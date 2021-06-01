@@ -7,6 +7,6 @@ echo $GCLOUD_SERVICE_KEY | base64 -d | docker login -u _json_key --password-stdi
 export VERSIONTAG=$TRAVIS_BUILD_ID"-"$BRANCH
 echo "Building with tags [$VERSIONTAG]"
 
-docker build -t eu.gcr.io/census-int-ci/sdc-contact-centre-service:$VERSIONTAG .
-docker push eu.gcr.io/census-int-ci/sdc-contact-centre-service:$VERSIONTAG
+docker build -t eu.gcr.io/census-int-ci/sdc-int-cc-service:$VERSIONTAG .
+docker push eu.gcr.io/census-int-ci/sdc-int-cc-service:$VERSIONTAG
 
