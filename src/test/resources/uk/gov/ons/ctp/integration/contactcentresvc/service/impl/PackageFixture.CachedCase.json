@@ -1,0 +1,53 @@
+[
+  {
+    "id": "b7565b5e-1396-4965-91a2-918c0d3642ed",
+    "uprn": "334999999999",
+    "createdDateTime": "2020-05-11T11:55:23.195Z",
+    "formattedAddress": "39 Sandford Walk, Exeter, EX1 2ET",
+    "addressLine1": "39 Sandford Walk",
+    "addressLine2": "",
+    "addressLine3": "",
+    "townName": "Exeter",
+    "postcode": "EX1 2ET",
+    "addressType": "HH",
+    "caseType": "HH",
+    "estabType": "Household",
+    "region": "E",
+    "ceOrgName": "The Cached Case Organisation",
+    "caseEvents": [
+      {
+        "category": "CASE_CREATED",
+        "description": "Cache: Initial creation of case",
+        "createdDateTime": "2020-05-14T16:11:41.343+01:00"
+      },
+      {
+        "category": "CASE_UPDATED",
+        "description": "Cache: Create Household Visit",
+        "createdDateTime": "2020-05-16T12:12:12.343Z"
+      }
+    ]
+  },
+  {
+    "id": "c46e5dd4-4b17-45ac-a034-0e514e8592c0",
+    "uprn": "334999999999",
+    "createdDateTime": "2020-06-12T11:55:23.195Z",
+    "formattedAddress": null,
+    "addressLine1": "39 Sandford Trot",
+    "addressLine2": "",
+    "addressLine3": "",
+    "townName": "Exeter",
+    "postcode": "EX1 2ET",
+    "addressType": "CE",
+    "caseType": "CE",
+    "estabType": "Care Home",
+    "region": "E",
+    "ceOrgName": "The Cached Case Organisation",
+    "caseEvents": [
+      {
+        "category": "CASE_CREATED",
+        "description": "Cache: Initial creation",
+        "createdDateTime": "2020-06-14T16:11:41.343+01:00"
+      }
+    ]
+  }
+]
