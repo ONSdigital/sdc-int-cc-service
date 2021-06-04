@@ -13,6 +13,7 @@ logging:
   level:
     uk.gov.ons.ctp: INFO
     org.springframework: WARN
+    org.flywaydb: INFO
     
   profile: DEV
   useJson: true
@@ -74,7 +75,17 @@ spring:
     host: localhost
     port: 35672
     virtual-host: /
-
+  jpa:
+    open-in-view: false
+    hibernate:
+      # make sure hibernate does not execute DDL, defer to flyway
+      ddl-auto: none
+  flyway:
+    schemas: postgres
+    default-schema: postgres
+#    baseline-on-migrate: true
+#    baseline-version: 1
+    
 channel: CC
 
 address-index-settings:
@@ -198,3 +209,18 @@ uprn-blacklist:
 
 telephone-capture:
   disabled:
+
+# datasources
+ccdb:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: password
+    driverClassName: org.postgresql.Driver
+    
+ccdb-admin:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: password
+    driverClassName: org.postgresql.Driver

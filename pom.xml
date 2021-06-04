@@ -54,6 +54,11 @@
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-undertow</artifactId>
     </dependency>
 
@@ -127,9 +132,9 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- WARNING WARNING WARNING The CCCucmber project has this dependancy
-      also, as it has tests that use the product lib as fixtures. That dependancy
-      must be kept in sync with this one in order for the tests to run successfully -->
+    <!-- WARNING WARNING WARNING The CCCucmber project has this dependancy also, as it has tests that
+      use the product lib as fixtures. That dependancy must be kept in sync with this one in order for the
+      tests to run successfully -->
     <dependency>
       <groupId>ons.sdc.int.common</groupId>
       <artifactId>product-reference</artifactId>
@@ -193,6 +198,16 @@
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpg-jdk15on</artifactId>
       <version>1.66</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
     </dependency>
 
     <!-- Testing -->
@@ -425,7 +440,6 @@
         </executions>
       </plugin>
 
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
@@ -444,8 +458,8 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
+
     <resources>
       <resource>
         <directory>src/main/resources</directory>
