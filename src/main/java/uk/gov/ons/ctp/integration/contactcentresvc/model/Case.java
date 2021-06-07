@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "caze")
+@Table(name = "caze", schema = "cc_schema")
 public class Case {
   @Id private UUID caseId;
 

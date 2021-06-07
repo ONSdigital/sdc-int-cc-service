@@ -81,8 +81,8 @@ spring:
       # make sure hibernate does not execute DDL, defer to flyway
       ddl-auto: none
   flyway:
-    schemas: postgres
-    default-schema: postgres
+    schemas: cc_schema
+    default-schema: cc_schema
 #    baseline-on-migrate: true
 #    baseline-version: 1
     
@@ -213,14 +213,12 @@ telephone-capture:
 # datasources
 ccdb:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
+    url: jdbc:postgresql://localhost:5432/ccdb
+    username: ccsvc
     password: password
-    driverClassName: org.postgresql.Driver
     
 ccdb-admin:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
+    url: jdbc:postgresql://localhost:5432/ccdb
+    username: ccadmin
     password: password
-    driverClassName: org.postgresql.Driver
