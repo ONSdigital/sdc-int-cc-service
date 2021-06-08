@@ -78,8 +78,8 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      # make sure hibernate does not execute DDL, defer to flyway
-      ddl-auto: none
+      # ask hibernate to validate the schema matches the code.
+      ddl-auto: validate
   flyway:
     schemas: cc_schema
     default-schema: cc_schema
