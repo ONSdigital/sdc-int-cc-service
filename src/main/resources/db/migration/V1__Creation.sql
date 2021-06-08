@@ -10,9 +10,4 @@ CREATE TABLE caze (
 
 CREATE INDEX caze_case_ref_idx ON caze (case_ref);
 
-GRANT USAGE ON SCHEMA cc_schema TO ccsvc;
-GRANT SELECT, UPDATE, INSERT, DELETE ON ALL TABLES IN SCHEMA cc_schema TO ccsvc;
-GRANT SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA cc_schema TO ccsvc;
-
-
 -- EOF
