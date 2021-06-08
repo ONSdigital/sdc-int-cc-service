@@ -29,11 +29,13 @@ management:
     web:
       base-path: /
       exposure:
-        include: info, health
+        include: info, health, flyway
   endpoint:
     info:
       enabled: true 
     health:
+      enabled: true
+    flyway:
       enabled: true
   metrics:
     tags:
