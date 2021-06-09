@@ -82,12 +82,16 @@ spring:
     hibernate:
       # ask hibernate to validate the schema matches the code.
       ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: cc_schema
   flyway:
     schemas: cc_schema
     default-schema: cc_schema
 #    baseline-on-migrate: true
 #    baseline-version: 1
-    
+
+
 channel: CC
 
 address-index-settings:
