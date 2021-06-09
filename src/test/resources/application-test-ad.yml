@@ -1,1 +1,21 @@
 channel: AD
+
+spring:
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: none    
+    
+# datasources
+ccdb:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: 
+    
+ccdb-admin:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:     
