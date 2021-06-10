@@ -6,12 +6,13 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -24,6 +25,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 
+@RunWith(MockitoJUnitRunner.class)
 public class AddressServiceClientServiceImplTest {
 
   private static final String ADDRESS_QUERY_PATH = "/addresses";
@@ -48,7 +50,6 @@ public class AddressServiceClientServiceImplTest {
 
   @Before
   public void initMocks() {
-    MockitoAnnotations.initMocks(this);
     addressIndexSettings = new AddressIndexSettings();
     // Mock the address index settings
     addressIndexSettings.setAddressQueryPath(ADDRESS_QUERY_PATH);
