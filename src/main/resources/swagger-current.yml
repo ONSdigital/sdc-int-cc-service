@@ -1,0 +1,1342 @@
+openapi: 3.0.0
+info:
+  title: ONS Contact Centre API
+  version: "5.11.18-oas3"
+  description: |
+    Specification for the ONS Census Contact Centre / Assisted Digital service.
+    This reflects the release candidate that will next be promoted into the integration environment.
+
+    Version | Change
+    ------- | ----------------------------------------------------------------
+    5.11.18 | Postcode query rejects BFPO postcodes
+    5.11.17 | postalfulfilment title, forename and surname max characters changes (20,35,35)
+    5.10.16 | title no longer mandatory for an individual fulfilment postal request
+    5.10.15 | updated maximum values of offset and limit for /addresses/postcode endpoint
+    5.10.14 | updated the EstabType enum
+    5.10.13 | removed support for 'unknown' from /cases/refusal. Also, the
+            | caseId in the request body can no longer be null.
+    5.10.12 | unrestricted integer agentId
+    5.10.11 | removed tele num and notes from /cases/refusal
+      -     | added isHouseholder to /cases/refusal
+      -     | callId optional for /cases/refusal
+    5.10.10 | PUT /cases/{caseId} address fields reduced
+    5.10.9  | uprn now 13 not 12 digits    
+    5.10.8  | AD location len 8 -> 4
+      -     | 202 response added to launch endpoint
+    5.10.7  | ceOrgName added to Case response
+      -     | added uprn to POST /cases request
+      -     | added estabType to POST /cases request
+      -     | required fields for POST /cases revised
+    5.10.6  | missing callId added to refusal request
+      -     | enums refactored into the schema
+    5.10.5  | /cases/{caseId}/invalidate added
+      -     | NA addressType added to GET /address/* endpoint response
+security:
+  - basicAuth: []
+tags:
+  - name: routes
+paths:
+  /addresses:
+    get:
+      operationId: addressQuery
+      tags:
+        - CONTACT_CENTRE
+        - ASSISTED_DIGITAL
+      summary: Search for an address.
+      description: >-
+        Returns a ranked list of addresses matching the search query in the
+        specified format.
+      parameters:
+        - in: query
+          name: input
+          required: true
+          description: >-
+            Specifies the address search string (e.g. 'Segensworth Road,
+            Titchfield, PO15 5RR').
+          schema:
+            type: string
+            maximum: 250
+            default: 0
+        - in: query
+          name: offset
+          required: false
+          description: 'Specifies the offset from zero, used for pagination.'
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 250
+            default: 0
+        - in: query
+          name: limit
+          required: false
+          description: Specifies the number of addresses to return.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 100
+            default: 100
+
+      responses:
+        '200':
+          description: Success. A json return of matched addresses.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/AddressQueryResponseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: >-
+            Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: >-
+            Server too busy. The Address Index API is experiencing exceptional
+            load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+  /addresses/postcode:
+    get:
+      operationId: postcodeQuery
+      tags:
+        - CONTACT_CENTRE
+        - ASSISTED_DIGITAL
+      summary: Search for an address by postcode.
+      description: >-
+        Returns a alpha-numeric ordered list of addresses matching the postcode
+        query.
+      parameters:
+        - $ref: '#/components/parameters/POSTCODE_REQUEST'
+        - in: query
+          name: offset
+          required: false
+          description: 'Specifies the offset from zero, used for pagination.'
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 5000
+            default: 0
+        - in: query
+          name: limit
+          required: false
+          description: Specifies the number of addresses to return.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 5000
+            default: 100
+      responses:
+        '200':
+          description: Success. A json return of matched addresses.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/AddressQueryResponseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: >-
+            Server too busy. The Address Index API is experiencing exceptional
+            load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+  /cases:
+    post:
+      operationId: caseCreation
+      tags:
+        - CONTACT_CENTRE
+      summary: Create a case for an address not found through the address search
+      description: >-
+        When an address cannot be found in search, this operation will result in a new case being created for the address
+      responses:
+        '200':
+          description: Success. Confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/CaseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCaseRequestDTO'
+        description: object detailing an until now unknown address for a case
+
+  /cases/{caseId}/invalidate:
+    post:
+      operationId: invalidateCase
+      tags:
+        - CONTACT_CENTRE
+      summary: Invalidates a case due to address status change
+      description: >-
+        Returns standard confirmation
+      parameters:
+        - in: path
+          name: caseId
+          required: true
+          description: The id of the case being modified
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success. Confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/ResponseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: >-
+                #/components/schemas/InvalidateCaseRequestDTO
+        description: object detailing status change of case
+
+  /cases/uprn/{uprn}:
+    get:
+      operationId: caseByUprnQuery
+      tags:
+        - CONTACT_CENTRE
+        - ASSISTED_DIGITAL
+      summary: Search for a case by address uprn.
+      description: >-
+        Returns a case
+      parameters:
+        - in: path
+          name: uprn
+          required: true
+          description: 'Lookup a case by the UPRN '
+          schema:
+            type: string
+            pattern: '^\d{1,13}$'
+        - in: query
+          name: caseEvents
+          description: true if case events are additionally required
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success. A json object return of matched case.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: >-
+                    #/components/schemas/CaseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '403':
+          description: Forbidden. The case exists, but it's not being returned as it's not a household case.
+        '404':
+          description: Not found. A case doesn't exist for the supplied uprn.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+  /cases/ccs/postcode/{postcode}:
+    get:
+      operationId: ccsCaseByPostcodeQuery
+      tags:
+        - CONTACT_CENTRE
+      summary: Search for a CCS case by address postcode.
+      description: >-
+        Returns a list of cases
+      parameters:
+        - $ref: '#/components/parameters/POSTCODE_PATH'
+        - in: query
+          name: caseEvents
+          description: true if case events are additionally required
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success. A json array of matched cases.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: >-
+                    #/components/schemas/CaseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '403':
+          description: Forbidden. The case exists, but it's not being returned as it's not a household case.
+        '404':
+          description: Not found. A case doesn't exist for the supplied uprn.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+  /cases/{caseId}:
+    put:
+      operationId: caseUpdate
+      tags:
+        - CONTACT_CENTRE
+      summary: Update the address details of a case or change it's estab type
+      description: >-
+        Update the address details for a known case and/or report a change of estab type
+        MUST contain the original case data retrieved from one of the GET /cases endpoints
+        with relevant amendments applied.
+      parameters:
+        - in: path
+          name: caseId
+          required: true
+          description: The id of the case being modified
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success. Confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/CaseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyCaseRequestDTO'
+        description: object detailing a change to the details of a case
+
+    get:
+      operationId: caseByIdQuery
+      tags:
+        - CONTACT_CENTRE
+      summary: Search for a case by its Id.
+      description: >-
+        Returns a case
+      parameters:
+        - in: path
+          name: caseId
+          required: true
+          description: 'Lookup a case by the case uuid '
+          schema:
+            type: string
+        - in: query
+          name: caseEvents
+          description: true if case events are additionally required
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success. A json object return of matched case.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/CaseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '403':
+          description: Forbidden. The case exists, but it's being not returned as it's not a household case.
+        '404':
+          description: Not found. A case doesn't exist for the supplied caseId.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+  /cases/ref/{reference}:
+    get:
+      operationId: caseByReferenceQuery
+      tags:
+        - CONTACT_CENTRE
+      summary: Search for a case by its reference.
+      description: >-
+        Returns a case by the case reference if available.
+      parameters:
+        - in: path
+          name: reference
+          required: true
+          description: Case reference e.g 123000001
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: caseEvents
+          description: true if case events are additionally required
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success. A json object return of matched case.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/CaseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '403':
+          description: Forbidden. The case exists, but it's not being returned as it's not a household case.
+        '404':
+          description: Not found. A case doesn't exist for the supplied uprn.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+  /cases/{caseId}/launch:
+    get:
+      operationId: LaunchByCaseIdQuery
+      tags:
+        - CONTACT_CENTRE
+      summary: Obtain an EQ launch URL and token for a case.
+      description: >-
+        Returns an EQ launch URL for the case
+      parameters:
+        - in: path
+          name: caseId
+          required: true
+          description: Obtain an EQ survey launch URL by caseID
+          schema:
+            type: string
+        - in: query
+          name: agentId
+          required: true
+          description: employee identifier
+          schema:
+            $ref: '#/components/schemas/AGENT_ID_CONST'
+        - in: query
+          name: individual
+          required: true
+          description: the launch of an individual questionnaire is required
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success. A json object return containing a launch url with token.
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+        '202':
+          description: >-
+            The operation cannot be performed at this point in time. Try again later.
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+  /cases/{caseId}/uac:
+    get:
+      operationId: GetUACForCase
+      tags:
+        - ASSISTED_DIGITAL
+      summary: Obtain a UAC for a case.
+      description: >-
+        Returns a UAC for the case
+      parameters:
+        - in: path
+          name: caseId
+          required: true
+          description: Obtain a UAC for a caseEQ survey launch URL by caseID
+          schema:
+            type: string
+        - in: query
+          name: adLocationId
+          required: true
+          description: Assisted Digital Location Identifier
+          schema:
+            type: string
+            pattern: '^\d{1,4}$'
+        - in: query
+          name: individual
+          required: true
+          description: the UAC for an individual questionnaire is required
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success. A json object return containing a single use UAC.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/UACResponseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+  /cases/{caseId}/fulfilment/post:
+    post:
+      operationId: postFulfilment
+      tags:
+        - CONTACT_CENTRE
+      summary: Request a fulfilment for a Case
+      description: >-
+        Request a fulfilment for a Case.
+        If the fulfilment code is for an individual then the request will be rejected as a bad
+        request if any of the following fields are not provided in the request body:
+        'forename' or 'surname'.
+      parameters:
+        - in: path
+          name: caseId
+          description: The Case UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success. Confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/ResponseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: >-
+                #/components/schemas/PostalFulfilmentRequestDTO
+        description: object detailing fulfilment request
+
+  /cases/{caseId}/fulfilment/sms:
+    post:
+      operationId: smsFulfilment
+      tags:
+        - CONTACT_CENTRE
+      summary: Request a fulfilment for a Case
+      description: >-
+        Requests a fulfilment for a case
+      parameters:
+        - in: path
+          name: caseId
+          description: The Case UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success. Confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/ResponseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: >-
+                #/components/schemas/SMSFulfilmentRequestDTO
+        description: object detailing fulfilment request
+
+  /fulfilments:
+    get:
+      operationId: fulfilments
+      tags:
+        - CONTACT_CENTRE
+      summary: Get a list of available fulfilments.
+      description: >-
+        Returns a JSON array containing available fulfilments
+      parameters:
+        - in: query
+          name: caseType
+          required: false
+          description: Lookup fulfilments by casetype
+          schema:
+            $ref: '#/components/schemas/CaseType'
+        - in: query
+          name: productGroup
+          required: false
+          description: Lookup fulfilments by product group
+          schema:
+            type: string
+            enum:
+              - QUESTIONNAIRE
+              - CONTINUATION
+              - LARGE_PRINT
+              - EASY_PRINT
+              - UAC
+              - TRANSLATION
+        - in: query
+          name: deliveryChannel
+          required: false
+          description: Lookup fulfilments by delivery channel
+          schema:
+            $ref: '#/components/schemas/DeliveryChannel'
+        - in: query
+          name: region
+          required: false
+          description: 'Lookup fulfilments by region e.g. England (E), Wales (W), Northern Ireland (N)'
+          schema:
+            $ref: '#/components/schemas/Region'
+        - in: query
+          name: individual
+          required: false
+          description: 'Lookup fulfilments suitable for an individual (true) or not (false)'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success. A json object return of fulfilment options.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: >-
+                    #/components/schemas/FulfilmentDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+  /cases/{caseId}/refusal:
+    post:
+      operationId: refusals
+      tags:
+        - CONTACT_CENTRE
+      summary: Log when someone is unable/unwilling to complete a response
+      description: >-
+        Logs a refusal against a Case.
+        Address fields are optional, these are only required in the instance where the API is down and the contact centre operative needs to record the address fields due to Case lookup not being available.
+      parameters:
+        - in: path
+          name: caseId
+          description: The Case UUID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success. Confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/ResponseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised. The API key provided with the request is invalid.
+        '429':
+          description: Server too busy. The ONS API is experiencing exceptional load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: >-
+                #/components/schemas/RefusalRequestDTO
+        description: object detailing refusal
+
+  /version:
+    get:
+      operationId: versionQuery
+      tags:
+        - routes
+      summary: Get version information.
+      description: Returns version information for the service api
+      responses:
+        '200':
+          description: Success. A json return of version information.
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/VersionResponseDTO
+        '400':
+          description: >-
+            Bad request. Indicates an issue with the request. Further details
+            are provided in the response.
+        '401':
+          description: Unauthorised.
+        '429':
+          description: >-
+            Server too busy. The server is experiencing exceptional
+            load.
+        '500':
+          description: >-
+            Internal server error. Failed to process the request due to an
+            internal error.
+
+components:
+  parameters:
+    POSTCODE_REQUEST:
+      in: query
+      name: postcode
+      required: true
+      schema:
+        $ref: '#/components/schemas/POSTCODE_CONST'
+    POSTCODE_PATH:
+      in: path
+      name: postcode
+      required: true
+      schema:
+        $ref: '#/components/schemas/POSTCODE_CONST'
+    CallIdentifier:
+      name: X-CALL-ID
+      description: >-
+        a unique call identifier that can be used to cross reference an API call
+        to a contact centre call, MUST NOT be personal info e.g. phonenumber
+      in: header
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    appId:
+      type: apiKey
+      in: header
+      name: X-APP-ID
+
+  schemas:
+    CaseRequestDTO:
+      type: object
+      properties:
+        caseType:
+              $ref: '#/components/schemas/CaseType'
+        addressLine1:
+          type: string
+          maxLength: 60
+          description: updated address line1
+        addressLine2:
+          type: string
+          maxLength: 60
+          description: updated address line2
+        addressLine3:
+          type: string
+          maxLength: 60
+          description: updated address line3
+        ceOrgName:
+          type: string
+          maxLength: 60
+          description: CE Organisation name. If not known then can be null or empty.
+        ceUsualResidents:
+          type: integer
+          description: CE number of usual residents. Must be a positive value for CE cases
+        estabType:
+          $ref: '#/components/schemas/EstabType'
+          description: 'the reported type of an address'
+        dateTime:
+          type: string
+          format: datetime
+          description: The request date time stamp
+
+    ModifyCaseRequestDTO:
+      allOf:
+        - $ref: '#/components/schemas/CaseRequestDTO'
+        - type: object
+          properties:
+            caseId:
+              type: string
+              format: uuid
+              description: CaseId of case to modify
+          required:
+            - caseId
+            - caseType
+            - estabType
+            - addressLine1
+            - dateTime
+
+    NewCaseRequestDTO:
+      allOf:
+        - $ref: '#/components/schemas/CaseRequestDTO'
+        - type: object
+          properties:
+            uprn:
+              type: string
+              pattern: '^\d{1,13}$'
+              description: The address UPRN if known, or null if not known.
+            region:
+              $ref: '#/components/schemas/Region'
+            postcode:
+              $ref:  '#/components/schemas/POSTCODE_CONST'
+            townName:
+              type: string
+              maxLength: 30
+              description: The post town of the address
+          required:
+            - caseType
+            - estabType
+            - region
+            - addressLine1
+            - townName
+            - postcode
+            - dateTime
+
+    InvalidateCaseRequestDTO:
+      properties:
+        caseId:
+          type: string
+          format: uuid
+          description: CaseId of case to modify
+        notes:
+          type: string
+          maxLength: 512
+          description: Textual context regarding the modification
+        status:
+          type: string
+          enum:
+            - SPLIT_ADDRESS
+            - MERGED
+            - DUPLICATE
+            - DOES_NOT_EXIST
+            - DERELICT
+            - DEMOLISHED
+            - NON_RESIDENTIAL
+            - UNDER_CONSTRUCTION
+          description: 'the reported status of an address'
+        dateTime:
+          type: string
+          format: datetime
+          description: The request date time stamp
+      required:
+        - status
+        - caseId
+        - dateTime
+
+    PostalFulfilmentRequestDTO:
+      properties:
+        caseId:
+          type: string
+          format: uuid
+          description: CaseId to request fulfilment for.
+        title:
+          type: string
+          maxLength: 20
+          description: the title of the person requesting fulfilment
+        forename:
+          type: string
+          maxLength: 35
+          description: the forename of the person requesting fulfilment
+        surname:
+          type: string
+          maxLength: 35
+          description: the surname of the person requesting fulfilment
+        fulfilmentCode:
+          type: string
+          description: the fulfilment code for the fulfilment
+        dateTime:
+          type: string
+          format: datetime
+          description: The request date time stamp
+      required:
+        - caseId
+        - fulfilmentCode
+        - dateTime
+
+    SMSFulfilmentRequestDTO:
+      properties:
+        caseId:
+          type: string
+          format: uuid
+          description: CaseId to request fulfilment for.
+        telNo:
+          type: string
+          pattern: '^447[0-9]{9}$'
+        fulfilmentCode:
+          type: string
+          description: the fulfilment code for the fulfilment
+        dateTime:
+          type: string
+          format: datetime
+          description: The request date time stamp
+      required:
+        - caseId
+        - telNo
+        - fulfilmentCode
+        - dateTime
+
+    RefusalRequestDTO:
+      properties:
+        caseId:
+          type: string
+          format: uuid
+          description: CaseId to log refusal against
+        agentId:
+          $ref: '#/components/schemas/AGENT_ID_CONST'
+        reason:
+          type: string
+          enum:
+            - EXTRAORDINARY
+            - HARD
+          description: 'the reason for the refusal'
+        title:
+          type: string
+          maxLength: 12
+          description: the title of the person refusing
+        forename:
+          type: string
+          maxLength: 60
+          description: the forename of the person refusing
+        surname:
+          type: string
+          maxLength: 60
+          description: the surname of the person refusing
+        addressLine1:
+          type: string
+          maxLength: 60
+          description: address line1 (for use if no caseid is available)
+        addressLine2:
+          type: string
+          maxLength: 60
+          description: address line2  (for use if no caseid is available)
+        addressLine3:
+          type: string
+          maxLength: 60
+          description: updated address line3  (for use if no caseid is available)
+        townName:
+          type: string
+          maxLength: 30
+          description: The post town of the address  (for use if no caseid is available)
+        region:
+          $ref: '#/components/schemas/Region'
+        postcode:
+          $ref: '#/components/schemas/POSTCODE_CONST'
+        uprn:
+          type: string
+          pattern: '^\d{1,13}$'
+          description: The address UPRN if known
+        isHouseholder:
+          type: boolean
+          description: True if the person refusing is the householder
+        dateTime:
+          type: string
+          format: datetime
+          description: The requested time of the refusal
+        callId:
+          type: string
+          description: call identifier
+      required:
+        - agentId
+        - caseId
+        - reason
+        - dateTime
+        - isHouseholder
+
+    FulfilmentDTO:
+      properties:
+        fulfilmentCode:
+          type: string
+        caseTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseType'
+          description: case type
+        individual:
+          type: boolean
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+        productGroup:
+          type: string
+          enum:
+            - INVITE
+            - QUESTIONNAIRE
+            - CONTINUATION
+            - LARGE_PRINT
+            - EASY_READ
+            - UAC
+            - TRANSLATION
+        description:
+          type: string
+        deliveryChannel:
+          $ref: '#/components/schemas/DeliveryChannel'
+      required:
+        - fulfilmentCode
+        - caseTypes
+        - individual
+        - regions
+        - productGroup
+        - description
+        - deliveryChannel
+
+    CaseDTO:
+      properties:
+        id:
+          type: string
+          format: uuid
+        caseRef:
+          type: string
+          pattern: "^[0-9]{10}$"
+        caseType:
+          $ref: '#/components/schemas/CaseType'
+        addressType:
+          type: string
+          enum:
+            - HH
+            - CE
+            - SPG
+          description: address type
+        secureEstablishment:
+          type: boolean
+          description: indicates that the case is resident at a secure establishment
+        allowedDeliveryChannels:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryChannel'
+        estabType:
+          $ref: '#/components/schemas/EstabType'
+        estabDescription:
+          type: string
+          maxLength: 60
+        ceOrgName:
+          type: string
+          maxLength: 60
+          description: CE Organisation name
+        createdDateTime:
+          type: string
+          format: datetime
+        lastUpdated:
+          type: string
+          format: datetime
+        addressLine1:
+          type: string
+          maxLength: 60
+          description: address line1
+        addressLine2:
+          type: string
+          maxLength: 60
+          description: address line2
+        addressLine3:
+          type: string
+          maxLength: 60
+          description: address line3
+        townName:
+          type: string
+          maxLength: 30
+          description: The post town of the address
+        region:
+          $ref: '#/components/schemas/Region'
+        postcode:
+          type: string
+          description: postcode of address
+          maxLength: 8
+        uprn:
+          type: string
+          description: uprn (Unique Property Reference Number) of address
+        estabUprn:
+          type: string
+          description: uprn (Unique Property Reference Number) of the parent establishments address
+        caseEvents:
+          type: array
+          items:
+            $ref: >-
+              #/components/schemas/CaseEventDTO
+      required:
+        - id
+        - caseType
+        - region
+        - allowedDeliveryChannels
+        - estabType
+        - estabDescription
+        - lastUpdated
+        - createdDateTime
+        - addressLine1
+        - townName
+        - postcode
+        - uprn
+
+    CaseEventDTO:
+      properties:
+        category:
+          type: string
+        description:
+          type: string
+        createdDateTime:
+          type: string
+          format: datetime
+      required:
+        - category
+        - description
+        - createdDateTime
+
+    AddressQueryResponseDTO:
+      properties:
+        dataVersion:
+          type: string
+        addresses:
+          type: array
+          items:
+            $ref: >-
+              #/components/schemas/AddressDTO
+        total:
+          type: integer
+          format: int64
+      required:
+        - dataVersion
+        - addresses
+        - total
+
+    VersionResponseDTO:
+      properties:
+        apiVersion:
+          type: string
+      required:
+        - apiVersion
+
+    AddressDTO:
+      properties:
+        region:
+          type: string
+          enum:
+            - E
+            - W
+            - N
+            - S
+          description: 'The region e.g. England (E), Wales (W), Northern Ireland (N), Scotland (S)'
+        estabDescription:
+          type: string
+        estabType:
+          $ref: '#/components/schemas/EstabType'
+        addressType:
+          type: string
+          enum:
+            - HH
+            - CE
+            - SPG
+            - NA
+        uprn:
+          type: string
+        formattedAddress:
+          type: string
+        welshFormattedAddress:
+          type: string
+      required:
+        - uprn
+        - region
+        - estabType
+        - estabDescription
+        - addressType
+        - formattedAddress
+        - welshFormattedAddress
+
+    ResponseDTO:
+      properties:
+        id:
+          type: string
+        dateTime:
+          type: string
+          format: datetime
+      required:
+        - dateTime
+
+    UACResponseDTO:
+      properties:
+        id:
+          type: string
+        uac:
+          type: string
+        dateTime:
+          type: string
+          format: datetime
+      required:
+        - dateTime
+
+    POSTCODE_CONST:
+      type: string
+      pattern: 'GIR[ ]?0AA|(AB|AL|B|BA|BB|BD|BH|BL|BN|BR|BS|BT|BX|CA|CB|CF|CH|CM|CO|CR|CT|CV|CW|DA|DD|DE|DG|DH|DL|DN|DT|DY|E|EC|EH|EN|EX|FK|FY|G|GL|GY|GU|HA|HD|HG|HP|HR|HS|HU|HX|IG|IM|IP|IV|JE|KA|KT|KW|KY|L|LA|LD|LE|LL|LN|LS|LU|M|ME|MK|ML|N|NE|NG|NN|NP|NR|NW|OL|OX|PA|PE|PH|PL|PO|PR|RG|RH|RM|S|SA|SE|SG|SK|SL|SM|SN|SO|SP|SR|SS|ST|SW|SY|TA|TD|TF|TN|TQ|TR|TS|TW|UB|W|WA|WC|WD|WF|WN|WR|WS|WV|YO|ZE)(\\d[\\dA-Z]?[ ]?\\d[ABD-HJLN-UW-Z]{2})'
+
+    AGENT_ID_CONST:
+      type: integer
+      format: int32
+      description: employee identifier
+      
+    Region:
+      type: string
+      description: 'The region e.g. England (E), Wales (W), Northern Ireland (N)'
+      enum:
+        - E
+        - W
+        - N
+      
+    CaseType:
+      type: string
+      description: 'Mnemonic for the type of case'
+      enum:
+        - HH
+        - CE
+        - SPG
+
+    DeliveryChannel:
+      type: string
+      enum:
+        - SMS
+        - POST
+
+    EstabType:
+      type: string
+      description: 'The establishment type of the address'
+      enum:
+        - HALL_OF_RESIDENCE
+        - CARE_HOME
+        - HOSPITAL
+        - HOSPICE
+        - BOARDING_SCHOOL
+        - LOW_OR_MEDIUM_SECURE_MENTAL_HEALTH
+        - HIGH_SECURE_MENTAL_HEALTH
+        - HOTEL
+        - YOUTH_HOSTEL
+        - HOSTEL
+        - MILITARY_SLA
+        - MILITARY_US_SLA
+        - RELIGIOUS_COMMUNITY
+        - RESIDENTIAL_CHILDRENS_HOME
+        - EDUCATION_OTHER
+        - PRISON
+        - IMMIGRATION_REMOVAL_CENTRE
+        - APPROVED_PREMISES
+        - ROUGH_SLEEPER
+        - STAFF_ACCOMMODATION
+        - HOUSEHOLD
+        - SHELTERED_ACCOMMODATION
+        - RESIDENTIAL_CARAVAN
+        - RESIDENTIAL_BOAT
+        - MILITARY_SFA
+        - EMBASSY
+        - ROYAL_HOUSEHOLD
+        - CARAVAN
+        - MARINA
+        - TRAVELLING_PERSONS
+        - TRANSIENT_PERSONS
+        - MILITARY_US_SFA
+        - OTHER
