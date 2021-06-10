@@ -11,10 +11,11 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -26,6 +27,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
 
 /** Contact Centre Data Endpoint Unit tests */
+@RunWith(MockitoJUnitRunner.class)
 public final class FulfilmentsEndpointTest {
 
   private static final String PARAM_CASE_TYPE = "caseType";
@@ -51,8 +53,6 @@ public final class FulfilmentsEndpointTest {
    */
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
-
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(fulfilmentsEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))

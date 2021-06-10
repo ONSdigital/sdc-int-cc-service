@@ -12,9 +12,10 @@ import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAd
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -29,6 +30,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /** Contact Centre Data Endpoint Unit tests */
+@RunWith(MockitoJUnitRunner.class)
 public class CaseEndpointCaseLaunchTest {
 
   @InjectMocks private CaseEndpoint caseEndpoint;
@@ -46,8 +48,6 @@ public class CaseEndpointCaseLaunchTest {
    */
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
-
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(caseEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
