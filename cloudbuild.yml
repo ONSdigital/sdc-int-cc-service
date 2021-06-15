@@ -1,0 +1,7 @@
+steps:
+ - name: maven:3-jdk-11
+   entrypoint: mvn
+   args: ['package','-Dmaven.test.skip=true']
+ - name: gcr.io/cloud-builders/docker
+   args: ['build', '-t', 'europe-west2-docker.pkg.dev/sdc-int-ci/dev-docker/cc-service:$BRANCH_NAME-$SHORT_SHA', '--build-arg=JAR_FILE=target/ccsvc-0.0.0.jar', '.']
+   images: ['europe-west2-docker.pkg.dev/sdc-int-ci/dev-docker/cc-service:$BRANCH_NAME-$SHORT_SHA']
