@@ -88,6 +88,8 @@ spring:
   flyway:
     schemas: cc_schema
     default-schema: cc_schema
+    placeholders:
+       username: ccuser
 #    baseline-on-migrate: true
 #    baseline-version: 1
 
@@ -219,12 +221,12 @@ telephone-capture:
 # datasources
 ccdb:
   datasource:
-    url: jdbc:postgresql://localhost:5432/ccdb
-    username: ccsvc
+    url: jdbc:postgresql://localhost:5432/cc
+    username: ccuser
     password: password
     
 ccdb-admin:
   datasource:
-    url: jdbc:postgresql://localhost:5432/ccdb
-    username: ccadmin
+    url: jdbc:postgresql://localhost:5432/cc
+    username: ccuser
     password: password
