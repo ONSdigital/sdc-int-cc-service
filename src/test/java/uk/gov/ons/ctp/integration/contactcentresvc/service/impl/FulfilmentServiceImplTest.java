@@ -11,12 +11,13 @@ import java.util.Set;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
@@ -29,6 +30,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ProductGroup;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.Region;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
 
+@RunWith(MockitoJUnitRunner.class)
 public class FulfilmentServiceImplTest {
 
   @Mock AppConfig appConfig;
@@ -43,8 +45,6 @@ public class FulfilmentServiceImplTest {
 
   @Before
   public void initMocks() {
-    MockitoAnnotations.initMocks(this);
-
     Fulfilments fulfilments = new Fulfilments();
     fulfilments.setBlacklistedCodes(Set.of(BLACK_LISTED_FULFILMENT_CODE));
     Mockito.when(appConfig.getFulfilments()).thenReturn(fulfilments);
