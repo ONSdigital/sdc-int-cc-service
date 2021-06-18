@@ -1,0 +1,201 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contactcentresvc
+  labels:
+    app: contactcentresvc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: contactcentresvc
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      name: contactcentresvc
+      labels:
+        app: contactcentresvc
+    spec:
+      serviceAccountName: contactcentre-service
+      terminationGracePeriodSeconds: 40
+      volumes:
+        - name: etc-config-uprn-vol
+          configMap:
+            name: uprn-blacklist-config
+            items:
+              - key: uprns
+                path: blacklist
+        - name: etc-config-ccs-vol
+          configMap:
+            name: ccs-config
+            items:
+              - key: postcodes
+                path: ccs-postcodes
+      containers:
+      - name: cloud-sql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.17
+        command:
+          - "/cloud_sql_proxy"
+          - "-instances=sdc-cc-dev:europe-west2:cc-postgres-dev-6edd80d5=tcp:5432"
+        securityContext:
+          runAsNonRoot: true
+        resources:
+          requests:
+            cpu:    "0.5"
+            memory: "1Gi"
+      - name: ccsvc
+        image: eu.gcr.io/sdc-int-ci/sdc-int-cc-service:229591682-SOCINT-19-flyway-poc-with-upgrade-spring
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: etc-config-uprn-vol
+            mountPath: /etc/config-uprn
+          - name: etc-config-ccs-vol
+            mountPath: /etc/config
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sleep
+              - "10"
+        resources:
+          requests:
+            cpu: "0.5"
+            memory: "1Gi"
+          limits:
+            cpu: "0.5"
+            memory: "1Gi"
+        readinessProbe:
+          httpGet:
+            path: /health/readiness
+            port: 8171
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        livenessProbe:
+          httpGet:
+            path: /health/liveness
+            port: 8171
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        startupProbe:
+          httpGet:
+            path: /health/readiness
+            port: 8171
+          initialDelaySeconds: 5
+          failureThreshold: 240
+          periodSeconds: 10
+        ports:
+        - name: http-server
+          containerPort: 8171
+        env:
+        - name: DELAY_MIGRATION_SECONDS
+          value: "0"
+        - name: MANAGEMENT_METRICS_EXPORT_STACKDRIVER_ENABLED
+          value: "false"
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "sdc-cc-dev"
+        - name: JAVA_TOOL_OPTIONS
+          value: "-XX:+UseContainerSupport
+            -XX:-OmitStackTraceInFastThrow
+            -Dspring.profiles.active=dev"
+        - name: CHANNEL
+          value: "CC"
+        - name: SPRING_SECURITY_USER_NAME
+          valueFrom:
+            secretKeyRef:
+              name: serco-identity
+              key: username
+        - name: SPRING_SECURITY_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: serco-identity
+              key: password
+        - name: FULFILMENTS_BLACKLISTED_CODES
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: fulfilments-blacklist
+        - name: TELEPHONE_CAPTURE_DISABLED
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: telephone-capture-disabled
+        - name: CLOUD_STORAGE_CASE_SCHEMA_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: cloud-storage-case-schema-name
+        - name: SPRING_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: rabbit-identity
+              key: username
+        - name: SPRING_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rabbit-identity
+              key: password
+        - name: SPRING_RABBITMQ_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: rabbitmq-host
+        - name: SPRING_RABBITMQ_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: rabbitmq-port
+        - name: ADDRESS_INDEX_SETTINGS_REST_CLIENT_CONFIG_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: address-index-url
+        - name: CASE_SERVICE_SETTINGS_REST_CLIENT_CONFIG_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: case-service-host
+        - name: CASE_SERVICE_SETTINGS_REST_CLIENT_CONFIG_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: case-service-port
+        - name: EQ_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: eq-host
+        - name: CCDB_DATASOURCE_URL
+          value: "jdbc:postgresql://localhost:5432/cc"
+        - name: CCDB_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        - name: CCDB_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        - name: CCDB_ADMIN_DATASOURCE_URL
+          value: "jdbc:postgresql://localhost:5432/cc"
+        - name: CCDB_ADMIN_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        - name: CCDB_ADMIN_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        - name: KEYSTORE
+          valueFrom:
+            secretKeyRef:
+              name: cc-keys
+              key: cc-keys
