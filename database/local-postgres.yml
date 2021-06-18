@@ -12,7 +12,7 @@ services:
     container_name: pgadmin
     image: dpage/pgadmin4
     ports:
-      - "80:80"
+      - "1963:80"
     environment:
       - PGADMIN_DEFAULT_EMAIL=ons@ons.gov
       - PGADMIN_DEFAULT_PASSWORD=secret

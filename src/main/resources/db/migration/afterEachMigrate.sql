@@ -1,7 +1,7 @@
 -- run automatically after each migration step
 
 --
--- Since the CCSvc user does not own the schema (for security), we grant CRUD privileges
+-- Since the CCSvc user may not own the schema (for security), we grant CRUD privileges
 -- after each migration.
 --
 GRANT USAGE ON SCHEMA cc_schema TO ${username};

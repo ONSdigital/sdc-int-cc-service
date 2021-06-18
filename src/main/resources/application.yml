@@ -229,5 +229,5 @@ ccdb:
 ccdb-admin:
   datasource:
     url: jdbc:postgresql://localhost:5432/cc
-    username: ccuser
+    username: ccadmin
     password: password
