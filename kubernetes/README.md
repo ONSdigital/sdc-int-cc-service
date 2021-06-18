@@ -1,7 +1,7 @@
 # Notes about deployment descriptor
 
 The purpose of this deployment descriptor is to demonstrate this prototype in DEV environment, running **flyway**, 
-connection to **PostgreSQL** provided by **Cloud SQL**.
+connecting to **PostgreSQL** provided by **Cloud SQL**.
 
 - This deployment descriptor is tailored for DEV environment **sdc-cc-dev**.
 - It is adapted from **sdc-int-cc-terraform/kubernetes/contact-centre-service/contact-centre-service-deployment.yml**

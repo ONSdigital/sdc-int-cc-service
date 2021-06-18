@@ -32,7 +32,7 @@ Note: this will drop all data!
 - make sure GOOGLE_APPLICATION_CREDENTIALS is not set since it will interfere
 - change context to the GCP environment
 - set running Cloud SQL Auth Proxy on port 6432
-- export GCP_PGPPWD="<password>"
+- export GCP_PGPPWD with the dababase password for the CC user
 
 Example:
 ```
