@@ -43,6 +43,14 @@ The database will need to be initialised. This can be done with a local **Cloud 
 When running successfully version information can be obtained from the info endpoint:
     
 * localhost:8171/info
+
+You can also see the current database flyway migrations with:
+
+* localhost:8171/flyway
+
+Prototype only: test data in database:
+
+* localhost:8171/data/case
     
 ## Docker Image Build
 

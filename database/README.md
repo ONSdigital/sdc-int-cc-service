@@ -2,7 +2,8 @@
 
 ## Local setup (on developer laptop)
 
-Scripts and configuration to setup the database locally
+Scripts and configuration to setup the database locally.
+The setup script MUST be run before you startup the CCSvc.
 
 ### Create a local docker image of postgres, and a pgadmin client, accessible via the browser
 
@@ -62,8 +63,6 @@ Note: this will drop all data!
 
 ### Create postgres artefacts needed for CC Service.
 
-```
-./setup_db_gcp.sh
-```
+Users and DB are pre-created by terraform, and flyway by default will create schema if it is missing, so no script needed!
 
 
