@@ -35,6 +35,18 @@ spec:
             items:
               - key: postcodes
                 path: ccs-postcodes
+        - name: etc-config-keys-1
+          secret:
+            secretName: env-secrets
+            items:
+              - key: public-pgp-key-1
+                path: public-pgp-key-1.pem
+        - name: etc-config-keys-2
+          secret:
+            secretName: env-secrets
+            items:
+              - key: public-pgp-key-2
+                path: public-pgp-key-2.pem
       containers:
       - name: cloud-sql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.17
@@ -48,13 +60,17 @@ spec:
             cpu:    "0.5"
             memory: "1Gi"
       - name: ccsvc
-        image: eu.gcr.io/sdc-int-ci/sdc-int-cc-service:229591682-SOCINT-19-flyway-poc-with-upgrade-spring
+        image: eu.gcr.io/sdc-int-ci/sdc-int-cc-service:[CONTAINER_VERSION]
         imagePullPolicy: Always
         volumeMounts:
           - name: etc-config-uprn-vol
             mountPath: /etc/config-uprn
           - name: etc-config-ccs-vol
             mountPath: /etc/config
+          - name: etc-config-keys-1
+            mountPath: /etc/config-keys-1
+          - name: etc-config-keys-2
+            mountPath: /etc/config-keys-2
         lifecycle:
           preStop:
             exec:
@@ -197,3 +213,13 @@ spec:
             secretKeyRef:
               name: cc-keys
               key: cc-keys
+        - name: PUBLIC_PGP_KEY1
+          value: file:/etc/config-keys-1/public-pgp-key-1.pem
+        - name: PUBLIC_PGP_KEY2
+          value: file:/etc/config-keys-2/public-pgp-key-2.pem
+        - name: EQ_RESPONSE_ID_SALT
+          valueFrom:
+            secretKeyRef:
+              name: env-secrets
+              key: response-id-salt
+
