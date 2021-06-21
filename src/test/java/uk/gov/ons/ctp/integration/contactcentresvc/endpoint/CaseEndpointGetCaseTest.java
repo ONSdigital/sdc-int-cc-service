@@ -16,10 +16,11 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -35,6 +36,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
  * Contact Centre Data Endpoint Unit tests. This class tests the get case endpoints, covering gets
  * based on uuid, ref and uprn.
  */
+@RunWith(MockitoJUnitRunner.class)
 public final class CaseEndpointGetCaseTest {
 
   private static final String CASE_UUID_STRING = "dca05c61-8b95-46af-8f73-36f0dc2cbf5e";
@@ -68,8 +70,6 @@ public final class CaseEndpointGetCaseTest {
    */
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
-
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(caseEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
