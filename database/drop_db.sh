@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+echo "All CCsvc database data will be removed."
+echo -n "Continue (y/n)? "
+read answer
+if [ "$answer" != "${answer#[Yy]}" ] ;then
+  echo "Dropping data ..."
+else
+  echo "Nothing changed"
+  exit 0
+fi
+
 PGPASSWORD=password psql -v ON_ERROR_STOP=1 -h localhost -U "postgres" -w --dbname "postgres" <<-EOSQL
 	\c cc
 	REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA cc_schema FROM ccuser;

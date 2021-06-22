@@ -19,7 +19,47 @@ Enter credentials:
 - username: ons@ons.gov
 - password: secret
 
+You will need to create a server context, for example, to connect locally:
+
+1. Object -> Create -> Server ...
+1. Give it a name, e.g. "ccsvc"
+1. Click on the connection tab:
+    1. `postgres` for the host name (This is important!)
+    1. `5432` for the port
+    1. `postgres` for the database name
+    1. `postgres` for the username
+    1. `password` for the password
+1. Click save to close the dialog and connect to the postgreSQL instance
+1. Example the Server section on the left to see the various DB elements
+
 After you run the **setup_db.sh** (see below), then you should see the **cc** Database and associated **cc_schema** by navigating in the sidebar.
+
+### Prerequisites to using the drop or setup scripts
+
+Install **psql** (command line PostgreSQL client) locally.
+
+```
+brew install libpq
+brew link --force libpq
+```
+
+Here are a few handy PSQL commands:
+
+```
+\?                  -- command help
+\l                  -- list databases
+\c cc               -- change to cc database
+\d                  -- describe (anything)
+\d cc_schema.caze   -- describe table "caze"
+\di                 -- list indexes
+\dn                 -- list schemas
+\conninfo           -- connection information: DB, user, host, port
+\dt cc_schema.*     -- list tables in cc_schema schema
+\du                 -- list roles (users)
+
+select * from cc_schema.flyway_schema_history;
+\d cc_schema.caze
+```
 
 ### Drop existing postgres artefacts relating to CC Service.
 
@@ -46,6 +86,7 @@ Note: this will drop all data!
 - export GCP_PGPPWD with the dababase password for the CC user
 
 Example:
+
 ```
     curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd6
     chmod +x cloud_sql_proxy

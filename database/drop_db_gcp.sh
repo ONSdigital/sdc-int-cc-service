@@ -12,6 +12,16 @@
 #
 set -e
 
+echo "All CCsvc database data will be removed in CloudSQL connected via the Cloud SQL Auth Proxy."
+echo -n "Continue (y/n)? "
+read answer
+if [ "$answer" != "${answer#[Yy]}" ] ;then
+  echo "Dropping data ..."
+else
+  echo "Nothing changed"
+  exit 0
+fi
+
 USER=ccuser
 PORT=6432
 
