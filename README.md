@@ -1,11 +1,18 @@
 # Contact Centre Data Service
-This repository contains the Contact Centre Data service. This microservice is a RESTful web service implemented using [Spring Boot](http://projects.spring.io/spring-boot/). It manages contact centre data, where a Contact Centre Data object represents an expected response from the Contact Centre Data service, which provides all the data that is required by Contact Centre in order for it to verify the contact centre's UAC code and connect them to the relevant EQ questionnaire.
+This repository contains the Contact Centre Data service. This microservice is a RESTful web service implemented using [Spring Boot](http://projects.spring.io/spring-boot/). 
+It manages contact centre data, where a Contact Centre Data object represents an expected response from the Contact Centre Data service, which provides all the data that 
+is required by Contact Centre in order for it to verify the contact centre's UAC code and connect them to the relevant EQ questionnaire.
 
 ## Set Up
 Do the following steps to set up the code to run locally:
 * Install Java 11 locally
 * Make sure that you have a suitable settings.xml file in your local .m2 directory
 * Clone the sdc-int-cc-service locally
+
+## Database
+There is a dependency on PostgreSQL database. When running locally a local PostgreSQL will be needed.
+
+To setup postgres locally, see instructions at: [database readme](database/README.md).
 
 ## Running
 There are two ways of running this service:
@@ -21,11 +28,28 @@ There are two ways of running this service:
     ```
 This will create the JAR file in the Target directory. You can then right-click on the JAR file (in Intellij) and choose 'Run'.
 
+## Deployment to kubernetes
+
+In order to connect to PostgreSQL provided by a GCP Cloud SQL instance, then we can deploy the service in a pod with a **Cloud SQL Auth Proxy** sidecar.
+
+A sample deployment descriptor is provided with instructions here: [deployment README](kubernetes/README.md).
+
+The database will need to be initialised. This can be done with a local **Cloud SQL Auth Proxy** by following instructions here
+[database readme](database/README.md).
+
 ## End Point
 
 When running successfully version information can be obtained from the info endpoint:
     
 * localhost:8171/info
+
+You can also see the current database flyway migrations with:
+
+* localhost:8171/flyway
+
+Prototype only: test data in database:
+
+* localhost:8171/data/case
     
 ## Docker Image Build
 

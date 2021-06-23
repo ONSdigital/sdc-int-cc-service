@@ -13,6 +13,8 @@ logging:
   level:
     uk.gov.ons.ctp: INFO
     org.springframework: WARN
+    org.flywaydb: INFO
+    org.flywaydb.core.internal.sqlscript: WARN
     
   profile: DEV
   useJson: true
@@ -28,11 +30,13 @@ management:
     web:
       base-path: /
       exposure:
-        include: info, health
+        include: info, health, flyway
   endpoint:
     info:
       enabled: true 
     health:
+      enabled: true
+    flyway:
       enabled: true
   metrics:
     tags:
@@ -74,6 +78,22 @@ spring:
     host: localhost
     port: 35672
     virtual-host: /
+  jpa:
+    open-in-view: false
+    hibernate:
+      # ask hibernate to validate the schema matches the code.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: cc_schema
+  flyway:
+    schemas: cc_schema
+    default-schema: cc_schema
+    placeholders:
+       username: ccuser
+#    baseline-on-migrate: true
+#    baseline-version: 1
+
 
 channel: CC
 
@@ -198,3 +218,16 @@ uprn-blacklist:
 
 telephone-capture:
   disabled:
+
+# datasources
+ccdb:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cc
+    username: ccuser
+    password: password
+    
+ccdb-admin:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cc
+    username: ccadmin
+    password: password
