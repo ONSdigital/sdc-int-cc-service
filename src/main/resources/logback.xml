@@ -89,7 +89,7 @@
   </appender>
 
   <appender class="ch.qos.logback.core.ConsoleAppender"
-    name="DEV">
+    name="NON_JSON">
     <encoder>
       <pattern>${CONSOLE_LOG_PATTERN}</pattern>
     </encoder>

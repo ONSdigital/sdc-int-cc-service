@@ -15,9 +15,7 @@ logging:
     org.springframework: WARN
     org.flywaydb: INFO
     org.flywaydb.core.internal.sqlscript: WARN
-    
-  profile: DEV
-  useJson: true
+  profile: NON_JSON
 
 surveyName: CENSUS
 collectionExerciseId : 34d7f3bb-91c9-45d0-bb2d-90afce4fc790
