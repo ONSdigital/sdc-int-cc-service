@@ -1,12 +1,13 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.repository.impl;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,9 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseDataRepository;
 
+@Slf4j
 @Service
 public class CaseDataRepositoryImpl implements CaseDataRepository {
-
-  private static final Logger log = LoggerFactory.getLogger(CaseDataRepositoryImpl.class);
 
   @Value("${GOOGLE_CLOUD_PROJECT}")
   private String gcpProject;
@@ -49,12 +49,12 @@ public class CaseDataRepositoryImpl implements CaseDataRepository {
   }
 
   private void ensureCollectionExists(String collectionName) throws CTPException {
-    log.with("collectionName", collectionName).info("Checking if collection exists");
+    log.info("Checking if collection exists", kv("collectionName", collectionName));
 
     Set<String> collectionNames = cloudDataStore.getCollectionNames();
 
     if (!collectionNames.contains(collectionName)) {
-      log.with("collectionName", collectionName).info("Creating collection");
+      log.info("Creating collection", kv("collectionName", collectionName));
 
       try {
         // Force collection creation by adding an object.
@@ -65,12 +65,12 @@ public class CaseDataRepositoryImpl implements CaseDataRepository {
         cloudDataStore.storeObject(
             collectionName, PLACEHOLDER_CASE_NAME, dummyCase, PLACEHOLDER_CASE_NAME);
       } catch (Exception e) {
-        log.with("collectionName", collectionName).error("Failed to create collection", e);
+        log.error("Failed to create collection", kv("collectionName", collectionName), e);
         throw new CTPException(Fault.SYSTEM_ERROR, e);
       }
     }
 
-    log.with("collectionName", collectionName).info("Collection check completed");
+    log.info("Collection check completed", kv("collectionName", collectionName));
   }
 
   @Override

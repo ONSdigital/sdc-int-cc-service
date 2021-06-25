@@ -1,8 +1,5 @@
 package uk.gov.ons.ctp.integration.contactcentresvc;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
-import com.godaddy.logging.LoggingConfigs;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.config.MeterFilterReply;
@@ -10,7 +7,7 @@ import io.micrometer.stackdriver.StackdriverConfig;
 import io.micrometer.stackdriver.StackdriverMeterRegistry;
 import java.time.Duration;
 import java.util.HashMap;
-import javax.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -51,13 +48,12 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 import uk.gov.ons.ctp.integration.eqlaunch.service.impl.EqLaunchServiceImpl;
 
 /** The 'main' entry point for the ContactCentre Svc SpringBoot Application. */
+@Slf4j
 @SpringBootApplication
 @IntegrationComponentScan("uk.gov.ons.ctp.integration")
 @ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common"})
 @EnableCaching
 public class ContactCentreSvcApplication {
-  private static final Logger log = LoggerFactory.getLogger(ContactCentreSvcApplication.class);
-
   private AppConfig appConfig;
 
   @Value("${queueconfig.event-exchange}")
@@ -212,16 +208,6 @@ public class ContactCentreSvcApplication {
   @Bean
   public EqLaunchService eqLaunchService() throws CTPException {
     return new EqLaunchServiceImpl(appConfig.getKeystore());
-  }
-
-  @Value("#{new Boolean('${logging.useJson}')}")
-  private boolean useJsonLogging;
-
-  @PostConstruct
-  public void initJsonLogging() {
-    if (useJsonLogging) {
-      LoggingConfigs.setCurrent(LoggingConfigs.getCurrent().useJson());
-    }
   }
 
   @Bean

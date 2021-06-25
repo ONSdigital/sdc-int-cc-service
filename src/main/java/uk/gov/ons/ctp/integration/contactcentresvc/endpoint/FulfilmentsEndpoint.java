@@ -1,10 +1,11 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 import io.micrometer.core.annotation.Timed;
 import java.util.List;
 import javax.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,12 +18,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentsReq
 import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
 
 /** The REST controller for ContactCentreSvc Fulfilments end points */
+@Slf4j
 @Timed
 @RestController
 @RequestMapping(value = "/", produces = "application/json")
 public final class FulfilmentsEndpoint implements CTPEndpoint {
-  private static final Logger log = LoggerFactory.getLogger(FulfilmentsEndpoint.class);
-
   private FulfilmentsService fulfilmentsService;
 
   /**
@@ -47,7 +47,7 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
   @RequestMapping(value = "/fulfilments", method = RequestMethod.GET)
   public ResponseEntity<List<FulfilmentDTO>> getFulfilments(@Valid FulfilmentsRequestDTO requestDTO)
       throws CTPException {
-    log.with("requestParams", requestDTO).info("Entering GET getFulfilments");
+    log.info("Entering GET getFulfilments", kv("requestParams", requestDTO));
     List<FulfilmentDTO> fulfilments =
         fulfilmentsService.getFulfilments(
             requestDTO.getCaseType(),

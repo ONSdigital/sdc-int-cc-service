@@ -1,8 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.godaddy.logging.LoggingScope;
-import com.godaddy.logging.Scope;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +25,6 @@ public class CaseDTO {
 
   private UUID id;
 
-  @LoggingScope(scope = Scope.HASH)
   private String caseRef;
 
   private String caseType;
@@ -46,13 +43,10 @@ public class CaseDTO {
 
   private String addressLine1;
 
-  @LoggingScope(scope = Scope.SKIP)
   private String addressLine2;
 
-  @LoggingScope(scope = Scope.SKIP)
   private String addressLine3;
 
-  @LoggingScope(scope = Scope.SKIP)
   private String townName;
 
   private String region;

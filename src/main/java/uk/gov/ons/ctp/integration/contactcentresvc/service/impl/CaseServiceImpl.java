@@ -1,9 +1,9 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static java.util.stream.Collectors.toList;
+import static net.logstash.logback.argument.StructuredArguments.kv;
+import static net.logstash.logback.argument.StructuredArguments.v;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
@@ -91,10 +92,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
+@Slf4j
 @Service
 public class CaseServiceImpl implements CaseService {
-
-  private static final Logger log = LoggerFactory.getLogger(CaseServiceImpl.class);
   private static final String NI_LAUNCH_ERR_MSG =
       "All Northern Ireland calls from CE Managers are to be escalated to the NI management team.";
   private static final String UNIT_LAUNCH_ERR_MSG =
@@ -140,8 +140,9 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
 
     if (log.isDebugEnabled()) {
-      log.with(requestBodyDTO)
-          .debug("Now in the fulfilmentRequestByPost method in class CaseServiceImpl.");
+      log.debug(
+          "Now in the fulfilmentRequestByPost method in class CaseServiceImpl.",
+          kv("requestBodyDTO", requestBodyDTO));
     }
 
     verifyFulfilmentCodeNotBlackListed(requestBodyDTO.getFulfilmentCode());
@@ -163,8 +164,9 @@ public class CaseServiceImpl implements CaseService {
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
 
     if (log.isDebugEnabled()) {
-      log.with(response)
-          .debug("Now returning from the fulfilmentRequestByPost method in class CaseServiceImpl.");
+      log.debug(
+          "Now returning from the fulfilmentRequestByPost method in class CaseServiceImpl.",
+          kv("response", response));
     }
 
     return response;
@@ -173,8 +175,9 @@ public class CaseServiceImpl implements CaseService {
   public ResponseDTO fulfilmentRequestBySMS(SMSFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.with(requestBodyDTO)
-          .debug("Now in the fulfilmentRequestBySMS method in class CaseServiceImpl.");
+      log.debug(
+          "Now in the fulfilmentRequestBySMS method in class CaseServiceImpl.",
+          kv("requestBodyDTO", requestBodyDTO));
     }
 
     verifyFulfilmentCodeNotBlackListed(requestBodyDTO.getFulfilmentCode());
@@ -193,8 +196,9 @@ public class CaseServiceImpl implements CaseService {
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
 
     if (log.isDebugEnabled()) {
-      log.with(response)
-          .debug("Now returning from the fulfilmentRequestBySMS method in class CaseServiceImpl.");
+      log.debug(
+          "Now returning from the fulfilmentRequestBySMS method in class CaseServiceImpl",
+          kv("response", response));
     }
 
     return response;
@@ -265,7 +269,7 @@ public class CaseServiceImpl implements CaseService {
     rejectHouseholdIndividual(caseServiceResponse);
 
     if (log.isDebugEnabled()) {
-      log.with("caseId", caseId).debug("Returning case details for caseId");
+      log.debug("Returning case details for caseId", kv("caseId", caseId));
     }
 
     return caseServiceResponse;
@@ -276,7 +280,7 @@ public class CaseServiceImpl implements CaseService {
       UniquePropertyReferenceNumber uprn, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.with("uprn", uprn).debug("Fetching latest case details by UPRN");
+      log.debug("Fetching latest case details by UPRN", kv("uprn", uprn));
     }
 
     Optional<CaseDTO> latest = getLatestCaseByUprn(uprn, requestParamsDTO.getCaseEvents());
@@ -288,9 +292,10 @@ public class CaseServiceImpl implements CaseService {
       // New Case
       CachedCase newcase = createNewCachedCase(uprn.getValue());
       if (log.isDebugEnabled()) {
-        log.with("uprn", uprn)
-            .with("caseId", newcase.getId())
-            .debug("Returning new skeleton case for UPRN");
+        log.debug(
+            "Returning new skeleton case for UPRN",
+            kv("uprn", uprn),
+            kv("caseId", newcase.getId()));
       }
       response = createNewCachedCaseResponse(newcase, false);
     }
@@ -300,7 +305,7 @@ public class CaseServiceImpl implements CaseService {
   @Override
   public List<CaseDTO> getCCSCaseByPostcode(String postcode) throws CTPException {
     if (log.isDebugEnabled()) {
-      log.with("postcode", postcode).debug("Fetching ccs case details by postcode");
+      log.debug("Fetching ccs case details by postcode", kv("postcode", postcode));
     }
     validatePostcode(postcode);
 
@@ -321,9 +326,10 @@ public class CaseServiceImpl implements CaseService {
       if (isSupportedCaseType) {
         ccsCases.add(caseDTOMapper.map(ccsCaseDetails, CaseDTO.class));
       } else {
-        log.with("caseId", ccsCaseDetails.getId())
-            .with("caseType", caseType)
-            .info("Not returning CCS case with unsupported case type");
+        log.info(
+            "Not returning CCS case with unsupported case type",
+            kv("caseId", ccsCaseDetails.getId()),
+            kv("caseType", caseType));
       }
     }
 
@@ -334,7 +340,7 @@ public class CaseServiceImpl implements CaseService {
   public CaseDTO getCaseByCaseReference(final long caseRef, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.with("caseRef", caseRef).debug("Fetching case details by case reference");
+      log.debug("Fetching case details by case reference", kv("caseRef", caseRef));
     }
 
     validateCaseRef(caseRef);
@@ -345,15 +351,16 @@ public class CaseServiceImpl implements CaseService {
     CaseDTO caseServiceResponse = mapCaseContainerDTO(caseDetails);
     rejectHouseholdIndividual(caseServiceResponse);
     if (log.isDebugEnabled()) {
-      log.with("caseRef", caseRef).debug("Returning case details for case reference");
+      log.debug("Returning case details for case reference", kv("caseRef", caseRef));
     }
 
     // Return a 404 if the UPRN is blacklisted
     UniquePropertyReferenceNumber foundUprn = caseServiceResponse.getUprn();
     if (blacklistedUPRNBean.isUPRNBlacklisted(foundUprn)) {
-      log.with("case", caseServiceResponse.getId())
-          .with("foundUprn", foundUprn)
-          .info("UPRN is blacklisted. Not returning case");
+      log.info(
+          "UPRN is blacklisted. Not returning case",
+          kv("case", caseServiceResponse.getId()),
+          kv("foundUprn", foundUprn));
       throw new CTPException(
           Fault.RESOURCE_NOT_FOUND,
           "Case "
@@ -414,9 +421,10 @@ public class CaseServiceImpl implements CaseService {
       reportedDateTime = DateTimeUtil.formatDate(requestBodyDTO.getDateTime());
     }
     if (log.isDebugEnabled()) {
-      log.with("caseId", caseId)
-          .with("reportedDateTime", reportedDateTime)
-          .debug("Processing refusal for case with reported dateTime");
+      log.debug(
+          "Processing refusal for case with reported dateTime",
+          kv("caseId", caseId),
+          kv("reportedDateTime", reportedDateTime));
     }
 
     // Create and publish a respondent refusal event
@@ -430,7 +438,7 @@ public class CaseServiceImpl implements CaseService {
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
 
     if (log.isDebugEnabled()) {
-      log.with("caseId", caseId).debug("Returning refusal response for case");
+      log.debug("Returning refusal response for case", kv("caseId", caseId));
     }
 
     return response;
@@ -440,9 +448,10 @@ public class CaseServiceImpl implements CaseService {
   public String getLaunchURLForCaseId(final UUID caseId, LaunchRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.with("caseId", caseId)
-          .with("request", requestParamsDTO)
-          .debug("Processing request to create launch URL");
+      log.debug(
+          "Processing request to create launch URL",
+          kv("caseId", caseId),
+          kv("request", requestParamsDTO));
     }
 
     CaseContainerDTO caseDetails = getLaunchCase(caseId);
@@ -474,9 +483,10 @@ public class CaseServiceImpl implements CaseService {
   public UACResponseDTO getUACForCaseId(UUID caseId, UACRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.with("caseId", caseId)
-          .with("request", requestParamsDTO)
-          .debug("Processing request to get UAC for Case");
+      log.debug(
+          "Processing request to get UAC for Case",
+          kv("caseId", caseId),
+          kv("request", requestParamsDTO));
     }
 
     CaseContainerDTO caseDetails = getLaunchCase(caseId);
@@ -497,9 +507,10 @@ public class CaseServiceImpl implements CaseService {
     UUID caseId = invalidateCaseRequestDTO.getCaseId();
 
     if (log.isDebugEnabled()) {
-      log.with("caseId", caseId)
-          .with("status", invalidateCaseRequestDTO.getStatus())
-          .debug("Invalidate Case");
+      log.debug(
+          "Invalidate Case",
+          kv("caseId", caseId),
+          kv("status", invalidateCaseRequestDTO.getStatus()));
     }
 
     CaseContainerDTO caseDetails = getCaseFromRmOrCache(caseId, false);
@@ -526,16 +537,17 @@ public class CaseServiceImpl implements CaseService {
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
 
     if (log.isDebugEnabled()) {
-      log.with(response).debug("Return from invalidate case");
+      log.debug("Return from invalidate case", kv("response", response));
     }
     return response;
   }
 
   private void publishSurveyLaunchedEvent(UUID caseId, String questionnaireId, Integer agentId) {
-    log.with("questionnaireId", questionnaireId)
-        .with("caseId", caseId)
-        .with("agentId", agentId)
-        .info("Generating SurveyLaunched event");
+    log.info(
+        "Generating SurveyLaunched event",
+        kv("questionnaireId", questionnaireId),
+        kv("caseId", caseId),
+        kv("agentId", agentId));
 
     SurveyLaunchedResponse response =
         SurveyLaunchedResponse.builder()
@@ -553,7 +565,7 @@ public class CaseServiceImpl implements CaseService {
       Integer ceExpectedCapacity,
       AddressIndexAddressCompositeDTO address)
       throws CTPException {
-    log.with("caseId", caseId.toString()).info("Generating NewAddressReported event");
+    log.info("Generating NewAddressReported event", kv("caseId", caseId.toString()));
 
     CollectionCaseNewAddress newAddress =
         caseDTOMapper.map(address, CollectionCaseNewAddress.class);
@@ -613,8 +625,9 @@ public class CaseServiceImpl implements CaseService {
       String fulfilmentCode, Product.DeliveryChannel deliveryChannel, UUID caseId, Contact contact)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.with(fulfilmentCode)
-          .debug("Entering createFulfilmentEvent method in class CaseServiceImpl");
+      log.debug(
+          "Entering createFulfilmentEvent method in class CaseServiceImpl",
+          kv("fulfilmentCode", fulfilmentCode));
     }
 
     CaseContainerDTO caze = getCaseFromRmOrCache(caseId, false);
@@ -626,8 +639,9 @@ public class CaseServiceImpl implements CaseService {
         if (StringUtils.isBlank(contact.getForename())
             || StringUtils.isBlank(contact.getSurname())) {
 
-          log.with("fulfilmentCode", fulfilmentCode)
-              .warn("Individual fields are required for the requested fulfilment");
+          log.warn(
+              "Individual fields are required for the requested fulfilment",
+              kv("fulfilmentCode", fulfilmentCode));
           throw new CTPException(
               Fault.BAD_REQUEST,
               "The fulfilment is for an individual so none of the following fields can be empty: "
@@ -665,10 +679,11 @@ public class CaseServiceImpl implements CaseService {
       String fulfilmentCode, Product.DeliveryChannel deliveryChannel, Product.Region region)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.with(fulfilmentCode)
-          .with(deliveryChannel)
-          .with(region)
-          .debug("Passing fulfilmentCode, deliveryChannel, and region, into findProduct method.");
+      log.debug(
+          "Passing fulfilmentCode, deliveryChannel, and region, into findProduct method.",
+          kv("fulfilmentCode", fulfilmentCode),
+          kv("deliveryChannel", deliveryChannel),
+          kv("region", region));
     }
     Product searchCriteria =
         Product.builder()
@@ -679,7 +694,7 @@ public class CaseServiceImpl implements CaseService {
             .build();
     List<Product> products = productReference.searchProducts(searchCriteria);
     if (products.size() == 0) {
-      log.with("searchCriteria", searchCriteria).warn("Compatible product cannot be found");
+      log.warn("Compatible product cannot be found", kv("searchCriteria", searchCriteria));
       throw new CTPException(Fault.BAD_REQUEST, "Compatible product cannot be found");
     }
 
@@ -704,20 +719,20 @@ public class CaseServiceImpl implements CaseService {
     } catch (ResponseStatusException ex) {
       if (ex.getStatus() == HttpStatus.NOT_FOUND) {
         if (log.isDebugEnabled()) {
-          log.with("caseId", caseId).debug("Case Id Not Found calling Case Service");
+          log.debug("Case Id Not Found calling Case Service", kv("caseId", caseId));
         }
         Optional<CachedCase> cachedCase = dataRepo.readCachedCaseById(caseId);
         if (cachedCase.isPresent()) {
-          log.with("caseId", caseId).info("Using stored case details");
+          log.info("Using stored case details", kv("caseId", caseId));
           caze = caseDTOMapper.map(cachedCase.get(), CaseContainerDTO.class);
           caze.setSurveyType(appConfig.getSurveyName());
         } else {
-          log.with("caseId", caseId).warn("Request for case Not Found");
+          log.warn("Request for case Not Found", kv("caseId", caseId));
           throw new CTPException(
               Fault.RESOURCE_NOT_FOUND, "Case Id Not Found: " + caseId.toString());
         }
       } else {
-        log.with("caseId", caseId).error("Error calling Case Service", ex);
+        log.error("Error calling Case Service", kv("caseId", caseId), ex);
         throw ex;
       }
     }
@@ -837,10 +852,10 @@ public class CaseServiceImpl implements CaseService {
       rmCases = getCasesFromRm(uprn, listCaseEvents);
     } catch (ResponseStatusException ex) {
       if (ex.getStatus() == HttpStatus.NOT_FOUND) {
-        log.with(uprn).info("Case by UPRN Not Found calling Case Service");
+        log.info("Case by UPRN Not Found calling Case Service", kv("uprn", uprn));
         return Collections.emptyList();
       } else {
-        log.with("uprn", uprn).error("Error calling Case Service", ex);
+        log.error("Error calling Case Service", kv("uprn", uprn), ex);
         throw ex;
       }
     }
@@ -869,16 +884,17 @@ public class CaseServiceImpl implements CaseService {
     AddressIndexAddressCompositeDTO address = addressSvc.uprnQuery(uprn);
 
     if (SCOTLAND_COUNTRY_CODE.equals(address.getCountryCode())) {
-      log.with("uprn", uprn)
-          .with("countryCode", address.getCountryCode())
-          .warn("Scottish address retrieved");
+      log.warn(
+          "Scottish address retrieved",
+          kv("uprn", uprn),
+          kv("countryCode", address.getCountryCode()));
       throw new CTPException(Fault.VALIDATION_FAILED, "Scottish address found for UPRN: " + uprn);
     }
 
     // Allow Serco to handle NA addresses by reclassifying as HH
     String addressType = address.getCensusAddressType();
     if (addressType != null && addressType.equals("NA")) {
-      log.with("uprn", address.getUprn()).info("Reclassifying NA to HH address");
+      log.info("Reclassifying NA to HH address", kv("uprn", address.getUprn()));
       address.setCensusAddressType(AddressType.HH.name());
       address.setCensusEstabType(EstabType.HOUSEHOLD.name());
     }
@@ -887,9 +903,10 @@ public class CaseServiceImpl implements CaseService {
     try {
       AddressType.valueOf(address.getCensusAddressType());
     } catch (IllegalArgumentException e) {
-      log.with("uprn", uprn)
-          .with("AddressType", address.getCensusAddressType())
-          .warn("AIMs AddressType not valid");
+      log.warn(
+          "AIMs AddressType not valid",
+          kv("uprn", uprn),
+          kv("AddressType", address.getCensusAddressType()));
       throw new CTPException(
           Fault.RESOURCE_NOT_FOUND,
           e,
@@ -936,7 +953,7 @@ public class CaseServiceImpl implements CaseService {
 
   private void rejectIfCaseIsTypeCE(CaseType caseType, String errorMessage) throws CTPException {
     if (caseType == CaseType.CE) {
-      log.with("caseType", caseType.name()).warn(errorMessage);
+      log.warn(errorMessage, kv("caseType", caseType.name()));
       throw new CTPException(Fault.BAD_REQUEST, errorMessage);
     }
   }
@@ -947,15 +964,17 @@ public class CaseServiceImpl implements CaseService {
             eventType, Source.CONTACT_CENTRE_API, appConfig.getChannel(), payload);
 
     if (log.isDebugEnabled()) {
-      log.with("caseId", caseId)
-          .with("transactionId", transactionId)
-          .debug("{} event published", eventType);
+      log.debug(
+          "{} event published",
+          v("eventType", eventType),
+          kv("caseId", caseId),
+          kv("transactionId", transactionId));
     }
   }
 
   private void validatePostcode(String postcode) throws CTPException {
     if (!ccsPostcodesBean.isInCCSPostcodes(postcode)) {
-      log.with(postcode).info("Check failed for postcode");
+      log.info("Check failed for postcode", kv("postcode", postcode));
       throw new CTPException(
           Fault.BAD_REQUEST, "The requested postcode is not within the CCS sample");
     }
@@ -963,8 +982,9 @@ public class CaseServiceImpl implements CaseService {
 
   private void rejectHouseholdIndividual(CaseDTO caseDetails) {
     if (caseDetails.getCaseType().equals(CaseType.HI.name())) {
-      log.with(caseDetails.getId())
-          .info("Case is not suitable as it is a household individual case");
+      log.info(
+          "Case is not suitable as it is a household individual case",
+          kv("caseId", caseDetails.getId()));
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Case is not suitable");
     }
   }
@@ -988,9 +1008,10 @@ public class CaseServiceImpl implements CaseService {
       String caseType = caseServiceResponse.getCaseType();
       caseServiceResponse.setEstabType(
           CaseType.HH.name().equals(caseType) ? EstabType.HOUSEHOLD : EstabType.OTHER);
-      log.with("caseType", caseType)
-          .with("estabType", caseServiceResponse.getEstabType())
-          .info("Case has a null estabDescription so estabType is based on the caseType");
+      log.info(
+          "Case has a null estabDescription so estabType is based on the caseType",
+          kv("caseType", caseType),
+          kv("estabType", caseServiceResponse.getEstabType()));
     } else {
       caseServiceResponse.setEstabType(
           EstabType.forCode(caseServiceResponse.getEstabDescription()));
@@ -1009,10 +1030,10 @@ public class CaseServiceImpl implements CaseService {
     } catch (ResponseStatusException ex) {
       if (ex.getStatus() == HttpStatus.NOT_FOUND) {
         if (log.isDebugEnabled()) {
-          log.with("caseId", caseId).debug("Case Id Not Found by Case Service");
+          log.debug("Case Id Not Found by Case Service", kv("caseId", caseId));
         }
       } else {
-        log.with("caseId", caseId).error("Error calling Case Service", ex);
+        log.error("Error calling Case Service", kv("caseId", caseId), ex);
         throw ex;
       }
     }
@@ -1031,7 +1052,7 @@ public class CaseServiceImpl implements CaseService {
     if (latest.isPresent()) {
       latestCaseDto = latest.get();
     } else {
-      log.with("caseId", caseId).warn("Request for case Not Found");
+      log.warn("Request for case Not Found", kv("caseId", caseId));
       throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Case Id Not Found: " + caseId.toString());
     }
 
@@ -1044,9 +1065,8 @@ public class CaseServiceImpl implements CaseService {
 
     List<CaseDTO> rmCases = callCaseSvcByUPRN(uprn.getValue(), addCaseEvents);
     if (log.isDebugEnabled()) {
-      log.with("uprn", uprn)
-          .with("cases", rmCases.size())
-          .debug("Found {} case details in RM for UPRN", rmCases.size());
+      log.debug(
+          "Found {} case details in RM for UPRN", v("cases", rmCases.size()), kv("uprn", uprn));
     }
     timeOrderedCases.add(rmCases);
 
@@ -1055,9 +1075,10 @@ public class CaseServiceImpl implements CaseService {
             .map(cc -> createNewCachedCaseResponse(cc, addCaseEvents))
             .collect(toList());
     if (log.isDebugEnabled()) {
-      log.with("uprn", uprn)
-          .with("cases", cachedCases.size())
-          .debug("Found {} case details in Cache for UPRN", cachedCases.size());
+      log.debug(
+          "Found {} case details in Cache for UPRN",
+          v("cases", cachedCases.size()),
+          kv("uprn", uprn));
     }
     timeOrderedCases.add(cachedCases);
 
@@ -1066,7 +1087,7 @@ public class CaseServiceImpl implements CaseService {
 
   private void validateCaseRef(long caseRef) throws CTPException {
     if (!luhnChecker.isValid(Long.toString(caseRef))) {
-      log.with(caseRef).info("Luhn check failed for case Reference");
+      log.info("Luhn check failed for case Reference", kv("caseRef", caseRef));
       throw new CTPException(Fault.BAD_REQUEST, "Invalid Case Reference");
     }
   }
@@ -1075,9 +1096,10 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
     Optional<AddressType> addrType = estabType.getAddressType();
     if (addrType.isPresent() && (caseType != CaseType.valueOf(addrType.get().name()))) {
-      log.with("caseType", caseType)
-          .with("estabType", estabType)
-          .info("Mismatching caseType and estabType");
+      log.info(
+          "Mismatching caseType and estabType",
+          kv("caseType", caseType),
+          kv("estabType", estabType));
       String msg =
           "Derived address type of '"
               + addrType.get()
@@ -1104,7 +1126,7 @@ public class CaseServiceImpl implements CaseService {
         String msg =
             "All queries relating to Communal Establishments in Northern Ireland "
                 + "should be escalated to NISRA HQ";
-        log.with("caseType", requestedCaseType).with("caseDetails", caseDetails).info(msg);
+        log.info(msg, kv("caseType", requestedCaseType), kv("caseDetails", caseDetails));
         throw new CTPException(Fault.BAD_REQUEST, msg);
       }
     }
@@ -1116,11 +1138,15 @@ public class CaseServiceImpl implements CaseService {
     switch (postcodeArea) {
       case "GY":
       case "JE":
-        log.with(postcode).info("Rejecting request as postcode is for a channel island address");
+        log.info(
+            "Rejecting request as postcode is for a channel island address",
+            kv("postcode", postcode));
         throw new CTPException(
             Fault.BAD_REQUEST, "Channel Island addresses are not valid for Census");
       case "IM":
-        log.with(postcode).info("Rejecting request as postcode is for an Isle of Man address");
+        log.info(
+            "Rejecting request as postcode is for an Isle of Man address",
+            kv("postcode", postcode));
         throw new CTPException(Fault.BAD_REQUEST, "Isle of Man addresses are not valid for Census");
       default: // to keep checkstyle happy
     }
@@ -1156,7 +1182,7 @@ public class CaseServiceImpl implements CaseService {
       } catch (ResponseStatusException e) {
         // Something went wrong calling AI.
         // Never mind, we'll still be able to use the Serco supplied region
-        log.with("postcode", postcode).warn("Failed to call AI to resolve region");
+        log.warn("Failed to call AI to resolve region", kv("postcode", postcode));
       }
 
       if (addressIndexResponse != null) {
@@ -1166,7 +1192,7 @@ public class CaseServiceImpl implements CaseService {
           // Found an address. Fail if Scottish otherwise use its region
           String countryCode = addresses.get(0).getCensus().getCountryCode();
           if (countryCode != null && countryCode.equals("S")) {
-            log.with("postcode", postcode).info("Rejecting as it's a Scottish address");
+            log.info("Rejecting as it's a Scottish address", kv("postcode", postcode));
             throw new CTPException(
                 Fault.BAD_REQUEST, "Scottish addresses are not valid for Census");
           }
@@ -1185,22 +1211,24 @@ public class CaseServiceImpl implements CaseService {
     uk.gov.ons.ctp.integration.contactcentresvc.representation.Region regionForNewCase = null;
     if (ccRegion == null) {
       // CC failed to find the region
-      log.with("sercoRegion", sercoRegion)
-          .info(
-              "Unable to determine region for new case."
-                  + " Falling back to using Serco provided region");
+      log.info(
+          "Unable to determine region for new case."
+              + " Falling back to using Serco provided region",
+          kv("sercoRegion", sercoRegion));
       regionForNewCase = sercoRegion;
     } else if (sercoRegion == ccRegion) {
       // CC agrees with Serco supplied region
-      log.with("sercoRegion", sercoRegion)
-          .with("ccRegion", ccRegion)
-          .info("Using Serco provided region for new case");
+      log.info(
+          "Using Serco provided region for new case",
+          kv("sercoRegion", sercoRegion),
+          kv("ccRegion", ccRegion));
       regionForNewCase = sercoRegion;
     } else {
       // CC and Serco differ, so override Serco region
-      log.with("sercoRegion", sercoRegion)
-          .with("ccRegion", ccRegion)
-          .info("Overriding Serco region with cc region for new case");
+      log.info(
+          "Overriding Serco region with cc region for new case",
+          kv("sercoRegion", sercoRegion),
+          kv("ccRegion", ccRegion));
       regionForNewCase = ccRegion;
     }
 
@@ -1341,10 +1369,11 @@ public class CaseServiceImpl implements CaseService {
     } catch (ResponseStatusException ex) {
       if (ex.getCause() != null) {
         HttpStatusCodeException cause = (HttpStatusCodeException) ex.getCause();
-        log.with("caseid", parentCaseId)
-            .with("status", cause.getStatusCode())
-            .with("message", cause.getMessage())
-            .warn("New QID, UAC Case service request failure.");
+        log.warn(
+            "New QID, UAC Case service request failure.",
+            kv("caseid", parentCaseId),
+            kv("status", cause.getStatusCode()),
+            kv("message", cause.getMessage()));
         if (cause.getStatusCode() == HttpStatus.BAD_REQUEST) {
           throw new CTPException(
               Fault.BAD_REQUEST, "Invalid request for case %s", parentCaseId.toString());
@@ -1355,9 +1384,10 @@ public class CaseServiceImpl implements CaseService {
 
     String questionnaireId = newQuestionnaireIdDto.getQuestionnaireId();
     String formType = newQuestionnaireIdDto.getFormType();
-    log.with("newQuestionnaireID", questionnaireId)
-        .with("formType", formType)
-        .info("Have generated new questionnaireId");
+    log.info(
+        "Have generated new questionnaireId",
+        kv("newQuestionnaireID", questionnaireId),
+        kv("formType", formType));
 
     if (caseType == CaseType.CE) {
       rejectInvalidLaunchCombinationsForCE(caseDetails, individual, formType);
@@ -1382,17 +1412,20 @@ public class CaseServiceImpl implements CaseService {
       if (ex.getStatus() == HttpStatus.NOT_FOUND) {
         Optional<CachedCase> cachedCase = dataRepo.readCachedCaseById(caseId);
         if (cachedCase.isPresent()) {
-          log.with("caseid", caseId)
-              .with("status", ex.getStatus())
-              .with("message", ex.getMessage())
-              .warn("New skeleton case created but not yet available.");
+          log.warn(
+              "New skeleton case created but not yet available.",
+              kv("caseid", caseId),
+              kv("status", ex.getStatus()),
+              kv("message", ex.getMessage()));
           throw new CTPException(
               Fault.ACCEPTED_UNABLE_TO_PROCESS,
               "Unable to provide launch URL/UAC at present, please try again later.");
         }
       }
-      log.with("caseId", caseId)
-          .error("Unable to provide launch URL/UAC, failed to call case service", ex);
+      log.error(
+          "Unable to provide launch URL/UAC, failed to call case service",
+          kv("caseId", caseId),
+          ex);
       throw ex;
     }
   }
@@ -1415,7 +1448,7 @@ public class CaseServiceImpl implements CaseService {
     UUID individualCaseId = UUID.randomUUID();
     caseDetails.setId(individualCaseId);
     caseDetails.setCaseType(CaseType.HI.name());
-    log.with("individualCaseId", individualCaseId).info("Creating new HI case");
+    log.info("Creating new HI case", kv("individualCaseId", individualCaseId));
     return caseDetails;
   }
 
@@ -1443,9 +1476,11 @@ public class CaseServiceImpl implements CaseService {
       encryptedPayload = eqLaunchService.getEqLaunchJwe(eqLuanchCoreDate);
 
     } catch (CTPException e) {
-      log.with("caseId", caseDetails.getId())
-          .with("questionnaireId", questionnaireId)
-          .error("Failed to create JWE payload for eq launch", e);
+      log.error(
+          "Failed to create JWE payload for eq launch",
+          kv("caseId", caseDetails.getId()),
+          kv("questionnaireId", questionnaireId),
+          e);
       throw e;
     }
     String eqUrl =
@@ -1455,7 +1490,7 @@ public class CaseServiceImpl implements CaseService {
             + appConfig.getEq().getPath()
             + encryptedPayload;
     if (log.isDebugEnabled()) {
-      log.with("launchURL", eqUrl).debug("Have created launch URL");
+      log.debug("Have created launch URL", kv("launchURL", eqUrl));
     }
     return eqUrl;
   }
@@ -1464,7 +1499,7 @@ public class CaseServiceImpl implements CaseService {
     Set<String> blacklistedProducts = appConfig.getFulfilments().getBlacklistedCodes();
 
     if (blacklistedProducts.contains(fulfilmentCode)) {
-      log.with(fulfilmentCode).info("Fulfilment code is no longer available");
+      log.info("Fulfilment code is no longer available", kv("fulfilmentCode", fulfilmentCode));
       throw new CTPException(
           Fault.BAD_REQUEST, "Requested fulfilment code is no longer available: " + fulfilmentCode);
     }

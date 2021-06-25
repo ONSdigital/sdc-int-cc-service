@@ -22,6 +22,22 @@
     class="ch.qos.logback.core.ConsoleAppender">
     <encoder
       class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+     <jsonGeneratorDecorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
+        <path>telNo</path>
+        <path>title</path>
+        <path>forename</path>
+        <path>surname</path>
+        <path>uacHash</path>
+        <path>estabType</path>
+        <path>estabDescription</path>
+        <path>formattedAddress</path>
+        <path>welshFormattedAddress</path>
+        <!-- caseRef ??  -->
+        <path>addressLine2</path>
+        <path>addressLine3</path>
+        <path>townName</path>
+        <path>notes</path>
+      </jsonGeneratorDecorator>
       <providers>
         <timestamp>
           <timeZone>UTC</timeZone>
@@ -62,7 +78,7 @@
           <fieldName>data</fieldName>
           <providers>
             <tags />
-            <logstashMarkers />
+            <arguments />
           </providers>
         </nestedField>
       </providers>

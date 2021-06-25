@@ -1,7 +1,5 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
-import com.godaddy.logging.LoggingScope;
-import com.godaddy.logging.Scope;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -26,7 +24,6 @@ public class NewCaseRequestDTO extends CaseRequestDTO {
 
   private UniquePropertyReferenceNumber uprn;
 
-  @LoggingScope(scope = Scope.SKIP)
   @NotBlank
   @Size(max = 60)
   private String townName;

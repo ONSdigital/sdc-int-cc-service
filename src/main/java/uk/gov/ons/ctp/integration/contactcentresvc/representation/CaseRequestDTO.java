@@ -1,7 +1,5 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
-import com.godaddy.logging.LoggingScope;
-import com.godaddy.logging.Scope;
 import java.util.Date;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -24,11 +22,9 @@ public abstract class CaseRequestDTO {
   @Size(max = 60)
   private String addressLine1;
 
-  @LoggingScope(scope = Scope.SKIP)
   @Size(max = 60)
   private String addressLine2;
 
-  @LoggingScope(scope = Scope.SKIP)
   @Size(max = 60)
   private String addressLine3;
 
