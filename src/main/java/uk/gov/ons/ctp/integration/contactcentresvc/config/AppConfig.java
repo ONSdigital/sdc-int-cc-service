@@ -30,6 +30,7 @@ public class AppConfig {
   private CCSPostcodes ccsPostcodes;
   private UPRNBlacklist uprnBlacklist;
   private CustomCircuitBreakerConfig circuitBreaker;
+  private QueueConfig queueConfig;
   private MessagingConfig messaging;
   private TelephoneCapture telephoneCapture;
 

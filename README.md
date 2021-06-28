@@ -1,6 +1,6 @@
 # Contact Centre Data Service
-This repository contains the Contact Centre Data service. This microservice is a RESTful web service implemented using [Spring Boot](http://projects.spring.io/spring-boot/). 
-It manages contact centre data, where a Contact Centre Data object represents an expected response from the Contact Centre Data service, which provides all the data that 
+This repository contains the Contact Centre Data service. This microservice is a RESTful web service implemented using [Spring Boot](http://projects.spring.io/spring-boot/).
+It manages contact centre data, where a Contact Centre Data object represents an expected response from the Contact Centre Data service, which provides all the data that
 is required by Contact Centre in order for it to verify the contact centre's UAC code and connect them to the relevant EQ questionnaire.
 
 ## Set Up
@@ -34,13 +34,10 @@ In order to connect to PostgreSQL provided by a GCP Cloud SQL instance, then we 
 
 A sample deployment descriptor is provided with instructions here: [deployment README](kubernetes/README.md).
 
-The database will need to be initialised. This can be done with a local **Cloud SQL Auth Proxy** by following instructions here
-[database readme](database/README.md).
-
 ## End Point
 
 When running successfully version information can be obtained from the info endpoint:
-    
+
 * localhost:8171/info
 
 You can also see the current database flyway migrations with:
@@ -50,7 +47,7 @@ You can also see the current database flyway migrations with:
 Prototype only: test data in database:
 
 * localhost:8171/data/case
-    
+
 ## Docker Image Build
 
 Is switched off by default for clean deploy. Switch on with;
