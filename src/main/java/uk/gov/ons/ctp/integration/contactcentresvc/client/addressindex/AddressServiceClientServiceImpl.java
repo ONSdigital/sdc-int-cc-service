@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex;
 
-import static net.logstash.logback.argument.StructuredArguments.kv;
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;

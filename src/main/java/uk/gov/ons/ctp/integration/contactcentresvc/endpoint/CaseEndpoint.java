@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
-import static net.logstash.logback.argument.StructuredArguments.kv;
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import io.micrometer.core.annotation.Timed;
 import java.util.List;

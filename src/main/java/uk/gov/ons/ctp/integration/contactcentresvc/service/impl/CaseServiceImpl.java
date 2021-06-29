@@ -1,8 +1,8 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static java.util.stream.Collectors.toList;
-import static net.logstash.logback.argument.StructuredArguments.kv;
-import static net.logstash.logback.argument.StructuredArguments.v;
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.v;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

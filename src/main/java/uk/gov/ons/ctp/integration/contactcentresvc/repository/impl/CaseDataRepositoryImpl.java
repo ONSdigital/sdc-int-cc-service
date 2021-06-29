@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.repository.impl;
 
-import static net.logstash.logback.argument.StructuredArguments.kv;
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.List;
 import java.util.Optional;

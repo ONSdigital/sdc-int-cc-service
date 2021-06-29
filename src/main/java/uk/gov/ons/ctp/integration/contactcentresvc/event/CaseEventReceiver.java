@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
-import static net.logstash.logback.argument.StructuredArguments.kv;
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
