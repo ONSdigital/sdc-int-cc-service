@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.ons.ctp.common.log.LoggingScope;
+import uk.gov.ons.ctp.common.log.Scope;
 import uk.gov.ons.ctp.integration.contactcentresvc.Constants;
 
 /**
@@ -27,6 +29,7 @@ public class SMSFulfilmentRequestDTO {
   @NotNull
   @Size(max = 20)
   @Pattern(regexp = Constants.UKMOBILEPHONENUMBER_RE)
+  @LoggingScope(scope = Scope.MASK)
   private String telNo;
 
   @NotNull

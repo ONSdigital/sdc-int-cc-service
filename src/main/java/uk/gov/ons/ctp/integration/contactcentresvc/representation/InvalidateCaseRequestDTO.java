@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.ons.ctp.common.log.LoggingScope;
+import uk.gov.ons.ctp.common.log.Scope;
 
 @Data
 @Builder
@@ -20,6 +22,7 @@ public class InvalidateCaseRequestDTO {
   @NotNull private CaseStatus status;
 
   @Size(max = 512)
+  @LoggingScope(scope = Scope.MASK)
   private String notes;
 
   @NotNull private Date dateTime;
