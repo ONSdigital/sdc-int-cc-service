@@ -42,6 +42,7 @@ public final class AddressEndpoint implements CTPEndpoint {
    *
    * @param addressQueryRequest is a DTO specify details on the address to search for.
    * @return an object listing the addresses matching the address search string.
+   * @throws CTPException on error
    */
   @RequestMapping(value = "", method = RequestMethod.GET)
   public AddressQueryResponseDTO getAddressesBySearchQuery(

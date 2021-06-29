@@ -30,7 +30,7 @@ You will need to create a server context, for example, to connect locally:
     1. `postgres` for the username
     1. `password` for the password
 1. Click save to close the dialog and connect to the postgreSQL instance
-1. Example the Server section on the left to see the various DB elements
+1. Expand the Server section on the left to see the various DB elements
 
 After you run the **setup_db.sh** (see below), then you should see the **cc** Database and associated **cc_schema** by navigating in the sidebar.
 
