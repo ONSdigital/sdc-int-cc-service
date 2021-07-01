@@ -360,7 +360,6 @@
         <configuration>
           <!-- exclude generated classes that cause javaco failures -->
           <excludes>
-            <exclude>reflectasm.*</exclude>
             <exclude>**/*MethodAccess</exclude>
           </excludes>
         </configuration>
