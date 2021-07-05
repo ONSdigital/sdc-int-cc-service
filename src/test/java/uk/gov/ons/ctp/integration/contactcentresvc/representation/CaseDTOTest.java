@@ -1,11 +1,11 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import lombok.SneakyThrows;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 
 public class CaseDTOTest {

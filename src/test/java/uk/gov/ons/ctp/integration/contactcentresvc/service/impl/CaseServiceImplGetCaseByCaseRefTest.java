@@ -1,19 +1,19 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -31,7 +31,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
  * Unit Test {@link CaseService#getCaseByCaseReference(long, CaseQueryRequestDTO)
  * getCaseByCaseReference}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase {
   private static final boolean CASE_EVENTS_TRUE = true;
   private static final boolean CASE_EVENTS_FALSE = false;
@@ -40,7 +40,7 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
   private static final String AN_ESTAB_UPRN = "334111111111";
 
-  @Before
+  @BeforeEach
   public void setup() {
     mockCaseEventWhiteList();
   }
@@ -167,7 +167,7 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
       fail();
     } catch (CTPException e) {
       assertEquals(Fault.RESOURCE_NOT_FOUND, e.getFault());
-      assertTrue(e.getMessage(), e.getMessage().contains("IVR restricted"));
+      assertTrue(e.getMessage().contains("IVR restricted"), e.getMessage());
     }
   }
 

@@ -1,11 +1,11 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -46,15 +46,15 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
  * fulfilmentRequestByPost} and {@link CaseService#fulfilmentRequestBySMS(SMSFulfilmentRequestDTO)
  * fulfilmentRequestBySMS}
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   private static final String BLACK_LISTED_FULFILMENT_CODE = "P_TB_TBBEN1";
 
-  @Before
+  @BeforeEach
   public void setup() {
-    Mockito.when(appConfig.getChannel()).thenReturn(Channel.CC);
-    Mockito.when(appConfig.getSurveyName()).thenReturn("CENSUS");
+    Mockito.lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
+    Mockito.lenient().when(appConfig.getSurveyName()).thenReturn("CENSUS");
 
     Fulfilments fulfilments = new Fulfilments();
     fulfilments.setBlacklistedCodes(Set.of(BLACK_LISTED_FULFILMENT_CODE));
@@ -121,7 +121,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
       target.fulfilmentRequestByPost(requestBodyDTOFixture);
       fail();
     } catch (CTPException e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("is no longer available"));
+      assertTrue(e.getMessage().contains("is no longer available"), e.getMessage());
       assertEquals(Fault.BAD_REQUEST, e.getFault());
     }
   }
@@ -155,7 +155,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
     }
   }
 
-  @Test(expected = CTPException.class)
+  @Test
   public void testFulfilmentRequestByPost_caseSvcNotFoundResponse_noCachedCase() throws Exception {
 
     Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
@@ -165,10 +165,10 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
         getPostalFulfilmentRequestDTO(UUID_0, "Mrs", "Sally", "Smurf");
-    target.fulfilmentRequestByPost(requestBodyDTOFixture);
+    assertThrows(CTPException.class, () -> target.fulfilmentRequestByPost(requestBodyDTOFixture));
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testFulfilmentRequestByPost_caseSvcRestClientException() throws Exception {
 
     Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
@@ -178,7 +178,8 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
         getPostalFulfilmentRequestDTO(UUID_0, "Mrs", "Sally", "Smurf");
 
-    target.fulfilmentRequestByPost(requestBodyDTOFixture);
+    assertThrows(
+        ResponseStatusException.class, () -> target.fulfilmentRequestByPost(requestBodyDTOFixture));
   }
 
   @Test
@@ -206,7 +207,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
       target.fulfilmentRequestBySMS(requestBodyDTOFixture);
       fail();
     } catch (CTPException e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("is no longer available"));
+      assertTrue(e.getMessage().contains("is no longer available"), e.getMessage());
       assertEquals(Fault.BAD_REQUEST, e.getFault());
     }
   }
@@ -266,7 +267,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
     }
   }
 
-  @Test(expected = CTPException.class)
+  @Test
   public void testFulfilmentRequestBySMS_caseSvcNotFoundResponse_noCachedCase() throws Exception {
     CaseContainerDTO caseData = casesFromCaseService().get(0);
     Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
@@ -276,10 +277,10 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
 
-    target.fulfilmentRequestBySMS(requestBodyDTOFixture);
+    assertThrows(CTPException.class, () -> target.fulfilmentRequestBySMS(requestBodyDTOFixture));
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testFulfilmentRequestBySMS_caseSvcRestClientException() throws Exception {
     CaseContainerDTO caseData = casesFromCaseService().get(0);
     Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
@@ -288,7 +289,8 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
 
-    target.fulfilmentRequestBySMS(requestBodyDTOFixture);
+    assertThrows(
+        ResponseStatusException.class, () -> target.fulfilmentRequestBySMS(requestBodyDTOFixture));
   }
 
   private PostalFulfilmentRequestDTO getPostalFulfilmentRequestDTO(

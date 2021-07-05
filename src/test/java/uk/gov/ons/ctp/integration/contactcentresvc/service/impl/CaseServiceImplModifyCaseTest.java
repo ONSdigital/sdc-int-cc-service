@@ -1,13 +1,14 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,13 +18,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -47,7 +47,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
 
   private ModifyCaseRequestDTO requestDTO;
@@ -58,7 +58,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
 
   @Captor private ArgumentCaptor<CachedCase> cachedCaseCaptor;
 
-  @Before
+  @BeforeEach
   public void setup() {
     mockCaseEventWhiteList();
     requestDTO = FixtureHelper.loadClassFixtures(ModifyCaseRequestDTO[].class).get(0);
@@ -68,8 +68,8 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     householdEstabTypeTypeCaseContainerDTO =
         FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class).get(2);
     cachedCase = FixtureHelper.loadPackageFixtures(CachedCase[].class).get(0);
-    when(appConfig.getChannel()).thenReturn(Channel.CC);
-    when(appConfig.getSurveyName()).thenReturn("CENSUS");
+    lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
+    lenient().when(appConfig.getSurveyName()).thenReturn("CENSUS");
   }
 
   private void verifyRejectIncompatible(EstabType estabType, CaseType caseType) {
@@ -137,7 +137,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     requestDTO.setEstabType(EstabType.OTHER);
     CaseDTO response = target.modifyCase(requestDTO);
     assertNotNull(response);
-    Assert.assertEquals(EstabType.OTHER, response.getEstabType());
+    assertEquals(EstabType.OTHER, response.getEstabType());
     verifyRmCaseCall(1);
   }
 
@@ -149,7 +149,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     requestDTO.setEstabType(EstabType.OTHER);
     CaseDTO response = target.modifyCase(requestDTO);
     assertNotNull(response);
-    Assert.assertEquals(EstabType.OTHER, response.getEstabType());
+    assertEquals(EstabType.OTHER, response.getEstabType());
     verifyRmCaseCall(1);
   }
 
@@ -161,7 +161,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     requestDTO.setEstabType(EstabType.OTHER);
     CaseDTO response = target.modifyCase(requestDTO);
     assertNotNull(response);
-    Assert.assertEquals(EstabType.OTHER, response.getEstabType());
+    assertEquals(EstabType.OTHER, response.getEstabType());
     verifyRmCaseCall(1);
   }
 
@@ -173,7 +173,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     requestDTO.setEstabType(EstabType.HOUSEHOLD);
     CaseDTO response = target.modifyCase(requestDTO);
     assertNotNull(response);
-    Assert.assertEquals(EstabType.HOUSEHOLD, response.getEstabType());
+    assertEquals(EstabType.HOUSEHOLD, response.getEstabType());
     verifyRmCaseCall(1);
   }
 

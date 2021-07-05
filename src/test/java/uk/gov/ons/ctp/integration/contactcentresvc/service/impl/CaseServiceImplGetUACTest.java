@@ -1,8 +1,8 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_AGENT_ID;
@@ -16,10 +16,10 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUI
 import java.util.Optional;
 import java.util.UUID;
 import lombok.SneakyThrows;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,7 +33,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACResponseDTO
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /** Unit Test {@link CaseService#getUACForCaseId(UUID, UACRequestDTO) getUACForCaseId}. */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
 
   @Test
@@ -69,38 +69,36 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
 
   @Test
   public void testGetUACHICase() {
-    try {
-      doGetUACTest("HI", false);
-      fail();
-    } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("must be SPG, CE or HH"));
-    }
+    Exception e = assertThrows(Exception.class, () -> doGetUACTest("HI", false));
+    assertTrue(e.getMessage().contains("must be SPG, CE or HH"));
   }
 
-  @Test(expected = CTPException.class)
+  @Test
   public void testGetUAC_caseServiceCaseNotFoundException_cachedCase() throws Exception {
     Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
         .when(caseServiceClient)
         .getCaseById(UUID_0, false);
     Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.of(new CachedCase()));
-    target.getUACForCaseId(UUID_0, new UACRequestDTO());
+    assertThrows(CTPException.class, () -> target.getUACForCaseId(UUID_0, new UACRequestDTO()));
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testGetUAC_caseServiceCaseNotFoundException_noCachedCase() throws Exception {
     Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
         .when(caseServiceClient)
         .getCaseById(UUID_0, false);
     Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.empty());
-    target.getUACForCaseId(UUID_0, new UACRequestDTO());
+    assertThrows(
+        ResponseStatusException.class, () -> target.getUACForCaseId(UUID_0, new UACRequestDTO()));
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testGetUAC_caseServiceCaseRequestResponseStatusException() throws Exception {
     Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
         .when(caseServiceClient)
         .getCaseById(UUID_0, false);
-    target.getUACForCaseId(UUID_0, new UACRequestDTO());
+    assertThrows(
+        ResponseStatusException.class, () -> target.getUACForCaseId(UUID_0, new UACRequestDTO()));
   }
 
   @Test
@@ -156,13 +154,9 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
 
   @SneakyThrows
   private void assertThatInvalidLaunchComboIsRejected(String expectedMsg) {
-    try {
-      doGetUACTest(false, FormType.C);
-      fail();
-    } catch (CTPException e) {
-      assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.getMessage(), e.getMessage().contains(expectedMsg));
-    }
+    CTPException e = assertThrows(CTPException.class, () -> doGetUACTest(false, FormType.C));
+    assertEquals(Fault.BAD_REQUEST, e.getFault());
+    assertTrue(e.getMessage().contains(expectedMsg));
   }
 
   private void doGetUACTest(String caseType, boolean individual) throws Exception {
@@ -177,7 +171,8 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
     newQuestionnaireIdDto.setQuestionnaireId(A_QUESTIONNAIRE_ID);
     newQuestionnaireIdDto.setUac(A_UAC);
     newQuestionnaireIdDto.setFormType(formType.name());
-    Mockito.when(caseServiceClient.getSingleUseQuestionnaireId(eq(UUID_0), eq(individual), any()))
+    Mockito.lenient()
+        .when(caseServiceClient.getSingleUseQuestionnaireId(eq(UUID_0), eq(individual), any()))
         .thenReturn(newQuestionnaireIdDto);
 
     UACRequestDTO requestsFromCCSvc =

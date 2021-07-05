@@ -1,15 +1,15 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 
 public class TimeOrderedCasesTest {
@@ -103,7 +103,7 @@ public class TimeOrderedCasesTest {
 
   private CaseDTO createCase(Date created, Date updated) {
     assertFalse(
-        "Don't create a test for object with no dates set", created == null && updated == null);
+        created == null && updated == null, "Don't create a test for object with no dates set");
     return CaseDTO.builder().createdDateTime(created).lastUpdated(updated).build();
   }
 }

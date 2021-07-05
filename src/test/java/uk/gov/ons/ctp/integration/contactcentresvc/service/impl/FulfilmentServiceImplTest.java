@@ -1,7 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -9,15 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import ma.glasnost.orika.MapperFacade;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
@@ -30,7 +30,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ProductGroup;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.Region;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FulfilmentServiceImplTest {
 
   @Mock AppConfig appConfig;
@@ -43,7 +43,7 @@ public class FulfilmentServiceImplTest {
 
   private static final String BLACK_LISTED_FULFILMENT_CODE = "P_TB_TBBEN1";
 
-  @Before
+  @BeforeEach
   public void initMocks() {
     Fulfilments fulfilments = new Fulfilments();
     fulfilments.setBlacklistedCodes(Set.of(BLACK_LISTED_FULFILMENT_CODE));

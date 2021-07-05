@@ -1,21 +1,21 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -42,7 +42,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 /**
  * Unit Test {@link CaseService#createCaseForNewAddress(NewCaseRequestDTO) createCaseForNewAddress}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplTestBase {
 
   // the actual census name & id as per the application.yml and also RM
@@ -54,16 +54,16 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
 
   @Mock RestClient restClient;
 
-  @Before
+  @BeforeEach
   public void setup() {
-    Mockito.when(appConfig.getChannel()).thenReturn(Channel.CC);
-    Mockito.when(appConfig.getSurveyName()).thenReturn(SURVEY_NAME);
-    Mockito.when(appConfig.getCollectionExerciseId()).thenReturn(COLLECTION_EXERCISE_ID);
+    Mockito.lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
+    Mockito.lenient().when(appConfig.getSurveyName()).thenReturn(SURVEY_NAME);
+    Mockito.lenient().when(appConfig.getCollectionExerciseId()).thenReturn(COLLECTION_EXERCISE_ID);
     AddressIndexSettings addressIndexSettings = new AddressIndexSettings();
     // Mock the address index settings
     addressIndexSettings.setPostcodeLookupPath(POSTCODE_QUERY_PATH);
     addressIndexSettings.setEpoch(EPOCH);
-    Mockito.when(appConfig.getAddressIndexSettings()).thenReturn(addressIndexSettings);
+    Mockito.lenient().when(appConfig.getAddressIndexSettings()).thenReturn(addressIndexSettings);
   }
 
   @Test
@@ -100,7 +100,6 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
       assertTrue(
-          e.toString(),
           e.getMessage()
               .matches(".* address type .*CE.* from .*MILITARY_SLA.* not compatible .*HH.*"));
     }
@@ -122,7 +121,7 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
       fail();
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.toString(), e.getMessage().matches(".*Number of residents .* for CE .*"));
+      assertTrue(e.getMessage().matches(".*Number of residents .* for CE .*"));
     }
   }
 
@@ -142,7 +141,7 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
       fail();
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.toString(), e.getMessage().matches(".*Number of residents .* for CE .*"));
+      assertTrue(e.getMessage().matches(".*Number of residents .* for CE .*"));
     }
   }
 
@@ -176,7 +175,6 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
       assertTrue(
-          e.toString(),
           e.getMessage()
               .matches(
                   "All queries relating to Communal Establishments "
@@ -213,7 +211,7 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
       fail();
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.toString(), e.getMessage().matches(expectedErrorMessage));
+      assertTrue(e.getMessage().matches(expectedErrorMessage));
     }
   }
 
@@ -268,7 +266,7 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
       fail();
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.toString(), e.getMessage().startsWith("Scottish addresses are not valid"));
+      assertTrue(e.getMessage().startsWith("Scottish addresses are not valid"));
     }
   }
 

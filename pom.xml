@@ -21,7 +21,7 @@
     <groupId>ons.sdc.int.common</groupId>
     <artifactId>common</artifactId>
     <!-- change this to the version of ALL common libs to be used by this build -->
-    <version>1.0.17</version>
+    <version>1.0.18-SNAPSHOT</version>
   </parent>
 
   <scm>
@@ -212,9 +212,9 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+   <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -228,34 +228,6 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito2</artifactId>
-      <version>${powermock-version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-junit4</artifactId>
-      <version>${powermock-version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-core</artifactId>
-      <version>${powermock-version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-junit4-rule</artifactId>
-      <version>${powermock-version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -431,7 +403,10 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>${surefireArgLine}</argLine>
+          <argLine>
+            ${surefireArgLine}
+            --add-opens java.base/java.lang=ALL-UNNAMED
+          </argLine>
           <classpathDependencyExcludes>
             <classpathDependencyExcludes>${project.groupId}:${project.artifactId}</classpathDependencyExcludes>
           </classpathDependencyExcludes>

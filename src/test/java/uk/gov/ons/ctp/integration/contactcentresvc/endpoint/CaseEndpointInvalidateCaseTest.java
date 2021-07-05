@@ -16,12 +16,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 import lombok.SneakyThrows;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -35,7 +35,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /** Test the POST endpoint to invalidate case details. */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public final class CaseEndpointInvalidateCaseTest {
 
   @Mock private CaseService caseService;
@@ -56,7 +56,7 @@ public final class CaseEndpointInvalidateCaseTest {
    *
    * @throws Exception exception thrown
    */
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(caseEndpoint)

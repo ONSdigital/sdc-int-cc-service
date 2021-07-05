@@ -1,8 +1,8 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,14 +12,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Iterator;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -31,7 +31,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRe
  * This class holds integration tests that submit requests to the Contact Centre service, which in
  * turn will delegating the query to the Address Index service.
  */
-@RunWith(SpringRunner.class)
+@Disabled
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public final class AddressEndpointIT {
   @Autowired private AddressEndpoint addressEndpoint;
@@ -40,7 +41,7 @@ public final class AddressEndpointIT {
 
   private ObjectMapper mapper = new ObjectMapper();
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     this.mockMvc = MockMvcBuilders.standaloneSetup(addressEndpoint).build();
   }
@@ -49,7 +50,6 @@ public final class AddressEndpointIT {
    * This test submits a generic address query and validates that some data is returned in the
    * expected format. Without a fixed test data set this is really as much validation as it can do.
    */
-  @Ignore
   @Test
   public void validateAddressQueryResponse() throws Exception {
     MvcResult result =
@@ -64,7 +64,6 @@ public final class AddressEndpointIT {
    * is working. It firstly captures the result of a query and then confirms that subsets of these
    * results can be fetched.
    */
-  @Ignore
   @Test
   public void validateAddressQueryPagination() throws Exception {
     String baseUrl = "/addresses?input=Street";
@@ -72,7 +71,6 @@ public final class AddressEndpointIT {
   }
 
   /** This test runs an address query which should get 0 results. */
-  @Ignore
   @Test
   public void validateAddressQueryEmptyResponse() throws Exception {
     MvcResult result =
@@ -89,7 +87,6 @@ public final class AddressEndpointIT {
    * This test submits a generic address query and validates that some data is returned in the
    * expected format. Without a fixed test data set this is really as much validation as it can do.
    */
-  @Ignore
   @Test
   public void validatePostcodeQueryResponse() throws Exception {
     MvcResult result =
@@ -107,7 +104,6 @@ public final class AddressEndpointIT {
    * is working. It firstly captures the result of a query and then confirms that subsets of these
    * results can be fetched.
    */
-  @Ignore
   @Test
   public void validatePostcodeQueryPagination() throws Exception {
     String baseUrl = "/addresses/postcode?postcode=EX2 4LU";
@@ -115,7 +111,6 @@ public final class AddressEndpointIT {
   }
 
   /** This test submits a postcode query which should get 0 results */
-  @Ignore
   @Test
   public void validatePostcodeQueryEmptyResponse() throws Exception {
     MvcResult result =
@@ -164,7 +159,7 @@ public final class AddressEndpointIT {
     JsonNode jsonNode = mapper.readValue(json, JsonNode.class);
 
     int dataVersion = Integer.parseInt(jsonNode.get("dataVersion").asText());
-    assertTrue("Wrong dataVersion: " + dataVersion, dataVersion >= 39);
+    assertTrue(dataVersion >= 39, () -> "Wrong dataVersion: " + dataVersion);
 
     JsonNode addresses = jsonNode.get("addresses");
     Iterator<JsonNode> iter = addresses.iterator();
@@ -172,35 +167,35 @@ public final class AddressEndpointIT {
       JsonNode addressNode = iter.next();
 
       JsonNode uprn = addressNode.get("uprn");
-      assertFalse(uprn.textValue(), uprn.textValue().equals("0"));
+      assertFalse(uprn.textValue().equals("0"), uprn.textValue());
 
       String region = addressNode.get("region").asText();
-      assertFalse(region, region.isEmpty());
+      assertFalse(region.isEmpty());
 
       String addressType = addressNode.get("addressType").asText();
-      assertFalse(addressType, addressType.isEmpty());
+      assertFalse(addressType.isEmpty());
 
       String estabType = addressNode.get("estabType").asText();
-      assertFalse(estabType, estabType.isEmpty());
+      assertFalse(estabType.isEmpty());
 
       String formattedAddress = addressNode.get("formattedAddress").asText();
-      assertFalse(formattedAddress, formattedAddress.isEmpty());
+      assertFalse(formattedAddress.isEmpty());
 
       String welshAddress = addressNode.get("welshFormattedAddress").asText();
-      assertFalse(welshAddress, welshAddress.isEmpty());
+      assertFalse(welshAddress.isEmpty());
 
       assertEquals(6, addressNode.size());
     }
     assertTrue(
-        "Not enough addresses found. Actual: " + addresses.size(), addresses.size() >= minExpected);
+        addresses.size() >= minExpected, "Not enough addresses found. Actual: " + addresses.size());
     assertTrue(
-        "Too many addresses found. Actual: " + addresses.size(), addresses.size() <= maxExpected);
+        addresses.size() <= maxExpected, "Too many addresses found. Actual: " + addresses.size());
 
     int totalNode = jsonNode.get("total").intValue();
-    assertTrue("Query returned only a few addresses:" + totalNode, totalNode >= minExpected);
+    assertTrue(totalNode >= minExpected, "Query returned only a few addresses:" + totalNode);
     assertTrue(
-        "Total too small. Have " + addresses.size() + " addresess but total is " + totalNode,
-        addresses.size() <= totalNode);
+        addresses.size() <= totalNode,
+        "Total too small. Have " + addresses.size() + " addresess but total is " + totalNode);
 
     assertEquals(3, jsonNode.size());
   }

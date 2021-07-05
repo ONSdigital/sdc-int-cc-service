@@ -1,8 +1,9 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_REGION;
 
@@ -11,10 +12,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
@@ -31,7 +32,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpDecrypt;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncryptTest;
 
 /** Unit Test {@link CaseService#reportRefusal(UUID, RefusalRequestDTO) reportRefusal}. */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
   private static final String A_CALL_ID = "8989-NOW";
   private static final String A_UPRN = "1234";
@@ -40,14 +41,14 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
   private static final String PRIVATE_KEY_1 = "pgp/priv-key1.asc";
   private static final String PRIVATE_KEY_2 = "pgp/priv-key2.asc";
 
-  @Before
+  @BeforeEach
   public void setup() {
     when(appConfig.getChannel()).thenReturn(Channel.CC);
 
     Resource pubKey1 = new ClassPathResource(PUBLIC_KEY_1);
     Resource pubKey2 = new ClassPathResource(PUBLIC_KEY_2);
-    when(appConfig.getPublicPgpKey1()).thenReturn(pubKey1);
-    when(appConfig.getPublicPgpKey2()).thenReturn(pubKey2);
+    lenient().when(appConfig.getPublicPgpKey1()).thenReturn(pubKey1);
+    lenient().when(appConfig.getPublicPgpKey2()).thenReturn(pubKey2);
   }
 
   @Test

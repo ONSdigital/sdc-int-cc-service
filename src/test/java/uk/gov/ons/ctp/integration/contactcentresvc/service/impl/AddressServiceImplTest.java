@@ -2,20 +2,21 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -30,7 +31,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRe
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AddressServiceImplTest {
 
   @Mock
@@ -142,7 +143,7 @@ public class AddressServiceImplTest {
     assertEquals("EX1 2ET", address.getPostcode());
   }
 
-  @Test(expected = CTPException.class)
+  @Test
   public void testUPRNQueryJSONStatusNot200() throws Exception {
     // Build results to be returned from search
     final String message = "Server too busy";
@@ -153,17 +154,17 @@ public class AddressServiceImplTest {
     addressIndexResults.getStatus().setMessage(message);
     when(addressClientService.searchByUPRN(any())).thenReturn(addressIndexResults);
 
-    addressService.uprnQuery(100041045018L);
+    assertThrows(CTPException.class, () -> addressService.uprnQuery(100041045018L));
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testUPRNQueryRestClientException() throws Exception {
 
     Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
         .when(addressClientService)
         .searchByUPRN(100041045018L);
 
-    addressService.uprnQuery(100041045018L);
+    assertThrows(ResponseStatusException.class, () -> addressService.uprnQuery(100041045018L));
   }
 
   /**

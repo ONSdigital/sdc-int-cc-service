@@ -1,7 +1,8 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -9,10 +10,10 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -28,7 +29,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
  * Unit Test {@link CaseService#getCaseByUPRN(UniquePropertyReferenceNumber, CaseQueryRequestDTO)
  * getCaseByUPRN}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplGetCcsCaseByPostcodeTest extends CaseServiceImplTestBase {
 
   private static final UUID CASE_ID = UUID.fromString("b7565b5e-1396-4965-91a2-918c0d3642ed");
@@ -36,19 +37,20 @@ public class CaseServiceImplGetCcsCaseByPostcodeTest extends CaseServiceImplTest
   private static final String POSTCODE_NOT_IN_CCS_SET = "GW12 AAC";
   List<CaseContainerDTO> casesFromRm;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     casesFromRm = FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testGetCcsCaseByPostcode_caseSvcRestClientException() throws Exception {
     when(ccsPostcodesBean.isInCCSPostcodes(POSTCODE_IN_CCS_SET)).thenReturn(true);
     doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
         .when(caseServiceClient)
         .getCcsCaseByPostcode(eq(POSTCODE_IN_CCS_SET));
 
-    target.getCCSCaseByPostcode(POSTCODE_IN_CCS_SET);
+    assertThrows(
+        ResponseStatusException.class, () -> target.getCCSCaseByPostcode(POSTCODE_IN_CCS_SET));
   }
 
   @Test
