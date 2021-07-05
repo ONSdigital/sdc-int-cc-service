@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
@@ -17,9 +18,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -61,54 +66,135 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
     Mockito.when(appConfig.getFulfilments()).thenReturn(fulfilments);
   }
 
-  @Test
-  public void testFulfilmentRequestByPost_individualFailsWithNullContactDetails() throws Exception {
-    // All of the following fail validation because one of the contact detail fields is always null
-    // or empty
-    doVerifyFulfilmentRequestByPostFailsValidation(Product.CaseType.HH, "Mr", null, "Smith", true);
-    doVerifyFulfilmentRequestByPostFailsValidation(Product.CaseType.HH, "Mr", "", "Smith", true);
-    doVerifyFulfilmentRequestByPostFailsValidation(Product.CaseType.HH, "Mr", "John", null, true);
-    doVerifyFulfilmentRequestByPostFailsValidation(Product.CaseType.HH, "Mr", "John", "", true);
+  private static Stream<Arguments> dataForFulfilmentPostSuccess() {
+    return Stream.of(
+        // Test that individual cases allow null/empty contact details
+        arguments(Product.CaseType.HH, null, "Bill", "Bloggs", true, false),
+        arguments(Product.CaseType.HH, "", "Bill", "Bloggs", true, false),
+        arguments(Product.CaseType.CE, null, "Bill", "Bloggs", true, false),
+        arguments(Product.CaseType.CE, "", "Bill", "Bloggs", true, false),
 
-    doVerifyFulfilmentRequestByPostFailsValidation(Product.CaseType.CE, "Mr", null, "Smith", true);
-    doVerifyFulfilmentRequestByPostFailsValidation(Product.CaseType.CE, "Mr", "", "Smith", true);
-    doVerifyFulfilmentRequestByPostFailsValidation(Product.CaseType.CE, "Mr", "John", null, true);
-    doVerifyFulfilmentRequestByPostFailsValidation(Product.CaseType.CE, "Mr", "John", "", true);
+        // Test that non-individual cases allow null/empty contact details
+        arguments(Product.CaseType.HH, null, null, null, false, false),
+        arguments(Product.CaseType.HH, "", "", "", false, false),
+        arguments(Product.CaseType.CE, null, null, null, false, false),
+        arguments(Product.CaseType.CE, "", "", "", false, false),
+        arguments(Product.CaseType.HH, "Mr", "Mickey", "Mouse", false, false),
+        arguments(Product.CaseType.HH, "Mr", "Mickey", "Mouse", true, false),
+        arguments(Product.CaseType.HH, "Mr", "Mickey", "Mouse", true, true));
   }
 
-  @Test
-  public void testFulfilmentRequestByPost_individualAllowsNullTitle() throws Exception {
-    // Test that individual cases allow null/empty contact details
-    doFulfilmentRequestByPostSuccess(Product.CaseType.HH, null, "Bill", "Bloggs", true, false);
-    doFulfilmentRequestByPostSuccess(Product.CaseType.HH, "", "Bill", "Bloggs", true, false);
+  @ParameterizedTest
+  @MethodSource("dataForFulfilmentPostSuccess")
+  public void fulfilmentRequestByPostShouldSucceed(
+      Product.CaseType caseType,
+      String title,
+      String forename,
+      String surname,
+      boolean individual,
+      boolean cached)
+      throws Exception {
+    Mockito.clearInvocations(eventPublisher);
 
-    doFulfilmentRequestByPostSuccess(Product.CaseType.CE, null, "Bill", "Bloggs", true, false);
-    doFulfilmentRequestByPostSuccess(Product.CaseType.CE, "", "Bill", "Bloggs", true, false);
+    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
+    caseFromCaseService.setCaseType(caseType.name());
+    CachedCase cachedCase = caseFromRepository();
+
+    if (cached) {
+      Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
+          .when(caseServiceClient)
+          .getCaseById(eq(UUID_0), any());
+      Mockito.when(dataRepo.readCachedCaseById(eq(UUID_0))).thenReturn(Optional.of(cachedCase));
+    } else {
+      Mockito.when(caseServiceClient.getCaseById(eq(UUID_0), any()))
+          .thenReturn(caseFromCaseService);
+    }
+
+    PostalFulfilmentRequestDTO requestBodyDTOFixture =
+        getPostalFulfilmentRequestDTO(UUID_0, title, forename, surname);
+
+    Product expectedSearchCriteria =
+        getExpectedSearchCriteria(
+            Product.Region.E,
+            requestBodyDTOFixture.getFulfilmentCode(),
+            Product.DeliveryChannel.POST);
+
+    // The mocked productReference will return this product
+    Product productFoundFixture =
+        getProductFoundFixture(Arrays.asList(caseType), Product.DeliveryChannel.POST, individual);
+    Mockito.when(productReference.searchProducts(eq(expectedSearchCriteria)))
+        .thenReturn(new ArrayList<Product>(List.of(productFoundFixture)));
+
+    // execution - call the unit under test
+    long timeBeforeInvocation = System.currentTimeMillis();
+    ResponseDTO responseDTOFixture = target.fulfilmentRequestByPost(requestBodyDTOFixture);
+    long timeAfterInvocation = System.currentTimeMillis();
+
+    // Validate the response
+    assertEquals(requestBodyDTOFixture.getCaseId().toString(), responseDTOFixture.getId());
+    verifyTimeInExpectedRange(
+        timeBeforeInvocation, timeAfterInvocation, responseDTOFixture.getDateTime());
+
+    // Grab the published event
+    FulfilmentRequest actualFulfilmentRequest =
+        verifyEventSent(EventType.FULFILMENT_REQUESTED, FulfilmentRequest.class);
+    assertEquals(
+        requestBodyDTOFixture.getFulfilmentCode(), actualFulfilmentRequest.getFulfilmentCode());
+    assertEquals(requestBodyDTOFixture.getCaseId().toString(), actualFulfilmentRequest.getCaseId());
+
+    if (caseType == Product.CaseType.HH && individual) {
+      assertNotNull(actualFulfilmentRequest.getIndividualCaseId());
+    } else {
+      assertEquals(null, actualFulfilmentRequest.getIndividualCaseId());
+    }
+
+    Contact actualContact = actualFulfilmentRequest.getContact();
+    assertEquals(requestBodyDTOFixture.getTitle(), actualContact.getTitle());
+    assertEquals(requestBodyDTOFixture.getForename(), actualContact.getForename());
+    assertEquals(requestBodyDTOFixture.getSurname(), actualContact.getSurname());
+    assertEquals(null, actualContact.getTelNo());
   }
 
-  @Test
-  public void testFulfilmentRequestByPost_nonIndividualAllowsNullContactDetails() throws Exception {
-    // Test that non-individual cases allow null/empty contact details
-    doFulfilmentRequestByPostSuccess(Product.CaseType.HH, null, null, null, false, false);
-    doFulfilmentRequestByPostSuccess(Product.CaseType.HH, "", "", "", false, false);
-
-    doFulfilmentRequestByPostSuccess(Product.CaseType.CE, null, null, null, false, false);
-    doFulfilmentRequestByPostSuccess(Product.CaseType.CE, "", "", "", false, false);
+  private static Stream<Arguments> dataForFailingValidation() {
+    return Stream.of(
+        arguments(Product.CaseType.HH, "Mr", null, "Smith", true),
+        arguments(Product.CaseType.HH, "Mr", "", "Smith", true),
+        arguments(Product.CaseType.HH, "Mr", "John", null, true),
+        arguments(Product.CaseType.HH, "Mr", "John", "", true),
+        arguments(Product.CaseType.CE, "Mr", null, "Smith", true),
+        arguments(Product.CaseType.CE, "Mr", "", "Smith", true),
+        arguments(Product.CaseType.CE, "Mr", "John", null, true),
+        arguments(Product.CaseType.CE, "Mr", "John", "", true));
   }
 
-  @Test
-  public void testFulfilmentRequestByPostSuccess_withCaseTypeHH() throws Exception {
-    doFulfilmentRequestByPostSuccess(Product.CaseType.HH, "Mr", "Mickey", "Mouse", false, false);
-  }
+  @ParameterizedTest
+  @MethodSource("dataForFailingValidation")
+  public void fulfilmentRequestByPostShouldFailValidation(
+      Product.CaseType caseType, String title, String forename, String surname, boolean individual)
+      throws Exception {
+    // Build results to be returned from search
+    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
+    Mockito.when(caseServiceClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
 
-  @Test
-  public void testFulfilmentRequestByPostSuccess_withIndividualTrue() throws Exception {
-    doFulfilmentRequestByPostSuccess(Product.CaseType.HH, "Mr", "Mickey", "Mouse", true, false);
-  }
+    PostalFulfilmentRequestDTO requestBodyDTOFixture =
+        getPostalFulfilmentRequestDTO(UUID_0, title, forename, surname);
 
-  @Test
-  public void testFulfilmentRequestByPost_caseSvcNotFoundResponse_cachedCase() throws Exception {
-    doFulfilmentRequestByPostSuccess(Product.CaseType.HH, "Mr", "Mickey", "Mouse", true, true);
+    Product expectedSearchCriteria =
+        getExpectedSearchCriteria(
+            Product.Region.valueOf(caseFromCaseService.getRegion().substring(0, 1)),
+            requestBodyDTOFixture.getFulfilmentCode(),
+            Product.DeliveryChannel.POST);
+
+    // The mocked productReference will return this product
+    Product productFoundFixture =
+        getProductFoundFixture(Arrays.asList(caseType), Product.DeliveryChannel.POST, individual);
+    Mockito.when(productReference.searchProducts(eq(expectedSearchCriteria)))
+        .thenReturn(new ArrayList<Product>(List.of(productFoundFixture)));
+
+    CTPException e =
+        assertThrows(
+            CTPException.class, () -> target.fulfilmentRequestByPost(requestBodyDTOFixture));
+    assertTrue(e.getMessage().contains("none of the following fields can be empty"));
   }
 
   @Test
@@ -339,106 +425,6 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
         .deliveryChannel(deliveryChannel)
         .regions(Arrays.asList(region))
         .build();
-  }
-
-  private void doVerifyFulfilmentRequestByPostFailsValidation(
-      Product.CaseType caseType, String title, String forename, String surname, boolean individual)
-      throws Exception {
-    // Build results to be returned from search
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
-    Mockito.when(caseServiceClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
-
-    PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_0, title, forename, surname);
-
-    Product expectedSearchCriteria =
-        getExpectedSearchCriteria(
-            Product.Region.valueOf(caseFromCaseService.getRegion().substring(0, 1)),
-            requestBodyDTOFixture.getFulfilmentCode(),
-            Product.DeliveryChannel.POST);
-
-    // The mocked productReference will return this product
-    Product productFoundFixture =
-        getProductFoundFixture(Arrays.asList(caseType), Product.DeliveryChannel.POST, individual);
-    Mockito.when(productReference.searchProducts(eq(expectedSearchCriteria)))
-        .thenReturn(new ArrayList<Product>(List.of(productFoundFixture)));
-
-    // execution - call the unit under test
-    try {
-      target.fulfilmentRequestByPost(requestBodyDTOFixture);
-      fail();
-    } catch (CTPException e) {
-      assertTrue(e.getMessage().contains("none of the following fields can be empty"));
-    }
-  }
-
-  private void doFulfilmentRequestByPostSuccess(
-      Product.CaseType caseType,
-      String title,
-      String forename,
-      String surname,
-      boolean individual,
-      boolean cached)
-      throws Exception {
-    Mockito.clearInvocations(eventPublisher);
-
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
-    caseFromCaseService.setCaseType(caseType.name());
-    CachedCase cachedCase = caseFromRepository();
-
-    if (cached) {
-      Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-          .when(caseServiceClient)
-          .getCaseById(eq(UUID_0), any());
-      Mockito.when(dataRepo.readCachedCaseById(eq(UUID_0))).thenReturn(Optional.of(cachedCase));
-    } else {
-      Mockito.when(caseServiceClient.getCaseById(eq(UUID_0), any()))
-          .thenReturn(caseFromCaseService);
-    }
-
-    PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_0, title, forename, surname);
-
-    Product expectedSearchCriteria =
-        getExpectedSearchCriteria(
-            Product.Region.E,
-            requestBodyDTOFixture.getFulfilmentCode(),
-            Product.DeliveryChannel.POST);
-
-    // The mocked productReference will return this product
-    Product productFoundFixture =
-        getProductFoundFixture(Arrays.asList(caseType), Product.DeliveryChannel.POST, individual);
-    Mockito.when(productReference.searchProducts(eq(expectedSearchCriteria)))
-        .thenReturn(new ArrayList<Product>(List.of(productFoundFixture)));
-
-    // execution - call the unit under test
-    long timeBeforeInvocation = System.currentTimeMillis();
-    ResponseDTO responseDTOFixture = target.fulfilmentRequestByPost(requestBodyDTOFixture);
-    long timeAfterInvocation = System.currentTimeMillis();
-
-    // Validate the response
-    assertEquals(requestBodyDTOFixture.getCaseId().toString(), responseDTOFixture.getId());
-    verifyTimeInExpectedRange(
-        timeBeforeInvocation, timeAfterInvocation, responseDTOFixture.getDateTime());
-
-    // Grab the published event
-    FulfilmentRequest actualFulfilmentRequest =
-        verifyEventSent(EventType.FULFILMENT_REQUESTED, FulfilmentRequest.class);
-    assertEquals(
-        requestBodyDTOFixture.getFulfilmentCode(), actualFulfilmentRequest.getFulfilmentCode());
-    assertEquals(requestBodyDTOFixture.getCaseId().toString(), actualFulfilmentRequest.getCaseId());
-
-    if (caseType == Product.CaseType.HH && individual) {
-      assertNotNull(actualFulfilmentRequest.getIndividualCaseId());
-    } else {
-      assertEquals(null, actualFulfilmentRequest.getIndividualCaseId());
-    }
-
-    Contact actualContact = actualFulfilmentRequest.getContact();
-    assertEquals(requestBodyDTOFixture.getTitle(), actualContact.getTitle());
-    assertEquals(requestBodyDTOFixture.getForename(), actualContact.getForename());
-    assertEquals(requestBodyDTOFixture.getSurname(), actualContact.getSurname());
-    assertEquals(null, actualContact.getTelNo());
   }
 
   private void doFulfilmentRequestBySMSSuccess(
