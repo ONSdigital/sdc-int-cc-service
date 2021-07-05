@@ -4,4 +4,3 @@ logging:
     uk.gov.ons.ctp.common: INFO
     org.springframework: OFF
   profile: CLOUD
-  useJson: true

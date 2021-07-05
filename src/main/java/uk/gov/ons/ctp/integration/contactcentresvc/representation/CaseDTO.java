@@ -1,8 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.godaddy.logging.LoggingScope;
-import com.godaddy.logging.Scope;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +11,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
+import uk.gov.ons.ctp.common.log.LoggingScope;
+import uk.gov.ons.ctp.common.log.Scope;
 
 /**
  * The response object when contact centre requests case details
@@ -46,13 +46,13 @@ public class CaseDTO {
 
   private String addressLine1;
 
-  @LoggingScope(scope = Scope.SKIP)
+  @LoggingScope(scope = Scope.MASK)
   private String addressLine2;
 
-  @LoggingScope(scope = Scope.SKIP)
+  @LoggingScope(scope = Scope.MASK)
   private String addressLine3;
 
-  @LoggingScope(scope = Scope.SKIP)
+  @LoggingScope(scope = Scope.MASK)
   private String townName;
 
   private String region;

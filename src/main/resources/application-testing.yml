@@ -4,5 +4,4 @@ logging:
     uk.gov.ons.ctp.common: DEBUG
     org.springframework: WARN
   profile: CLOUD
-  useJson: true
   

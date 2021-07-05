@@ -1,8 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,11 +11,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 
 /** Example endpoint to access data from database */
+@Slf4j
 @RestController
 @RequestMapping(value = "/data", produces = "application/json")
 public class DataEndpoint {
-  private static final Logger log = LoggerFactory.getLogger(DataEndpoint.class);
-
   @Autowired CaseRepository caseRepo;
 
   @RequestMapping(value = "/case", method = RequestMethod.GET)

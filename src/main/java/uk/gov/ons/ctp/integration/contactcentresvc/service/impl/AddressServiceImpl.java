@@ -1,11 +1,11 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static java.util.stream.Collectors.toList;
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -29,10 +29,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
  * A ContactCentreDataService implementation which encapsulates all business logic for getting
  * Addresses
  */
+@Slf4j
 @Service
-@Validated()
+@Validated
 public class AddressServiceImpl implements AddressService {
-  private static final Logger log = LoggerFactory.getLogger(AddressServiceImpl.class);
   private static final String HISTORICAL_ADDRESS_STATUS = "8";
 
   @Autowired private AddressServiceClientServiceImpl addressServiceClient;
@@ -40,7 +40,7 @@ public class AddressServiceImpl implements AddressService {
   @Override
   public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest) {
     if (log.isDebugEnabled()) {
-      log.with("addressQueryRequest", addressQueryRequest).debug("Running search by address");
+      log.debug("Running search by address", kv("addressQueryRequest", addressQueryRequest));
     }
 
     // Delegate the query to Address Index
@@ -52,8 +52,8 @@ public class AddressServiceImpl implements AddressService {
         convertAddressIndexResultsToSummarisedAdresses(addressIndexResponse);
 
     if (log.isDebugEnabled()) {
-      log.with("addresses", results.getAddresses().size())
-          .debug("Address search is returning addresses");
+      log.debug(
+          "Address search is returning addresses", kv("addresses", results.getAddresses().size()));
     }
     return results;
   }
@@ -61,7 +61,7 @@ public class AddressServiceImpl implements AddressService {
   @Override
   public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest) {
     if (log.isDebugEnabled()) {
-      log.with("postcodeQueryRequest", postcodeQueryRequest).debug("Running search by postcode");
+      log.debug("Running search by postcode", kv("postcodeQueryRequest", postcodeQueryRequest));
     }
 
     // Delegate the query to Address Index
@@ -73,8 +73,8 @@ public class AddressServiceImpl implements AddressService {
         convertAddressIndexResultsToSummarisedAdresses(addressIndexResponse);
 
     if (log.isDebugEnabled()) {
-      log.with("addresses", results.getAddresses().size())
-          .debug("Postcode search is returning addresses");
+      log.debug(
+          "Postcode search is returning addresses", kv("addresses", results.getAddresses().size()));
     }
     return results;
   }
@@ -82,7 +82,7 @@ public class AddressServiceImpl implements AddressService {
   @Override
   public AddressIndexAddressCompositeDTO uprnQuery(long uprn) throws CTPException {
     if (log.isDebugEnabled()) {
-      log.with("uprnQueryRequest", uprn).debug("Running search by uprn");
+      log.debug("Running search by uprn", kv("uprnQueryRequest", uprn));
     }
 
     // Delegate the query to Address Index
@@ -90,10 +90,11 @@ public class AddressServiceImpl implements AddressService {
       AddressIndexSearchResultsCompositeDTO addressResult = addressServiceClient.searchByUPRN(uprn);
       // No result for UPRN from Address Index search
       if (addressResult.getStatus().getCode() != 200) {
-        log.with("uprn", uprn)
-            .with("status", addressResult.getStatus().getCode())
-            .with("message", addressResult.getStatus().getMessage())
-            .warn("UPRN not found calling Address Index");
+        log.warn(
+            "UPRN not found calling Address Index",
+            kv("uprn", uprn),
+            kv("status", addressResult.getStatus().getCode()),
+            kv("message", addressResult.getStatus().getMessage()));
         throw new CTPException(
             CTPException.Fault.RESOURCE_NOT_FOUND,
             "UPRN: %s, status: %s, message: %s",
@@ -105,14 +106,15 @@ public class AddressServiceImpl implements AddressService {
       AddressIndexAddressCompositeDTO address = addressResult.getResponse().getAddress();
 
       if (log.isDebugEnabled()) {
-        log.with("uprn", uprn).debug("UPRN search is returning address");
+        log.debug("UPRN search is returning address", kv("uprn", uprn));
       }
       return address;
     } catch (ResponseStatusException ex) {
-      log.with("uprn", uprn)
-          .with("status", ex.getStatus())
-          .with("message", ex.getMessage())
-          .warn("UPRN not found calling Address Index");
+      log.warn(
+          "UPRN not found calling Address Index",
+          kv("uprn", uprn),
+          kv("status", ex.getStatus()),
+          kv("message", ex.getMessage()));
       throw ex;
     }
   }
@@ -155,9 +157,10 @@ public class AddressServiceImpl implements AddressService {
   private boolean isHistorical(AddressIndexAddressDTO dto) {
     boolean historical = HISTORICAL_ADDRESS_STATUS.equals(dto.getLpiLogicalStatus());
     if (historical) {
-      log.with("uprn", dto.getUprn())
-          .with("formattedAddress", dto.getFormattedAddress())
-          .error("Unexpected historical address returned from AIMS");
+      log.error(
+          "Unexpected historical address returned from AIMS",
+          kv("uprn", dto.getUprn()),
+          kv("formattedAddress", dto.getFormattedAddress()));
     }
     return historical;
   }
@@ -174,7 +177,7 @@ public class AddressServiceImpl implements AddressService {
     for (AddressDTO address : summarisedAddresses) {
       String addressType = address.getAddressType();
       if (addressType != null && addressType.equals("NA")) {
-        log.with("uprn", address.getUprn()).debug("Reclassifying NA address as HH");
+        log.debug("Reclassifying NA address as HH", kv("uprn", address.getUprn()));
         address.setAddressType(AddressType.HH.name());
         address.setEstabType(EstabType.HOUSEHOLD.name());
         address.setEstabDescription("Household");

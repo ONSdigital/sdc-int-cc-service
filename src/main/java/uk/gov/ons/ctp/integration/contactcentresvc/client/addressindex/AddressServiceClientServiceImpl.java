@@ -1,8 +1,9 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
+
 import javax.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,11 +19,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRe
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 
 /** This class is responsible for communications with the Address Index service. */
+@Slf4j
 @Service
 @Validated
 public class AddressServiceClientServiceImpl {
-  private static final Logger log = LoggerFactory.getLogger(AddressServiceClientServiceImpl.class);
-
   @Autowired private AppConfig appConfig;
 
   @Inject
@@ -30,9 +30,7 @@ public class AddressServiceClientServiceImpl {
   private RestClient addressIndexClient;
 
   public AddressIndexSearchResultsDTO searchByAddress(AddressQueryRequestDTO addressQueryRequest) {
-    if (log.isDebugEnabled()) {
-      log.debug("Delegating address search to AddressIndex service");
-    }
+    log.debug("Delegating address search to AddressIndex service");
 
     String input = addressQueryRequest.getInput().trim();
     int offset = addressQueryRequest.getOffset();
@@ -54,9 +52,10 @@ public class AddressServiceClientServiceImpl {
         addressIndexClient.getResource(
             path, AddressIndexSearchResultsDTO.class, null, queryParams, new Object[] {});
     if (log.isDebugEnabled()) {
-      log.with("status", addressIndexResponse.getStatus().getCode())
-          .with("addresses", addressIndexResponse.getResponse().getAddresses().size())
-          .debug("Address query response received");
+      log.debug(
+          "Address query response received",
+          kv("status", addressIndexResponse.getStatus().getCode()),
+          kv("addresses", addressIndexResponse.getResponse().getAddresses().size()));
     }
 
     return addressIndexResponse;
@@ -85,19 +84,18 @@ public class AddressServiceClientServiceImpl {
         addressIndexClient.getResource(
             path, AddressIndexSearchResultsDTO.class, null, queryParams, postcode);
     if (log.isDebugEnabled()) {
-      log.with("postcode", postcode)
-          .with("status", addressIndexResponse.getStatus().getCode())
-          .with("addresses", addressIndexResponse.getResponse().getAddresses().size())
-          .debug("Postcode query response received");
+      log.debug(
+          "Postcode query response received",
+          kv("postcode", postcode),
+          kv("status", addressIndexResponse.getStatus().getCode()),
+          kv("addresses", addressIndexResponse.getResponse().getAddresses().size()));
     }
 
     return addressIndexResponse;
   }
 
   public AddressIndexSearchResultsCompositeDTO searchByUPRN(Long uprn) {
-    if (log.isDebugEnabled()) {
-      log.debug("Delegating UPRN search to AddressIndex service");
-    }
+    log.debug("Delegating UPRN search to AddressIndex service");
 
     // Build map for query params
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
@@ -111,9 +109,10 @@ public class AddressServiceClientServiceImpl {
             path, AddressIndexSearchResultsCompositeDTO.class, null, queryParams, uprn.toString());
 
     if (log.isDebugEnabled()) {
-      log.with("uprn", uprn)
-          .with("status", addressIndexResponse.getStatus().getCode())
-          .debug("UPRN query response received");
+      log.debug(
+          "UPRN query response received",
+          kv("uprn", uprn),
+          kv("status", addressIndexResponse.getStatus().getCode()));
     }
 
     return addressIndexResponse;

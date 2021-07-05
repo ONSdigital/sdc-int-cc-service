@@ -1,7 +1,5 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
-import com.godaddy.logging.LoggingScope;
-import com.godaddy.logging.Scope;
 import java.util.Date;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
@@ -12,6 +10,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
+import uk.gov.ons.ctp.common.log.LoggingScope;
+import uk.gov.ons.ctp.common.log.Scope;
 import uk.gov.ons.ctp.integration.contactcentresvc.Constants;
 
 /**
@@ -30,30 +30,30 @@ public class RefusalRequestDTO {
   @NotNull private Integer agentId;
 
   @Size(max = 12)
-  @LoggingScope(scope = Scope.SKIP)
+  @LoggingScope(scope = Scope.MASK)
   private String title;
 
   @Size(max = 60)
-  @LoggingScope(scope = Scope.SKIP)
+  @LoggingScope(scope = Scope.MASK)
   private String forename;
 
   @Size(max = 60)
-  @LoggingScope(scope = Scope.SKIP)
+  @LoggingScope(scope = Scope.MASK)
   private String surname;
 
   @Size(max = 60)
   private String addressLine1;
 
   @Size(max = 60)
-  @LoggingScope(scope = Scope.SKIP)
+  @LoggingScope(scope = Scope.MASK)
   private String addressLine2;
 
   @Size(max = 60)
-  @LoggingScope(scope = Scope.SKIP)
+  @LoggingScope(scope = Scope.MASK)
   private String addressLine3;
 
   @Size(max = 60)
-  @LoggingScope(scope = Scope.SKIP)
+  @LoggingScope(scope = Scope.MASK)
   private String townName;
 
   @NotNull private Reason reason;
