@@ -31,7 +31,7 @@ public class PgpEncryptTest {
           + "and Wisdom to know the difference.";
 
   public static String readFileIntoString(String filename) throws Exception {
-    try (InputStream is = ClassLoader.getSystemResourceAsStream(filename)) {
+    try (InputStream is = PgpEncrypt.class.getClassLoader().getResourceAsStream(filename)) {
       String text = null;
       try (Reader reader = new InputStreamReader(is)) {
         text = CharStreams.toString(reader);
