@@ -1,8 +1,8 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.repository.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -15,12 +15,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.cloud.RetryableCloudDataStore;
@@ -28,7 +28,7 @@ import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseDataRepositoryImplTest {
 
   private static final String GCP_PROJECT_NAME = "census-test-project";
@@ -39,7 +39,7 @@ public class CaseDataRepositoryImplTest {
 
   @InjectMocks private CaseDataRepositoryImpl repo;
 
-  @Before
+  @BeforeEach
   public void setup() {
     ReflectionTestUtils.setField(repo, "caseSchemaName", SCHEMA_NAME);
     ReflectionTestUtils.setField(repo, "gcpProject", GCP_PROJECT_NAME);
@@ -78,7 +78,7 @@ public class CaseDataRepositoryImplTest {
     doThrow(firestoreException).when(dataStore).storeObject(any(), any(), any(), any());
 
     CTPException e = assertThrows(CTPException.class, () -> repo.init());
-    assertTrue(e.getMessage(), e.getMessage().contains("Firestore couldn't create"));
+    assertTrue(e.getMessage().contains("Firestore couldn't create"), e.getMessage());
   }
 
   private List<CachedCase> readCachedCases(String uprn) throws Exception {

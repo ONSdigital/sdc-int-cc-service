@@ -1,8 +1,9 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
@@ -15,12 +16,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.SneakyThrows;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -36,7 +40,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryReque
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /** Unit Test {@link CaseService#getCaseById(UUID, CaseQueryRequestDTO) getCaseById}. */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   private static final boolean CASE_EVENTS_TRUE = true;
   private static final boolean CASE_EVENTS_FALSE = false;
@@ -49,44 +53,70 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   private static final String CACHED_CASE_UPRN_0 = "1347459987";
   private static final String RM_CASE_UPRN_0 = "1347459988";
 
-  @Before
+  @BeforeEach
   public void setup() {
     mockCaseEventWhiteList();
   }
 
-  @Test
-  public void testGetHouseholdCaseByCaseId_withCaseDetails() {
-    doTestGetCaseByCaseId(CaseType.HH, CASE_EVENTS_TRUE, NO_CACHED_CASE);
+  private static Stream<Arguments> dataForGetCaseByCaseIdSuccess() {
+    return Stream.of(
+        arguments(CaseType.HH, CASE_EVENTS_TRUE, NO_CACHED_CASE),
+        arguments(CaseType.HH, CASE_EVENTS_FALSE, NO_CACHED_CASE),
+        arguments(CaseType.CE, CASE_EVENTS_TRUE, NO_CACHED_CASE),
+        arguments(CaseType.CE, CASE_EVENTS_FALSE, NO_CACHED_CASE),
+        arguments(CaseType.SPG, CASE_EVENTS_FALSE, NO_CACHED_CASE),
+        arguments(CaseType.SPG, CASE_EVENTS_FALSE, USE_CACHED_CASE),
+        arguments(CaseType.SPG, CASE_EVENTS_TRUE, USE_CACHED_CASE));
   }
 
-  @Test
-  public void testGetHouseholdCaseByCaseId_withNoCaseDetails() {
-    doTestGetCaseByCaseId(CaseType.HH, CASE_EVENTS_FALSE, NO_CACHED_CASE);
-  }
+  @ParameterizedTest
+  @MethodSource("dataForGetCaseByCaseIdSuccess")
+  public void shouldGetCaseByCaseId(CaseType caseType, boolean caseEvents, boolean cached)
+      throws Exception {
+    // Build results to be returned from search
+    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
+    caseFromCaseService.setCaseType(caseType.name());
+    CachedCase caseFromRepository;
+    CaseDTO expectedCaseResult;
 
-  @Test
-  public void testGetCommunalCaseByCaseId_withCaseDetails() {
-    doTestGetCaseByCaseId(CaseType.CE, CASE_EVENTS_TRUE, NO_CACHED_CASE);
-  }
+    if (cached) {
+      Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
+          .when(caseServiceClient)
+          .getCaseById(eq(UUID_0), any());
 
-  @Test
-  public void testGetCommunalCaseByCaseId_withNoCaseDetails() {
-    doTestGetCaseByCaseId(CaseType.CE, CASE_EVENTS_FALSE, NO_CACHED_CASE);
-  }
+      List<CachedCase> casesFromRepository = FixtureHelper.loadPackageFixtures(CachedCase[].class);
+      caseFromRepository = casesFromRepository.get(1);
+      caseFromRepository.setCaseType(caseType);
+      Mockito.when(dataRepo.readCachedCaseById(eq(UUID_0)))
+          .thenReturn(Optional.of(caseFromRepository));
 
-  @Test
-  public void testGetCaseByCaseId_caseSPG() {
-    doTestGetCaseByCaseId(CaseType.SPG, CASE_EVENTS_FALSE, NO_CACHED_CASE);
-  }
+      expectedCaseResult = mapperFacade.map(caseFromRepository, CaseDTO.class);
 
-  @Test
-  public void testGetCaseByCaseId_caseSPG_fromCache() {
-    doTestGetCaseByCaseId(CaseType.SPG, CASE_EVENTS_FALSE, USE_CACHED_CASE);
-  }
+      // We need to account for the mapping from a CachedCase to a CaseDTO missing a few fields:
+      expectedCaseResult.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
+      expectedCaseResult.setEstabType(EstabType.CARE_HOME);
+      if (!caseEvents) {
+        expectedCaseResult.setCaseEvents(Collections.emptyList());
+      }
 
-  @Test
-  public void testGetCaseByCaseId_caseSPG_fromCacheWithEvents() {
-    doTestGetCaseByCaseId(CaseType.SPG, CASE_EVENTS_TRUE, USE_CACHED_CASE);
+    } else {
+      Mockito.when(caseServiceClient.getCaseById(eq(UUID_0), any()))
+          .thenReturn(caseFromCaseService);
+      expectedCaseResult = createExpectedCaseDTO(caseFromCaseService, caseEvents);
+    }
+
+    // Run the request
+    CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
+    CaseDTO results = target.getCaseById(UUID_0, requestParams);
+
+    verifyCase(results, expectedCaseResult, caseEvents);
+
+    if (cached) {
+      assertEquals(asMillis("2020-06-12T11:55:23.195Z"), results.getCreatedDateTime().getTime());
+    } else {
+      assertEquals(
+          asMillis("2019-05-14T16:11:41.343+01:00"), results.getCreatedDateTime().getTime());
+    }
   }
 
   @Test
@@ -228,54 +258,6 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   @Test
   public void testHandleErrorFromRM() throws CTPException {
     doGetCaseByIdGetsError(UUID_0);
-  }
-
-  @SneakyThrows
-  private void doTestGetCaseByCaseId(CaseType caseType, boolean caseEvents, boolean cached) {
-    // Build results to be returned from search
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
-    caseFromCaseService.setCaseType(caseType.name());
-    CachedCase caseFromRepository;
-    CaseDTO expectedCaseResult;
-
-    if (cached) {
-      Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-          .when(caseServiceClient)
-          .getCaseById(eq(UUID_0), any());
-
-      List<CachedCase> casesFromRepository = FixtureHelper.loadPackageFixtures(CachedCase[].class);
-      caseFromRepository = casesFromRepository.get(1);
-      caseFromRepository.setCaseType(caseType);
-      Mockito.when(dataRepo.readCachedCaseById(eq(UUID_0)))
-          .thenReturn(Optional.of(caseFromRepository));
-
-      expectedCaseResult = mapperFacade.map(caseFromRepository, CaseDTO.class);
-
-      // We need to account for the mapping from a CachedCase to a CaseDTO missing a few fields:
-      expectedCaseResult.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
-      expectedCaseResult.setEstabType(EstabType.CARE_HOME);
-      if (!caseEvents) {
-        expectedCaseResult.setCaseEvents(Collections.emptyList());
-      }
-
-    } else {
-      Mockito.when(caseServiceClient.getCaseById(eq(UUID_0), any()))
-          .thenReturn(caseFromCaseService);
-      expectedCaseResult = createExpectedCaseDTO(caseFromCaseService, caseEvents);
-    }
-
-    // Run the request
-    CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
-    CaseDTO results = target.getCaseById(UUID_0, requestParams);
-
-    verifyCase(results, expectedCaseResult, caseEvents);
-
-    if (cached) {
-      assertEquals(asMillis("2020-06-12T11:55:23.195Z"), results.getCreatedDateTime().getTime());
-    } else {
-      assertEquals(
-          asMillis("2019-05-14T16:11:41.343+01:00"), results.getCreatedDateTime().getTime());
-    }
   }
 
   private List<CaseContainerDTO> casesFromCaseService() {

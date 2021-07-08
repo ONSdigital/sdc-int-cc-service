@@ -1,7 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -10,12 +10,12 @@ import static uk.gov.ons.ctp.common.MvcHelper.getJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
 
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -30,7 +30,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /** Contact Centre Data Endpoint Unit tests */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseEndpointCaseLaunchTest {
 
   @InjectMocks private CaseEndpoint caseEndpoint;
@@ -46,7 +46,7 @@ public class CaseEndpointCaseLaunchTest {
    *
    * @throws Exception exception thrown
    */
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(caseEndpoint)

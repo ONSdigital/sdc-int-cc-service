@@ -10,13 +10,13 @@ import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAd
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -30,7 +30,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /** Contact Centre Data Endpoint Unit tests */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public final class CaseEndpointRefusalTest {
 
   private static final String CASE_ID = "caseId";
@@ -61,7 +61,7 @@ public final class CaseEndpointRefusalTest {
   // UUID_STR must match the UUID in the test fixture
   private static final String UUID_STR = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
 
-  @Before
+  @BeforeEach
   public void setUp() {
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(caseEndpoint)

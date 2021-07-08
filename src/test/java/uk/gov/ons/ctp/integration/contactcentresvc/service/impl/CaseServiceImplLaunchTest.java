@@ -1,10 +1,10 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,14 +20,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.SneakyThrows;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
@@ -53,14 +53,14 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
  * Unit Test {@link CaseService#getLaunchURLForCaseId(UUID, LaunchRequestDTO)
  * getLaunchURLForCaseId}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
 
   @Captor private ArgumentCaptor<UUID> individualCaseIdCaptor;
   @Captor private ArgumentCaptor<EqLaunchData> eqLaunchDataCaptor;
   @Mock private KeyStore keyStoreEncryption;
 
-  @Before
+  @BeforeEach
   public void setup() {
     EqConfig eqConfig = new EqConfig();
     eqConfig.setProtocol("https");
@@ -69,12 +69,12 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
     eqConfig.setResponseIdSalt("CENSUS");
     appConfig.setEq(eqConfig);
 
-    Mockito.when(appConfig.getChannel()).thenReturn(Channel.CC);
-    Mockito.when(appConfig.getEq()).thenReturn(eqConfig);
+    Mockito.lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
+    Mockito.lenient().when(appConfig.getEq()).thenReturn(eqConfig);
 
     TelephoneCapture telephoneCapture = new TelephoneCapture();
     telephoneCapture.setDisabled(new HashSet<String>());
-    Mockito.when(appConfig.getTelephoneCapture()).thenReturn(telephoneCapture);
+    Mockito.lenient().when(appConfig.getTelephoneCapture()).thenReturn(telephoneCapture);
   }
 
   @Test
@@ -171,50 +171,47 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
 
   @Test
   public void testLaunchHICase() {
-    try {
-      doLaunchTest("HI", false);
-      fail();
-    } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("must be SPG, CE or HH"));
-    }
+    Exception e = assertThrows(Exception.class, () -> doLaunchTest("HI", false));
+    assertTrue(e.getMessage().contains("must be SPG, CE or HH"), e.getMessage());
   }
 
-  @Test(expected = CTPException.class)
+  @Test
   public void testLaunch_caseServiceNotFoundException_cachedCase() throws Exception {
     Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
         .when(caseServiceClient)
         .getCaseById(UUID_0, false);
     Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.of(new CachedCase()));
-    target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO());
+    assertThrows(
+        CTPException.class, () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testLaunch_caseServiceNotFoundException_noCachedCase() throws Exception {
     Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
         .when(caseServiceClient)
         .getCaseById(UUID_0, false);
     Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.empty());
-    target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO());
+    assertThrows(
+        ResponseStatusException.class,
+        () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testLaunch_caseServiceResponseStatusException() throws Exception {
     Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
         .when(caseServiceClient)
         .getCaseById(UUID_0, false);
-    target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO());
+    assertThrows(
+        ResponseStatusException.class,
+        () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));
   }
 
   @SneakyThrows
   private void assertThatInvalidLaunchComboIsRejected(
       CaseContainerDTO dto, String expectedMsg, Fault expectedFault) {
-    try {
-      doLaunchTest(false, dto, FormType.C);
-      fail();
-    } catch (CTPException e) {
-      assertEquals(expectedFault, e.getFault());
-      assertTrue(e.getMessage(), e.getMessage().contains(expectedMsg));
-    }
+    CTPException e = assertThrows(CTPException.class, () -> doLaunchTest(false, dto, FormType.C));
+    assertEquals(expectedFault, e.getFault());
+    assertTrue(e.getMessage().contains(expectedMsg), e.getMessage());
   }
 
   @SneakyThrows
@@ -365,11 +362,13 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
     SingleUseQuestionnaireIdDTO newQuestionnaireIdDto = new SingleUseQuestionnaireIdDTO();
     newQuestionnaireIdDto.setQuestionnaireId(A_QUESTIONNAIRE_ID);
     newQuestionnaireIdDto.setFormType(formType.name());
-    Mockito.when(caseServiceClient.getSingleUseQuestionnaireId(eq(UUID_0), eq(individual), any()))
+    Mockito.lenient()
+        .when(caseServiceClient.getSingleUseQuestionnaireId(eq(UUID_0), eq(individual), any()))
         .thenReturn(newQuestionnaireIdDto);
 
     // Mock out building of launch payload
-    Mockito.when(eqLaunchService.getEqLaunchJwe(any(EqLaunchData.class)))
+    Mockito.lenient()
+        .when(eqLaunchService.getEqLaunchJwe(any(EqLaunchData.class)))
         .thenReturn("simulated-encrypted-payload");
 
     List<LaunchRequestDTO> requestsFromCCSvc =

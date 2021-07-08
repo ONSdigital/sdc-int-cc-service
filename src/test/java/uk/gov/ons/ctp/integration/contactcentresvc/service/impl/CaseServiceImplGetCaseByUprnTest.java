@@ -1,12 +1,14 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,11 +24,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -52,7 +54,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
  * Unit Test {@link CaseService#getCaseByUPRN(UniquePropertyReferenceNumber, CaseQueryRequestDTO)
  * getCaseByUPRN}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
   private static final String AN_ESTAB_UPRN = "334111111111";
   private static final UniquePropertyReferenceNumber UPRN =
@@ -71,13 +73,13 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
   List<CachedCase> casesFromCache;
   private AddressIndexAddressCompositeDTO addressFromAI;
 
-  @Before
+  @BeforeEach
   public void setup() {
     mockCaseEventWhiteList();
 
-    when(appConfig.getChannel()).thenReturn(Channel.CC);
-    when(appConfig.getSurveyName()).thenReturn(SURVEY_NAME);
-    when(appConfig.getCollectionExerciseId()).thenReturn(COLLECTION_EXERCISE_ID);
+    lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
+    lenient().when(appConfig.getSurveyName()).thenReturn(SURVEY_NAME);
+    lenient().when(appConfig.getCollectionExerciseId()).thenReturn(COLLECTION_EXERCISE_ID);
 
     casesFromRm = FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
     casesFromCache = FixtureHelper.loadPackageFixtures(CachedCase[].class);
@@ -248,7 +250,7 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     verifyNewCase(result, addressType, addressFromAI.getCensusEstabType(), "E");
   }
 
-  @Test(expected = CTPException.class)
+  @Test
   public void testGetCaseByUprn_caseSvcNotFoundResponse_noCachedCase_addressServiceNotFound()
       throws Exception {
 
@@ -256,15 +258,12 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     mockNothingInTheCache();
 
     doThrow(new CTPException(Fault.RESOURCE_NOT_FOUND)).when(addressSvc).uprnQuery(UPRN.getValue());
-    target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false));
-    verify(caseServiceClient, times(1)).getCaseByUprn(any(Long.class), any(Boolean.class));
-    verifyHasReadCachedCases();
-    verifyNotWrittenCachedCase();
-    verify(addressSvc, times(1)).uprnQuery(anyLong());
-    verifyEventNotSent();
+
+    assertThrows(
+        CTPException.class, () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testGetCaseByUprn_caseSvcNotFoundResponse_noCachedCase_addressSvcRestClientException()
       throws Exception {
 
@@ -275,10 +274,12 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
         .when(addressSvc)
         .uprnQuery(eq(UPRN.getValue()));
 
-    target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false));
+    assertThrows(
+        ResponseStatusException.class,
+        () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
   }
 
-  @Test(expected = CTPException.class)
+  @Test
   public void testGetCaseByUprn_caseSvcNotFoundResponse_noCachedCase_scottishAddress()
       throws Exception {
 
@@ -288,7 +289,8 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     mockNothingInTheCache();
     mockAddressFromAI();
 
-    target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false));
+    assertThrows(
+        CTPException.class, () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
   }
 
   @Test
@@ -309,17 +311,19 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     assertFalse(result.getCaseEvents().isEmpty());
   }
 
-  @Test(expected = ResponseStatusException.class)
+  @Test
   public void testGetCaseByUprn_caseSvcRestClientException() throws Exception {
 
     doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
         .when(caseServiceClient)
         .getCaseByUprn(eq(UPRN.getValue()), any());
 
-    target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false));
+    assertThrows(
+        ResponseStatusException.class,
+        () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
   }
 
-  @Test(expected = CTPException.class)
+  @Test
   public void testGetCaseByUprn_caseSvcNotFoundResponse_NoCachedCase_RetriesExhausted()
       throws Exception {
 
@@ -330,7 +334,8 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     doThrow(new CTPException(Fault.SYSTEM_ERROR, new Exception(), "Retries exhausted"))
         .when(dataRepo)
         .writeCachedCase(any());
-    target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false));
+    assertThrows(
+        CTPException.class, () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
   }
 
   @Test

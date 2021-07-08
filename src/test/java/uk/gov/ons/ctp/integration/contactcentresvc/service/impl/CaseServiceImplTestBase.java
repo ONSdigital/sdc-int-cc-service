@@ -1,14 +1,15 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -84,8 +85,8 @@ public abstract class CaseServiceImplTestBase {
 
   void verifyTimeInExpectedRange(long minAllowed, long maxAllowed, Date dateTime) {
     long actualInMillis = dateTime.getTime();
-    assertTrue(actualInMillis + " not after " + minAllowed, actualInMillis >= minAllowed);
-    assertTrue(actualInMillis + " not before " + maxAllowed, actualInMillis <= maxAllowed);
+    assertTrue(actualInMillis >= minAllowed, actualInMillis + " not after " + minAllowed);
+    assertTrue(actualInMillis <= maxAllowed, actualInMillis + " not before " + maxAllowed);
   }
 
   long asMillis(String datetime) throws ParseException {
@@ -198,7 +199,7 @@ public abstract class CaseServiceImplTestBase {
     CaseServiceSettings caseServiceSettings = new CaseServiceSettings();
     Set<String> whitelistedSet = Set.of("CASE_CREATED", "CASE_UPDATED");
     caseServiceSettings.setWhitelistedEventCategories(whitelistedSet);
-    when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
+    lenient().when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
   }
 
   void assertCaseQIDRestClientFailureCaught(Exception ex, boolean caught) {
