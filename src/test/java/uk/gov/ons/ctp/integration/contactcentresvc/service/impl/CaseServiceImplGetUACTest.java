@@ -70,7 +70,7 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
   @Test
   public void testGetUACHICase() {
     Exception e = assertThrows(Exception.class, () -> doGetUACTest("HI", false));
-    assertTrue(e.getMessage().contains("must be SPG, CE or HH"));
+    assertTrue(e.getMessage().contains("must be SPG, CE or HH"), e.toString());
   }
 
   @Test
@@ -156,7 +156,7 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
   private void assertThatInvalidLaunchComboIsRejected(String expectedMsg) {
     CTPException e = assertThrows(CTPException.class, () -> doGetUACTest(false, FormType.C));
     assertEquals(Fault.BAD_REQUEST, e.getFault());
-    assertTrue(e.getMessage().contains(expectedMsg));
+    assertTrue(e.getMessage().contains(expectedMsg), e.toString());
   }
 
   private void doGetUACTest(String caseType, boolean individual) throws Exception {
