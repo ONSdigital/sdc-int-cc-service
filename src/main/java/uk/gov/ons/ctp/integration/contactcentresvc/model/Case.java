@@ -30,11 +30,9 @@ public class Case {
   private boolean addressInvalid;
   private Integer ceExpectedCapacity;
 
-  @Embedded
-  private CaseContact contact;
+  @Embedded private CaseContact contact;
 
-  @Embedded
-  private CaseAddress address;
+  @Embedded private CaseAddress address;
 
   private OffsetDateTime createdDateTime;
 }

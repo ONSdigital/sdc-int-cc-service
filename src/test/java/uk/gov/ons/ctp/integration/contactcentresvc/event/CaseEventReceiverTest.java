@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,14 +21,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 @ExtendWith(MockitoExtension.class)
 public class CaseEventReceiverTest {
 
-  @Mock
-  private CaseRepository repo;
+  @Mock private CaseRepository repo;
 
-  @InjectMocks
-  private CaseEventReceiver target;
+  @InjectMocks private CaseEventReceiver target;
 
-  @Captor
-  private ArgumentCaptor<Case> caseCaptor;
+  @Captor private ArgumentCaptor<Case> caseCaptor;
 
   @Test
   public void dummy() {}
@@ -44,7 +42,6 @@ public class CaseEventReceiverTest {
     Case caze = caseCaptor.getValue();
     CaseContact contact = caze.getContact();
     assertEquals(expectedContact(ccase.getContact()), contact);
-
   }
 
   private CaseContact expectedContact(Contact contact) {
@@ -55,5 +52,4 @@ public class CaseEventReceiverTest {
         .telNo(contact.getTelNo())
         .build();
   }
-
 }
