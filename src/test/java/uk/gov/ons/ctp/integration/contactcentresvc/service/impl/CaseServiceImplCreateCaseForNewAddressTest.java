@@ -122,7 +122,7 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
       fail();
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.getMessage().matches(".*Number of residents .* for CE .*"));
+      assertTrue(e.getMessage().matches(".*Number of residents .* for CE .*"), e.toString());
     }
   }
 
@@ -179,7 +179,8 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
           e.getMessage()
               .matches(
                   "All queries relating to Communal Establishments "
-                      + "in Northern Ireland should be escalated to NISRA HQ"));
+                      + "in Northern Ireland should be escalated to NISRA HQ"),
+          e.getMessage());
     }
   }
 
