@@ -172,7 +172,7 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   @Test
   public void testLaunchHICase() {
     Exception e = assertThrows(Exception.class, () -> doLaunchTest("HI", false));
-    assertTrue(e.getMessage().contains("must be SPG, CE or HH"));
+    assertTrue(e.getMessage().contains("must be SPG, CE or HH"), e.getMessage());
   }
 
   @Test
@@ -211,7 +211,7 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
       CaseContainerDTO dto, String expectedMsg, Fault expectedFault) {
     CTPException e = assertThrows(CTPException.class, () -> doLaunchTest(false, dto, FormType.C));
     assertEquals(expectedFault, e.getFault());
-    assertTrue(e.getMessage().contains(expectedMsg));
+    assertTrue(e.getMessage().contains(expectedMsg), e.getMessage());
   }
 
   @SneakyThrows

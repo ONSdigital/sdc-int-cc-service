@@ -101,7 +101,8 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
       assertEquals(Fault.BAD_REQUEST, e.getFault());
       assertTrue(
           e.getMessage()
-              .matches(".* address type .*CE.* from .*MILITARY_SLA.* not compatible .*HH.*"));
+              .matches(".* address type .*CE.* from .*MILITARY_SLA.* not compatible .*HH.*"),
+          e.toString());
     }
   }
 
@@ -141,7 +142,7 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
       fail();
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.getMessage().matches(".*Number of residents .* for CE .*"));
+      assertTrue(e.getMessage().matches(".*Number of residents .* for CE .*"), e.toString());
     }
   }
 
@@ -211,7 +212,7 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
       fail();
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.getMessage().matches(expectedErrorMessage));
+      assertTrue(e.getMessage().matches(expectedErrorMessage), e.toString());
     }
   }
 
@@ -266,7 +267,7 @@ public class CaseServiceImplCreateCaseForNewAddressTest extends CaseServiceImplT
       fail();
     } catch (CTPException e) {
       assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.getMessage().startsWith("Scottish addresses are not valid"));
+      assertTrue(e.getMessage().startsWith("Scottish addresses are not valid"), e.toString());
     }
   }
 
