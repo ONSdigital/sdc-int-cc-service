@@ -7,7 +7,6 @@ import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
-import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
@@ -30,16 +29,15 @@ public class CaseEventReceiver {
    * Message end point for events from Response Management.
    *
    * @param caseEvent CaseEvent message from Response Management
-   * @throws CTPException something went wrong
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
-  public void acceptCaseEvent(CaseEvent caseEvent) throws CTPException {
+  public void acceptCaseEvent(CaseEvent caseEvent) {
 
     CollectionCase collectionCase = caseEvent.getPayload().getCollectionCase();
     String caseTransactionId = caseEvent.getEvent().getTransactionId();
 
     log.info(
-        "Entering acceptCaseEvent",
+        "Entering acceptCaseEvent {}, {}",
         kv("transactionId", caseTransactionId),
         kv("caseId", collectionCase.getId()));
 

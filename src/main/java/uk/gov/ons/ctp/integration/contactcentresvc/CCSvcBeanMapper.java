@@ -1,5 +1,8 @@
 package uk.gov.ons.ctp.integration.contactcentresvc;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.converter.BidirectionalConverter;
@@ -35,6 +38,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter("regionConverter", new RegionConverter());
     converterFactory.registerConverter(new StringToUUIDConverter());
     converterFactory.registerConverter(new StringToUPRNConverter());
+    converterFactory.registerConverter(new UtcOffsetDateTimeConverter());
 
     factory
         .classMap(CaseContainerDTO.class, CaseDTO.class)
@@ -91,7 +95,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     factory.classMap(CaseContainerDTO.class, AddressCompact.class).byDefault().register();
   }
 
-  private class RegionConverter extends BidirectionalConverter<String, String> {
+  static class RegionConverter extends BidirectionalConverter<String, String> {
     public String convertTo(String src, Type<String> dstType, MappingContext context) {
       return convert(src);
     }
@@ -102,6 +106,20 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     private String convert(String src) {
       return StringUtils.isEmpty(src) ? src : src.substring(0, 1).toUpperCase();
+    }
+  }
+
+  static class UtcOffsetDateTimeConverter extends BidirectionalConverter<Date, OffsetDateTime> {
+    @Override
+    public OffsetDateTime convertTo(
+        Date source, Type<OffsetDateTime> destinationType, MappingContext mappingContext) {
+      return source.toInstant().atOffset(ZoneOffset.UTC);
+    }
+
+    @Override
+    public Date convertFrom(
+        OffsetDateTime source, Type<Date> destinationType, MappingContext mappingContext) {
+      return new Date(source.toInstant().toEpochMilli());
     }
   }
 }

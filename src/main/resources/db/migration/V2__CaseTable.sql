@@ -2,7 +2,7 @@
 DROP TABLE caze;
 
 CREATE TABLE caze (
-    case_id UUID NOT NULL,
+    id UUID NOT NULL,
     case_ref INT8,
     case_type VARCHAR(255),
     survey VARCHAR(255) NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE caze (
     --
     created_date_time TIMESTAMP WITH TIME ZONE,
 
-    PRIMARY KEY (case_id)
+    PRIMARY KEY (id)
 );
 
 CREATE INDEX caze_case_ref_idx ON caze (case_ref);

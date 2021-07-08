@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "caze")
 public class Case {
 
-  @Id private UUID caseId;
+  @Id private UUID id;
 
   private Long caseRef;
   private String caseType;
