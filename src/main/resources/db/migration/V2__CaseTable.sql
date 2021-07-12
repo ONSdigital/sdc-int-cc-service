@@ -1,10 +1,13 @@
 
 DROP TABLE caze;
 
+CREATE TYPE CASE_TYPE_ENUM AS ENUM('HH', 'HI', 'CE', 'SPG');
+CREATE CAST (VARCHAR AS CASE_TYPE_ENUM) WITH INOUT AS IMPLICIT;
+
 CREATE TABLE caze (
     id UUID NOT NULL,
     case_ref INT8,
-    case_type VARCHAR(255),
+    case_type CASE_TYPE_ENUM,
     survey VARCHAR(255) NOT NULL,
     collection_exercise_id UUID,
     actionable_from VARCHAR(255),

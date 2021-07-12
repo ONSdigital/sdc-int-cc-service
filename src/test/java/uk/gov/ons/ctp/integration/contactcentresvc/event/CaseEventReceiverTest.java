@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
@@ -44,18 +44,20 @@ public class CaseEventReceiverTest {
     CollectionCase ccase = caseEvent.getPayload().getCollectionCase();
 
     Case caze = caseCaptor.getValue();
+    verifyMappedCase(caze, ccase);
+  }
+
+  private void verifyMappedCase(Case caze, CollectionCase ccase) {
     CaseContact contact = caze.getContact();
     CaseAddress address = caze.getAddress();
     assertEquals(expectedContact(ccase.getContact()), contact);
     assertEquals(expectedAddress(ccase.getAddress()), address);
 
-    assertEquals(
-        OffsetDateTime.parse("2020-06-08T07:28:45.113Z", DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-        caze.getCreatedDateTime());
+    assertEquals(OffsetDateTime.parse("2020-06-08T07:28:45.113Z"), caze.getCreatedDateTime());
 
     assertEquals(UUID.fromString("0000089e-c6ef-46cb-9f09-b4def5a6d2d1"), caze.getId());
     assertEquals(Long.valueOf(ccase.getCaseRef()), caze.getCaseRef());
-    assertEquals(ccase.getCaseType(), caze.getCaseType());
+    assertEquals(CaseType.valueOf(ccase.getCaseType()), caze.getCaseType());
     assertEquals(ccase.getSurvey(), caze.getSurvey());
     assertEquals(UUID.fromString(ccase.getCollectionExerciseId()), caze.getCollectionExerciseId());
     assertEquals(ccase.getActionableFrom(), caze.getActionableFrom());
