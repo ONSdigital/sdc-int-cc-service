@@ -43,6 +43,11 @@ public class CaseEventReceiver {
 
     Case caze = map(collectionCase);
     caseRepo.save(caze);
+
+    log.info(
+        "Successful saved Case to database {}, {}",
+        kv("transactionId", caseTransactionId),
+        kv("caseId", collectionCase.getId()));
   }
 
   private Case map(CollectionCase collectionCase) {
