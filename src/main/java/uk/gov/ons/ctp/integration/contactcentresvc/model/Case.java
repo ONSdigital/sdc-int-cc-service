@@ -11,12 +11,20 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 
-@Data
+/**
+ * Representation of Case entity from database table.
+ *
+ * <p>Implementation note: avoid Lombok Data annotation, since generated toString, equals and
+ * hashcode are dangerous in combination with Entity annotation.
+ */
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
