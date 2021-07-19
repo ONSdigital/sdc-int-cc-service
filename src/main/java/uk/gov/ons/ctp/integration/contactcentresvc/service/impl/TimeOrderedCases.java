@@ -8,8 +8,8 @@ import java.util.TreeSet;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 
 /**
- * Hold a time ordered collection of cases, which may have been populated by RM or our local cache,
- * and sorted by latest date first , where each object takes it's date in the following order:
+ * Hold a time ordered collection of cases, populated by RM and sorted by latest date first , where
+ * each object takes it's date in the following order:
  *
  * <ol>
  *   <li>lastUpdated

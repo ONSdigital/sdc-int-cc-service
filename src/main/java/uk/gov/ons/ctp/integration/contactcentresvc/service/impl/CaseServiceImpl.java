@@ -185,9 +185,8 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching case details by caseId: {}", caseId);
     }
 
-    // Get the case details from the case service, or failing that from the cache
     Boolean getCaseEvents = requestParamsDTO.getCaseEvents();
-    CaseDTO caseServiceResponse = getLatestCaseById(caseId, getCaseEvents);
+    CaseDTO caseServiceResponse = caseById(caseId, getCaseEvents);
     rejectHouseholdIndividual(caseServiceResponse);
 
     if (log.isDebugEnabled()) {
@@ -759,7 +758,7 @@ public class CaseServiceImpl implements CaseService {
     return caseServiceResponse;
   }
 
-  private CaseDTO getLatestCaseById(UUID caseId, Boolean getCaseEvents) throws CTPException {
+  private CaseDTO caseById(UUID caseId, Boolean getCaseEvents) throws CTPException {
     CaseContainerDTO caseFromRM = null;
     try {
       caseFromRM = getCaseFromRm(caseId, getCaseEvents);
@@ -876,8 +875,7 @@ public class CaseServiceImpl implements CaseService {
    *
    * @param caseId of case to get
    * @return CaseContainerDTO for case requested
-   * @throws CTPException if case not available to call (not in case service), but new skeleton case
-   *     details available
+   * @throws CTPException if case not available to call (not in case service)
    */
   private CaseContainerDTO getLaunchCase(UUID caseId) throws CTPException {
     try {
