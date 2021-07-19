@@ -27,7 +27,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.NewCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
@@ -263,30 +262,6 @@ public class CaseEndpoint implements CTPEndpoint {
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
     ResponseDTO response = caseService.invalidateCase(requestBodyDTO);
     return ResponseEntity.ok(response);
-  }
-
-  /**
-   * The PUT endpoint to modify an existing case.
-   *
-   * <p>The behaviour is nuanced, since when the CaseType fundamentally changes, then instead of an
-   * update (resulting in an ADDRESS_MODIFIED event being sent), a new caseId will be generated and
-   * an ADDRESS_TYPE_CHANGED event will be sent instead.
-   *
-   * @param caseId case ID
-   * @param requestBodyDTO the request body
-   * @return response entity
-   * @throws CTPException something went wrong
-   */
-  @RequestMapping(value = "/{caseId}", method = RequestMethod.PUT)
-  @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<CaseDTO> modifyCase(
-      @PathVariable(value = "caseId") final UUID caseId,
-      @Valid @RequestBody ModifyCaseRequestDTO requestBodyDTO)
-      throws CTPException {
-    log.info("Entering PUT modifyCase", kv("requestBody", requestBodyDTO));
-    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
-    CaseDTO result = caseService.modifyCase(requestBodyDTO);
-    return ResponseEntity.ok(result);
   }
 
   /**

@@ -63,11 +63,6 @@ public class CCEndpointSecurityTest extends EndpointSecurityTest {
   }
 
   @Test
-  public void ccOkPutCase() {
-    testPutCase(HttpStatus.OK);
-  }
-
-  @Test
   public void ccOkPostCase() {
     testPostCase(HttpStatus.OK);
   }
