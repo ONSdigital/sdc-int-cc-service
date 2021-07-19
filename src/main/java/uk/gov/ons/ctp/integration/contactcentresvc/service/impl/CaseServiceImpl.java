@@ -716,20 +716,6 @@ public class CaseServiceImpl implements CaseService {
     return mapCaseContainerDTOList(casesToReturn);
   }
 
-  private CaseDTO createNewCachedCaseResponse(CachedCase newCase, boolean caseEvents) {
-    CaseDTO response = caseDTOMapper.map(newCase, CaseDTO.class);
-    response.setAllowedDeliveryChannels(Arrays.asList(DeliveryChannel.values()));
-
-    EstabType estabType = EstabType.forCode(newCase.getEstabType());
-    response.setEstabType(estabType);
-    response.setSecureEstablishment(estabType.isSecure());
-
-    if (!caseEvents) {
-      response.setCaseEvents(Collections.emptyList());
-    }
-    return response;
-  }
-
   private void rejectIfCaseIsTypeCE(CaseType caseType, String errorMessage) throws CTPException {
     if (caseType == CaseType.CE) {
       log.warn(errorMessage, kv("caseType", caseType.name()));
@@ -799,13 +785,9 @@ public class CaseServiceImpl implements CaseService {
   }
 
   private CaseDTO getLatestCaseById(UUID caseId, Boolean getCaseEvents) throws CTPException {
-    TimeOrderedCases timeOrderedCases = new TimeOrderedCases();
-
+    CaseContainerDTO caseFromRM = null;
     try {
-      CaseContainerDTO caseFromRM = getCaseFromRm(caseId, getCaseEvents);
-      if (caseFromRM != null) {
-        timeOrderedCases.addCase(mapCaseContainerDTO(caseFromRM));
-      }
+      caseFromRM = getCaseFromRm(caseId, getCaseEvents);
     } catch (ResponseStatusException ex) {
       if (ex.getStatus() == HttpStatus.NOT_FOUND) {
         if (log.isDebugEnabled()) {
@@ -816,26 +798,11 @@ public class CaseServiceImpl implements CaseService {
         throw ex;
       }
     }
-
-    Optional<CaseDTO> cachedCase =
-        dataRepo
-            .readCachedCaseById(caseId)
-            .map(cc -> createNewCachedCaseResponse(cc, getCaseEvents));
-
-    if (cachedCase.isPresent()) {
-      timeOrderedCases.addCase(cachedCase.get());
-    }
-    Optional<CaseDTO> latest = timeOrderedCases.latest();
-
-    CaseDTO latestCaseDto = null;
-    if (latest.isPresent()) {
-      latestCaseDto = latest.get();
-    } else {
+    if (caseFromRM == null) {
       log.warn("Request for case Not Found", kv("caseId", caseId));
       throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Case Id Not Found: " + caseId.toString());
     }
-
-    return latestCaseDto;
+    return mapCaseContainerDTO(caseFromRM);
   }
 
   private Optional<CaseDTO> getLatestCaseByUprn(
