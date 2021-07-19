@@ -27,7 +27,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.NewCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
@@ -53,25 +52,6 @@ public class CaseEndpoint implements CTPEndpoint {
   @Autowired
   public CaseEndpoint(final CaseService caseService) {
     this.caseService = caseService;
-  }
-
-  /**
-   * POST endpoint to create a new case for a new address.
-   *
-   * @param newCaseRequest contains details about the new address.
-   * @return a CaseDTO containing details about the new case
-   * @throws CTPException something went wrong
-   */
-  @RequestMapping(value = "", method = RequestMethod.POST)
-  @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<CaseDTO> newCase(@Valid @RequestBody NewCaseRequestDTO newCaseRequest)
-      throws CTPException {
-
-    log.info("Entering POST newCase", kv("newCaseRequest", newCaseRequest));
-
-    CaseDTO response = caseService.createCaseForNewAddress(newCaseRequest);
-
-    return ResponseEntity.ok(response);
   }
 
   /**

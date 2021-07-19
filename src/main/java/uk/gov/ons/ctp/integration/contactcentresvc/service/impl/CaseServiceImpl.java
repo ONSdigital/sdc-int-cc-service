@@ -23,8 +23,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
@@ -64,8 +62,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexSearchResultsDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseDataRepository;
@@ -74,7 +70,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryReque
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.NewCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
@@ -196,58 +191,6 @@ public class CaseServiceImpl implements CaseService {
     }
 
     return response;
-  }
-
-  @Override
-  public CaseDTO createCaseForNewAddress(NewCaseRequestDTO caseRequestDTO) throws CTPException {
-    CaseType caseType = caseRequestDTO.getCaseType();
-
-    String errorMessage =
-        "All queries relating to Communal Establishments in Northern Ireland "
-            + "should be escalated to NISRA HQ";
-    rejectIfCEInNI(caseType, caseRequestDTO.getRegion(), errorMessage);
-
-    validateCompatibleEstabAndCaseType(caseType, caseRequestDTO.getEstabType());
-
-    rejectIfForCrownDependency(caseRequestDTO.getPostcode());
-
-    uk.gov.ons.ctp.integration.contactcentresvc.representation.Region actualRegion =
-        determineActualRegion(caseRequestDTO);
-    caseRequestDTO.setRegion(actualRegion);
-
-    // Reject if CE with non-positive number of residents
-    if (caseRequestDTO.getCaseType() == CaseType.CE) {
-      if (caseRequestDTO.getCeUsualResidents() == null
-          || caseRequestDTO.getCeUsualResidents() <= 0) {
-        throw new CTPException(
-            Fault.BAD_REQUEST, "Number of residents must be supplied for CE case");
-      }
-    } else {
-      // Field not relevant. Clear incase it's a silly number
-      caseRequestDTO.setCeUsualResidents(0);
-    }
-    String addressType = caseType.name();
-
-    // Create new case
-    CachedCase cachedCase = caseDTOMapper.map(caseRequestDTO, CachedCase.class);
-    UUID newCaseId = UUID.randomUUID();
-    cachedCase.setId(newCaseId.toString());
-    cachedCase.setEstabType(caseRequestDTO.getEstabType().getCode());
-    cachedCase.setAddressType(addressType);
-    cachedCase.setCreatedDateTime(DateTimeUtil.nowUTC());
-
-    dataRepo.writeCachedCase(cachedCase);
-
-    // Publish NewAddress event
-    AddressIndexAddressCompositeDTO address =
-        caseDTOMapper.map(caseRequestDTO, AddressIndexAddressCompositeDTO.class);
-    address.setCensusAddressType(addressType);
-    address.setCensusEstabType(caseRequestDTO.getEstabType().getCode());
-    address.setCountryCode(actualRegion.name());
-    publishNewAddressReportedEvent(
-        newCaseId, caseType, caseRequestDTO.getCeUsualResidents(), address);
-
-    return createNewCachedCaseResponse(cachedCase, false);
   }
 
   @Override
@@ -895,16 +838,6 @@ public class CaseServiceImpl implements CaseService {
     return response;
   }
 
-  private void rejectIfCEInNI(
-      CaseType caseType,
-      uk.gov.ons.ctp.integration.contactcentresvc.representation.Region region,
-      String errorMessage)
-      throws CTPException {
-    if (region == uk.gov.ons.ctp.integration.contactcentresvc.representation.Region.N) {
-      rejectIfCaseIsTypeCE(caseType, errorMessage);
-    }
-  }
-
   private void rejectIfCaseIsTypeCE(CaseType caseType, String errorMessage) throws CTPException {
     if (caseType == CaseType.CE) {
       log.warn(errorMessage, kv("caseType", caseType.name()));
@@ -1044,138 +977,6 @@ public class CaseServiceImpl implements CaseService {
       log.info("Luhn check failed for case Reference", kv("caseRef", caseRef));
       throw new CTPException(Fault.BAD_REQUEST, "Invalid Case Reference");
     }
-  }
-
-  private void validateCompatibleEstabAndCaseType(CaseType caseType, EstabType estabType)
-      throws CTPException {
-    Optional<AddressType> addrType = estabType.getAddressType();
-    if (addrType.isPresent() && (caseType != CaseType.valueOf(addrType.get().name()))) {
-      log.info(
-          "Mismatching caseType and estabType",
-          kv("caseType", caseType),
-          kv("estabType", estabType));
-      String msg =
-          "Derived address type of '"
-              + addrType.get()
-              + "', from establishment type '"
-              + estabType
-              + "', "
-              + "is not compatible with caseType of '"
-              + caseType
-              + "'";
-      throw new CTPException(Fault.BAD_REQUEST, msg);
-    }
-  }
-
-  private void rejectIfForCrownDependency(String postcode) throws CTPException {
-    String postcodeArea = postcode.substring(0, 2).toUpperCase();
-
-    switch (postcodeArea) {
-      case "GY":
-      case "JE":
-        log.info(
-            "Rejecting request as postcode is for a channel island address",
-            kv("postcode", postcode));
-        throw new CTPException(
-            Fault.BAD_REQUEST, "Channel Island addresses are not valid for Census");
-      case "IM":
-        log.info(
-            "Rejecting request as postcode is for an Isle of Man address",
-            kv("postcode", postcode));
-        throw new CTPException(Fault.BAD_REQUEST, "Isle of Man addresses are not valid for Census");
-      default: // to keep checkstyle happy
-    }
-  }
-
-  private uk.gov.ons.ctp.integration.contactcentresvc.representation.Region determineActualRegion(
-      NewCaseRequestDTO caseRequestDTO) throws CTPException {
-    uk.gov.ons.ctp.integration.contactcentresvc.representation.Region sercoRegion =
-        caseRequestDTO.getRegion();
-    uk.gov.ons.ctp.integration.contactcentresvc.representation.Region ccRegion = null;
-
-    String postcode = caseRequestDTO.getPostcode();
-    String postcodeArea = postcode.substring(0, 2).toUpperCase();
-
-    if (postcodeArea.equals("BT")) {
-      ccRegion = uk.gov.ons.ctp.integration.contactcentresvc.representation.Region.N;
-
-    } else {
-      // Get ready to call AI to find the region for the specified postcode
-      MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-      queryParams.add("offset", "0");
-      queryParams.add("limit", "1");
-      queryParams.add("includeauxiliarysearch", "true");
-      addEpoch(queryParams);
-
-      // Ask Address Index to do postcode search
-      AddressIndexSearchResultsDTO addressIndexResponse = null;
-      try {
-        String path = appConfig.getAddressIndexSettings().getPostcodeLookupPath();
-        addressIndexResponse =
-            addressIndexClient.getResource(
-                path, AddressIndexSearchResultsDTO.class, null, queryParams, postcode);
-      } catch (ResponseStatusException e) {
-        // Something went wrong calling AI.
-        // Never mind, we'll still be able to use the Serco supplied region
-        log.warn("Failed to call AI to resolve region", kv("postcode", postcode));
-      }
-
-      if (addressIndexResponse != null) {
-        ArrayList<AddressIndexAddressDTO> addresses =
-            addressIndexResponse.getResponse().getAddresses();
-        if (!addresses.isEmpty()) {
-          // Found an address. Fail if Scottish otherwise use its region
-          String countryCode = addresses.get(0).getCensus().getCountryCode();
-          if (countryCode != null && countryCode.equals("S")) {
-            log.info("Rejecting as it's a Scottish address", kv("postcode", postcode));
-            throw new CTPException(
-                Fault.BAD_REQUEST, "Scottish addresses are not valid for Census");
-          }
-
-          if (countryCode != null) {
-            // Use the region as specified by AI
-            ccRegion =
-                uk.gov.ons.ctp.integration.contactcentresvc.representation.Region.valueOf(
-                    countryCode);
-          }
-        }
-      }
-    }
-
-    // Decide if we are using the Serco or the CC calculated region
-    uk.gov.ons.ctp.integration.contactcentresvc.representation.Region regionForNewCase = null;
-    if (ccRegion == null) {
-      // CC failed to find the region
-      log.info(
-          "Unable to determine region for new case."
-              + " Falling back to using Serco provided region",
-          kv("sercoRegion", sercoRegion));
-      regionForNewCase = sercoRegion;
-    } else if (sercoRegion == ccRegion) {
-      // CC agrees with Serco supplied region
-      log.info(
-          "Using Serco provided region for new case",
-          kv("sercoRegion", sercoRegion),
-          kv("ccRegion", ccRegion));
-      regionForNewCase = sercoRegion;
-    } else {
-      // CC and Serco differ, so override Serco region
-      log.info(
-          "Overriding Serco region with cc region for new case",
-          kv("sercoRegion", sercoRegion),
-          kv("ccRegion", ccRegion));
-      regionForNewCase = ccRegion;
-    }
-
-    return regionForNewCase;
-  }
-
-  private MultiValueMap<String, String> addEpoch(MultiValueMap<String, String> queryParams) {
-    String epoch = appConfig.getAddressIndexSettings().getEpoch();
-    if (!StringUtils.isBlank(epoch)) {
-      queryParams.add("epoch", epoch);
-    }
-    return queryParams;
   }
 
   private void validateSurveyType(CaseContainerDTO caseDetails) throws CTPException {

@@ -86,9 +86,4 @@ public class ADEndpointSecurityTest extends EndpointSecurityTest {
   public void adForbiddenPostFulfilfmentSMS() {
     testPostFulfilmentSMS(HttpStatus.FORBIDDEN);
   }
-
-  @Test
-  public void adOkPostCase() {
-    testPostCase(HttpStatus.FORBIDDEN);
-  }
 }
