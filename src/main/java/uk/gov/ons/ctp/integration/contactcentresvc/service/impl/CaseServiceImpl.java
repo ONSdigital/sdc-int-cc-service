@@ -848,19 +848,6 @@ public class CaseServiceImpl implements CaseService {
           "Found {} case details in RM for UPRN", v("cases", rmCases.size()), kv("uprn", uprn));
     }
     timeOrderedCases.add(rmCases);
-
-    List<CaseDTO> cachedCases =
-        dataRepo.readCachedCasesByUprn(uprn).stream()
-            .map(cc -> createNewCachedCaseResponse(cc, addCaseEvents))
-            .collect(toList());
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Found {} case details in Cache for UPRN",
-          v("cases", cachedCases.size()),
-          kv("uprn", uprn));
-    }
-    timeOrderedCases.add(cachedCases);
-
     return timeOrderedCases.latest();
   }
 
