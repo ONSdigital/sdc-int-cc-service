@@ -17,7 +17,6 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUI
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +40,6 @@ import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.EqConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.TelephoneCapture;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
@@ -176,21 +174,10 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testLaunch_caseServiceNotFoundException_cachedCase() throws Exception {
+  public void testLaunch_caseServiceNotFoundException() throws Exception {
     Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
         .when(caseServiceClient)
         .getCaseById(UUID_0, false);
-    Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.of(new CachedCase()));
-    assertThrows(
-        CTPException.class, () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));
-  }
-
-  @Test
-  public void testLaunch_caseServiceNotFoundException_noCachedCase() throws Exception {
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-        .when(caseServiceClient)
-        .getCaseById(UUID_0, false);
-    Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.empty());
     assertThrows(
         ResponseStatusException.class,
         () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));

@@ -7,7 +7,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseDataRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
@@ -20,7 +19,6 @@ public class ADEndpointSecurityTest extends EndpointSecurityTest {
 
   @MockBean CaseService caseService;
   @MockBean AddressService addressService;
-  @MockBean CaseDataRepository caseDataRepository;
 
   @Test
   public void adOkGetUACForCase() {

@@ -47,7 +47,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseDataRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
@@ -67,8 +66,6 @@ public abstract class CaseServiceImplTestBase {
   @Mock EventPublisher eventPublisher;
 
   @Spy MapperFacade mapperFacade = new CCSvcBeanMapper();
-
-  @Mock CaseDataRepository dataRepo;
 
   @Mock CCSPostcodesBean ccsPostcodesBean;
 

@@ -56,9 +56,7 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
-import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseDataRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
@@ -99,8 +97,6 @@ public class CaseServiceImpl implements CaseService {
   private MapperFacade caseDTOMapper = new CCSvcBeanMapper();
 
   @Autowired private EqLaunchService eqLaunchService;
-
-  @Autowired private CaseDataRepository dataRepo;
 
   @Autowired private EventPublisher eventPublisher;
 
@@ -391,7 +387,7 @@ public class CaseServiceImpl implements CaseService {
           kv("status", invalidateCaseRequestDTO.getStatus()));
     }
 
-    CaseContainerDTO caseDetails = getCaseFromRmOrCache(caseId, false);
+    CaseContainerDTO caseDetails = getCaseFromRm2(caseId, false);
     String errorMessage =
         "All CE addresses will be validated by a Field Officer. "
             + "It is not necessary to submit this Invalidation request.";
@@ -476,7 +472,7 @@ public class CaseServiceImpl implements CaseService {
           kv("fulfilmentCode", fulfilmentCode));
     }
 
-    CaseContainerDTO caze = getCaseFromRmOrCache(caseId, false);
+    CaseContainerDTO caze = getCaseFromRm2(caseId, false);
     validateSurveyType(caze);
     Product product = findProduct(fulfilmentCode, deliveryChannel, convertRegion(caze));
 
@@ -547,36 +543,15 @@ public class CaseServiceImpl implements CaseService {
     return products.get(0);
   }
 
-  /**
-   * Return a case by Id, if Not Found calling Case Service query repository for new skeleton cached
-   * case
-   *
-   * @param caseId for which to request case
-   * @param getCaseEvents should be set to true if the caller wants case events returned.
-   * @return the requested case
-   * @throws CTPException if case Not Found
-   */
-  private CaseContainerDTO getCaseFromRmOrCache(UUID caseId, boolean getCaseEvents)
-      throws CTPException {
-
+  // FIXME rename
+  private CaseContainerDTO getCaseFromRm2(UUID caseId, boolean getCaseEvents) throws CTPException {
     CaseContainerDTO caze = null;
     try {
       caze = getCaseFromRm(caseId, getCaseEvents);
     } catch (ResponseStatusException ex) {
       if (ex.getStatus() == HttpStatus.NOT_FOUND) {
-        if (log.isDebugEnabled()) {
-          log.debug("Case Id Not Found calling Case Service", kv("caseId", caseId));
-        }
-        Optional<CachedCase> cachedCase = dataRepo.readCachedCaseById(caseId);
-        if (cachedCase.isPresent()) {
-          log.info("Using stored case details", kv("caseId", caseId));
-          caze = caseDTOMapper.map(cachedCase.get(), CaseContainerDTO.class);
-          caze.setSurveyType(appConfig.getSurveyName());
-        } else {
-          log.warn("Request for case Not Found", kv("caseId", caseId));
-          throw new CTPException(
-              Fault.RESOURCE_NOT_FOUND, "Case Id Not Found: " + caseId.toString());
-        }
+        log.warn("Request for case Not Found", kv("caseId", caseId));
+        throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Case Id Not Found: " + caseId.toString());
       } else {
         log.error("Error calling Case Service", kv("caseId", caseId), ex);
         throw ex;
@@ -909,19 +884,6 @@ public class CaseServiceImpl implements CaseService {
       CaseContainerDTO caseDetails = getCaseFromRm(caseId, false);
       return caseDetails;
     } catch (ResponseStatusException ex) {
-      if (ex.getStatus() == HttpStatus.NOT_FOUND) {
-        Optional<CachedCase> cachedCase = dataRepo.readCachedCaseById(caseId);
-        if (cachedCase.isPresent()) {
-          log.warn(
-              "New skeleton case created but not yet available.",
-              kv("caseid", caseId),
-              kv("status", ex.getStatus()),
-              kv("message", ex.getMessage()));
-          throw new CTPException(
-              Fault.ACCEPTED_UNABLE_TO_PROCESS,
-              "Unable to provide launch URL/UAC at present, please try again later.");
-        }
-      }
       log.error(
           "Unable to provide launch URL/UAC, failed to call case service",
           kv("caseId", caseId),
