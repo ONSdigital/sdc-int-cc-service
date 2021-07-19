@@ -2,15 +2,13 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
@@ -27,7 +25,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,11 +34,7 @@ import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
-import uk.gov.ons.ctp.common.event.model.NewAddress;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
@@ -150,10 +143,9 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
     mockCasesFromRm();
     mockNothingInTheCache();
-    mockAddressFromAI();
 
-    CaseDTO result = getCasesByUprn(false);
-    verifyNewCase(result, AddressType.HH.name(), "Household", "U");
+    assertNull(getCasesByUprn(false));
+    verifyCallToGetCasesFromRm();
   }
 
   @Test
@@ -164,10 +156,9 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
         .getCaseByUprn(eq(UPRN.getValue()), any());
 
     mockNothingInTheCache();
-    mockAddressFromAI();
 
-    CaseDTO result = getCasesByUprn(false);
-    verifyNewCase(result, AddressType.HH.name(), "Household", "U");
+    assertNull(getCasesByUprn(false));
+    verifyCallToGetCasesFromRm();
   }
 
   @Test
@@ -175,29 +166,27 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     addressFromAI.setCensusAddressType("NA");
     addressFromAI.setCensusEstabType("X");
     mockNothingInTheCache();
-    mockAddressFromAI();
-    CaseDTO result = getCasesByUprn(false);
-    verifyNewCase(result, "HH", "HOUSEHOLD", "U");
+    assertNull(getCasesByUprn(false));
+    verifyCallToGetCasesFromRm();
   }
 
-  private void verifyCreatedNewCase(String estabType) throws Exception {
+  private void verifyCaseNotFound(String estabType) throws Exception {
     addressFromAI.setCensusEstabType(estabType);
 
     mockNothingInRm();
     mockNothingInTheCache();
-    mockAddressFromAI();
 
-    CaseDTO result = getCasesByUprn(false);
-    verifyNewCase(result, AddressType.HH.name(), estabType, "U");
+    assertNull(getCasesByUprn(false));
+    verifyCallToGetCasesFromRm();
   }
 
   @Test
-  public void testGetCaseByUprn_caseSvcNotFoundResponse_noCachedCase_SPG() throws Exception {
-    verifyCreatedNewCase("marina");
+  public void testGetCaseByUprn_caseSvcNotFoundResponse_SPG() throws Exception {
+    verifyCaseNotFound("marina");
   }
 
   @Test
-  public void testGetCaseByUprn_caseSvcNotFoundResponse_noCachedCase_CE() throws Exception {
+  public void testGetCaseByUprn_caseSvcNotFoundResponse_CE() throws Exception {
     addressFromAI.setCensusAddressType(AddressType.CE.name());
 
     String estabType = "CARE HOME";
@@ -205,15 +194,14 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
     mockNothingInRm();
     mockNothingInTheCache();
-    mockAddressFromAI();
 
-    CaseDTO result = getCasesByUprn(false);
-    verifyNewCase(result, AddressType.CE.name(), estabType, "E");
+    assertNull(getCasesByUprn(false));
+    verifyCallToGetCasesFromRm();
   }
 
   @Test
   public void testGetCaseByUprn_caseSvcNotFoundResponse_noCachedCase_NA() throws Exception {
-    verifyCreatedNewCase("NA");
+    verifyCaseNotFound("NA");
   }
 
   // CR-1823 - when we have AIMS mismatching addressType. we need addressLevel to be based on
@@ -227,10 +215,9 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
     mockNothingInRm();
     mockNothingInTheCache();
-    mockAddressFromAI();
 
-    CaseDTO result = getCasesByUprn(false);
-    verifyNewCase(result, AddressType.HH.name(), estabType, "U");
+    assertNull(getCasesByUprn(false));
+    verifyCallToGetCasesFromRm();
   }
 
   // CR-1823 - when we have AIMS mismatching addressType. we need addressLevel to be based on
@@ -244,53 +231,9 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
     mockNothingInRm();
     mockNothingInTheCache();
-    mockAddressFromAI();
 
-    CaseDTO result = getCasesByUprn(false);
-    verifyNewCase(result, addressType, addressFromAI.getCensusEstabType(), "E");
-  }
-
-  @Test
-  public void testGetCaseByUprn_caseSvcNotFoundResponse_noCachedCase_addressServiceNotFound()
-      throws Exception {
-
-    mockNothingInRm();
-    mockNothingInTheCache();
-
-    doThrow(new CTPException(Fault.RESOURCE_NOT_FOUND)).when(addressSvc).uprnQuery(UPRN.getValue());
-
-    assertThrows(
-        CTPException.class, () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
-  }
-
-  @Test
-  public void testGetCaseByUprn_caseSvcNotFoundResponse_noCachedCase_addressSvcRestClientException()
-      throws Exception {
-
-    mockNothingInRm();
-    mockNothingInTheCache();
-
-    doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
-        .when(addressSvc)
-        .uprnQuery(eq(UPRN.getValue()));
-
-    assertThrows(
-        ResponseStatusException.class,
-        () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
-  }
-
-  @Test
-  public void testGetCaseByUprn_caseSvcNotFoundResponse_noCachedCase_scottishAddress()
-      throws Exception {
-
-    addressFromAI.setCountryCode("S");
-
-    mockNothingInRm();
-    mockNothingInTheCache();
-    mockAddressFromAI();
-
-    assertThrows(
-        CTPException.class, () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
+    assertNull(getCasesByUprn(false));
+    verifyCallToGetCasesFromRm();
   }
 
   @Test
@@ -321,21 +264,6 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     assertThrows(
         ResponseStatusException.class,
         () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
-  }
-
-  @Test
-  public void testGetCaseByUprn_caseSvcNotFoundResponse_NoCachedCase_RetriesExhausted()
-      throws Exception {
-
-    mockNothingInRm();
-    mockNothingInTheCache();
-    mockAddressFromAI();
-
-    doThrow(new CTPException(Fault.SYSTEM_ERROR, new Exception(), "Retries exhausted"))
-        .when(dataRepo)
-        .writeCachedCase(any());
-    assertThrows(
-        CTPException.class, () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
   }
 
   @Test
@@ -473,16 +401,6 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     verify(dataRepo).readCachedCasesByUprn(any(UniquePropertyReferenceNumber.class));
   }
 
-  private CachedCase verifyHasWrittenCachedCase() throws Exception {
-    ArgumentCaptor<CachedCase> cachedCaseCaptor = ArgumentCaptor.forClass(CachedCase.class);
-    verify(dataRepo).writeCachedCase(cachedCaseCaptor.capture());
-    return cachedCaseCaptor.getValue();
-  }
-
-  private void mockAddressFromAI() throws Exception {
-    when(addressSvc.uprnQuery(UPRN.getValue())).thenReturn(addressFromAI);
-  }
-
   private void verifyNonCachedCase(CaseDTO results, boolean caseEventsExpected, int dataIndex)
       throws Exception {
     CaseDTO expectedCaseResult =
@@ -490,96 +408,6 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
     verifyCase(results, expectedCaseResult, caseEventsExpected);
     verifyHasReadCachedCases();
-  }
-
-  private void verifyNewCase(
-      CaseDTO result,
-      String expectedAddressType,
-      String expectedEstabType,
-      String expectedAddressLevel)
-      throws Exception {
-
-    verifyCallToGetCasesFromRm();
-    verifyHasReadCachedCases();
-    verify(addressSvc, times(1)).uprnQuery(anyLong());
-
-    // Verify content of case written to Firestore
-    CachedCase capturedCase = verifyHasWrittenCachedCase();
-
-    CaseType expectedCaseType = CaseType.valueOf(expectedAddressType);
-
-    verifyCachedCaseContent(
-        result.getId(), expectedCaseType, expectedAddressType, expectedEstabType, capturedCase);
-
-    // Verify response
-    CachedCase cachedCase = mapperFacade.map(addressFromAI, CachedCase.class);
-    cachedCase.setId(result.getId().toString());
-    verifyCaseDTOContent(
-        cachedCase, expectedCaseType.name(), false, result, expectedAddressType, expectedEstabType);
-
-    // Verify the NewAddressEvent
-    CollectionCaseNewAddress newAddress =
-        mapperFacade.map(addressFromAI, CollectionCaseNewAddress.class);
-    newAddress.setId(cachedCase.getId());
-    verifyNewAddressEventSent(
-        addressFromAI.getCensusAddressType(), expectedEstabType, expectedAddressLevel, newAddress);
-  }
-
-  private void verifyCachedCaseContent(
-      UUID expectedId,
-      CaseType expectedCaseType,
-      String expectedAddressType,
-      String expectedEstabType,
-      CachedCase expectedCase) {
-    assertEquals(expectedId.toString(), expectedCase.getId());
-    assertEquals(addressFromAI.getUprn(), expectedCase.getUprn());
-    assertEquals(addressFromAI.getAddressLine1(), expectedCase.getAddressLine1());
-    assertEquals(addressFromAI.getAddressLine2(), expectedCase.getAddressLine2());
-    assertEquals(addressFromAI.getAddressLine3(), expectedCase.getAddressLine3());
-    assertEquals(addressFromAI.getTownName(), expectedCase.getTownName());
-    assertEquals(addressFromAI.getPostcode(), expectedCase.getPostcode());
-    assertEquals(expectedAddressType, expectedCase.getAddressType());
-    assertEquals(expectedCaseType, expectedCase.getCaseType());
-    assertEquals(expectedEstabType, expectedCase.getEstabType());
-    assertEquals(addressFromAI.getCountryCode(), expectedCase.getRegion());
-    assertEquals(addressFromAI.getOrganisationName(), expectedCase.getCeOrgName());
-    assertEquals(0, expectedCase.getCaseEvents().size());
-  }
-
-  private void verifyCaseDTOContent(
-      CachedCase cachedCase,
-      String expectedCaseType,
-      boolean isSecureEstablishment,
-      CaseDTO actualCaseDto,
-      String expectedAddressType,
-      String expectedEstabType) {
-    CaseDTO expectedNewCaseResult = mapperFacade.map(cachedCase, CaseDTO.class);
-    expectedNewCaseResult.setCreatedDateTime(actualCaseDto.getCreatedDateTime());
-    expectedNewCaseResult.setCaseType(expectedCaseType);
-    expectedNewCaseResult.setSecureEstablishment(isSecureEstablishment);
-    expectedNewCaseResult.setAllowedDeliveryChannels(Arrays.asList(DeliveryChannel.values()));
-    expectedNewCaseResult.setCaseEvents(Collections.emptyList());
-    expectedNewCaseResult.setAddressType(expectedAddressType);
-    expectedNewCaseResult.setEstabType(EstabType.forCode(expectedEstabType));
-    assertEquals(expectedNewCaseResult, actualCaseDto);
-  }
-
-  private void verifyNewAddressEventSent(
-      String expectedAddressType,
-      String expectedEstabTypeCode,
-      String expectedAddressLevel,
-      CollectionCaseNewAddress newAddress) {
-    newAddress.setCaseType(expectedAddressType);
-    newAddress.setSurvey(SURVEY_NAME);
-    newAddress.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
-    newAddress.setCeExpectedCapacity(0);
-    newAddress.getAddress().setAddressLevel(expectedAddressLevel);
-    newAddress.getAddress().setAddressType(expectedAddressType);
-    newAddress.getAddress().setEstabType(EstabType.forCode(expectedEstabTypeCode).getCode());
-    NewAddress payload = new NewAddress();
-    payload.setCollectionCase(newAddress);
-    NewAddress payloadSent = verifyEventSent(EventType.NEW_ADDRESS_REPORTED, NewAddress.class);
-    assertEquals(payload, payloadSent);
   }
 
   private void verifyCachedCase(CaseDTO result, boolean caseEvents) throws Exception {
@@ -597,14 +425,12 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
     verifyCallToGetCasesFromRm();
     verifyHasReadCachedCases();
-    verifyNotWrittenCachedCase();
-    verify(addressSvc, never()).uprnQuery(anyLong());
     verifyEventNotSent();
   }
 
   private CaseDTO getCasesByUprn(boolean caseEvents) throws CTPException {
     List<CaseDTO> results = target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(caseEvents));
-    assertEquals(1, results.size());
-    return results.get(0);
+    assertTrue(results.size() <= 1);
+    return results.size() == 1 ? results.get(0) : null;
   }
 }

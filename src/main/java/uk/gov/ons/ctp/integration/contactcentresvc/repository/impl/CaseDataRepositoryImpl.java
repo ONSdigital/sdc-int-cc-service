@@ -74,11 +74,6 @@ public class CaseDataRepositoryImpl implements CaseDataRepository {
   }
 
   @Override
-  public void writeCachedCase(final CachedCase caze) throws CTPException {
-    cloudDataStore.storeObject(caseSchema, caze.getId(), caze, caze.getId());
-  }
-
-  @Override
   public List<CachedCase> readCachedCasesByUprn(UniquePropertyReferenceNumber uprn)
       throws CTPException {
     String key = String.valueOf(uprn.getValue());

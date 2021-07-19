@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -53,7 +52,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
@@ -71,8 +69,6 @@ public abstract class CaseServiceImplTestBase {
   @Spy MapperFacade mapperFacade = new CCSvcBeanMapper();
 
   @Mock CaseDataRepository dataRepo;
-
-  @Mock AddressService addressSvc;
 
   @Mock CCSPostcodesBean ccsPostcodesBean;
 
@@ -114,10 +110,6 @@ public abstract class CaseServiceImplTestBase {
     verify(eventPublisher, never()).sendEvent(eq(type), any(), any(), any());
   }
 
-  void verifyNotWrittenCachedCase() throws Exception {
-    verify(dataRepo, never()).writeCachedCase(any());
-  }
-
   void verifyCase(CaseDTO results, CaseDTO expectedCaseResult, boolean caseEventsExpected)
       throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
@@ -132,8 +124,6 @@ public abstract class CaseServiceImplTestBase {
     }
 
     assertEquals(expectedCaseResult, results);
-    verifyNotWrittenCachedCase();
-    Mockito.verify(addressSvc, never()).uprnQuery(anyLong());
     verifyEventNotSent();
   }
 

@@ -25,8 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
-import uk.gov.ons.ctp.common.domain.AddressLevel;
-import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.FormType;
@@ -37,16 +35,13 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
-import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressNotValid;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
-import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.ContactCompact;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
-import uk.gov.ons.ctp.common.event.model.NewAddress;
 import uk.gov.ons.ctp.common.event.model.RespondentRefusalDetails;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.common.rest.RestClient;
@@ -61,7 +56,6 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
-import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseDataRepository;
@@ -77,7 +71,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
@@ -97,8 +90,6 @@ public class CaseServiceImpl implements CaseService {
   private static final List<DeliveryChannel> ALL_DELIVERY_CHANNELS =
       List.of(DeliveryChannel.POST, DeliveryChannel.SMS);
 
-  private static final String SCOTLAND_COUNTRY_CODE = "S";
-
   @Autowired private AppConfig appConfig;
 
   @Autowired private CaseServiceClientServiceImpl caseServiceClient;
@@ -110,8 +101,6 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private EqLaunchService eqLaunchService;
 
   @Autowired private CaseDataRepository dataRepo;
-
-  @Autowired private AddressService addressSvc;
 
   @Autowired private EventPublisher eventPublisher;
 
@@ -226,15 +215,7 @@ public class CaseServiceImpl implements CaseService {
     if (latest.isPresent()) {
       response = latest.get();
     } else {
-      // New Case
-      CachedCase newcase = createNewCachedCase(uprn.getValue());
-      if (log.isDebugEnabled()) {
-        log.debug(
-            "Returning new skeleton case for UPRN",
-            kv("uprn", uprn),
-            kv("caseId", newcase.getId()));
-      }
-      response = createNewCachedCaseResponse(newcase, false);
+      return Collections.emptyList();
     }
     return Collections.singletonList(response);
   }
@@ -454,38 +435,6 @@ public class CaseServiceImpl implements CaseService {
             .build();
 
     sendEvent(EventType.SURVEY_LAUNCHED, response, response.getCaseId());
-  }
-
-  private void publishNewAddressReportedEvent(
-      UUID caseId,
-      CaseType caseType,
-      Integer ceExpectedCapacity,
-      AddressIndexAddressCompositeDTO address)
-      throws CTPException {
-    log.info("Generating NewAddressReported event", kv("caseId", caseId.toString()));
-
-    CollectionCaseNewAddress newAddress =
-        caseDTOMapper.map(address, CollectionCaseNewAddress.class);
-    newAddress.setId(caseId.toString());
-    newAddress.setCaseType(caseType.name());
-    newAddress.setSurvey(appConfig.getSurveyName());
-    newAddress.setCollectionExerciseId(appConfig.getCollectionExerciseId());
-    newAddress.setCeExpectedCapacity(ceExpectedCapacity);
-
-    Address addrDetails = newAddress.getAddress();
-    EstabType aimsEstabType = EstabType.forCode(addrDetails.getEstabType());
-    addrDetails.setEstabType(aimsEstabType.getCode());
-
-    if (caseType == CaseType.HH || caseType == CaseType.SPG) {
-      addrDetails.setAddressLevel(AddressLevel.U.name());
-    } else {
-      addrDetails.setAddressLevel(AddressLevel.E.name());
-    }
-
-    NewAddress payload = new NewAddress();
-    payload.setCollectionCase(newAddress);
-
-    sendEvent(EventType.NEW_ADDRESS_REPORTED, payload, payload.getCollectionCase().getId());
   }
 
   private CaseContainerDTO filterCaseEvents(CaseContainerDTO caseDTO, Boolean getCaseEvents) {
@@ -765,63 +714,6 @@ public class CaseServiceImpl implements CaseService {
                 .collect(toList());
 
     return mapCaseContainerDTOList(casesToReturn);
-  }
-
-  /**
-   * Create new skeleton case, publish new address reported event and store new case in repository
-   * cache.
-   *
-   * @param uprn for address
-   * @return CachedCase details of created skeleton case
-   * @throws CTPException
-   */
-  private CachedCase createNewCachedCase(Long uprn) throws CTPException {
-
-    // Query AIMS for UPRN
-    AddressIndexAddressCompositeDTO address = addressSvc.uprnQuery(uprn);
-
-    if (SCOTLAND_COUNTRY_CODE.equals(address.getCountryCode())) {
-      log.warn(
-          "Scottish address retrieved",
-          kv("uprn", uprn),
-          kv("countryCode", address.getCountryCode()));
-      throw new CTPException(Fault.VALIDATION_FAILED, "Scottish address found for UPRN: " + uprn);
-    }
-
-    // Allow Serco to handle NA addresses by reclassifying as HH
-    String addressType = address.getCensusAddressType();
-    if (addressType != null && addressType.equals("NA")) {
-      log.info("Reclassifying NA to HH address", kv("uprn", address.getUprn()));
-      address.setCensusAddressType(AddressType.HH.name());
-      address.setCensusEstabType(EstabType.HOUSEHOLD.name());
-    }
-
-    // Validate address type
-    try {
-      AddressType.valueOf(address.getCensusAddressType());
-    } catch (IllegalArgumentException e) {
-      log.warn(
-          "AIMs AddressType not valid",
-          kv("uprn", uprn),
-          kv("AddressType", address.getCensusAddressType()));
-      throw new CTPException(
-          Fault.RESOURCE_NOT_FOUND,
-          e,
-          "AddressType of '%s' not valid for Census",
-          address.getCensusAddressType());
-    }
-
-    CachedCase cachedCase = caseDTOMapper.map(address, CachedCase.class);
-    cachedCase.setCaseType(CaseType.valueOf(address.getCensusAddressType()));
-
-    UUID newCaseId = UUID.randomUUID();
-    cachedCase.setId(newCaseId.toString());
-    cachedCase.setCreatedDateTime(DateTimeUtil.nowUTC());
-
-    publishNewAddressReportedEvent(newCaseId, cachedCase.getCaseType(), 0, address);
-
-    dataRepo.writeCachedCase(cachedCase);
-    return cachedCase;
   }
 
   private CaseDTO createNewCachedCaseResponse(CachedCase newCase, boolean caseEvents) {

@@ -11,14 +11,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 public interface CaseDataRepository {
 
   /**
-   * Store newly created skeleton case to repository
-   *
-   * @param newCase Skeleton case to be stored in repository
-   * @throws CTPException undefined system error on storing case to repository
-   */
-  void writeCachedCase(final CachedCase newCase) throws CTPException;
-
-  /**
    * Get all Cached cases for an address by Unique Property Reference Number.
    *
    * @param uprn UPRN of the case to read
