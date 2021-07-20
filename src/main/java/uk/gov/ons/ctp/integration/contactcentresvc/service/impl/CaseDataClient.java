@@ -27,7 +27,15 @@ public class CaseDataClient {
     log.debug(
         "getCaseById() calling Case Service to find case details by ID", kv("caseId", caseId));
 
-    CaseContainerDTO caseDetails = null; // WRITEME
+    Case caze =
+        caseRepo
+            .findById(caseId)
+            .orElseThrow(
+                () ->
+                    new CTPException(
+                        Fault.RESOURCE_NOT_FOUND, "Could not find case for ID: " + caseId));
+
+    CaseContainerDTO caseDetails = mapper.map(caze, CaseContainerDTO.class);
     log.debug("getCaseById() found case details for case ID", kv("caseId", caseId));
     return caseDetails;
   }
