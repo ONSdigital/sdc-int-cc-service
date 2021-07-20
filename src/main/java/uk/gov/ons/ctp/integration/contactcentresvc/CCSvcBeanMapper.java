@@ -19,6 +19,7 @@ import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 
@@ -47,6 +48,25 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .fieldMap("region", "region")
         .converter("regionConverter")
         .add()
+        .register();
+
+    factory
+        .classMap(CaseContainerDTO.class, Case.class)
+        .field("uprn", "address.uprn")
+        .field("addressLine1", "address.addressLine1")
+        .field("addressLine2", "address.addressLine2")
+        .field("addressLine3", "address.addressLine3")
+        .field("townName", "address.townName")
+        .field("postcode", "address.postcode")
+        .field("region", "address.region")
+        .field("estabType", "address.estabType")
+        .field("organisationName", "address.organisationName")
+        .field("latitude", "address.latitude")
+        .field("longitude", "address.longitude")
+        .field("estabUprn", "address.estabUprn")
+        .field("addressType", "address.addressType")
+        .field("addressLevel", "address.addressLevel")
+        .byDefault()
         .register();
 
     factory

@@ -90,6 +90,8 @@ public class CaseServiceImpl implements CaseService {
 
   @Autowired private AppConfig appConfig;
 
+  @Autowired private CaseDataClient caseDataClient;
+
   @Autowired private CaseServiceClientServiceImpl caseServiceClient;
 
   @Autowired private ProductReference productReference;
@@ -260,7 +262,7 @@ public class CaseServiceImpl implements CaseService {
 
     // Get the case details from the case service
     Boolean getCaseEvents = requestParamsDTO.getCaseEvents();
-    CaseContainerDTO caseDetails = getCaseFromRm(caseRef, getCaseEvents);
+    CaseContainerDTO caseDetails = getCaseFromDb(caseRef, getCaseEvents);
     CaseDTO caseServiceResponse = mapCaseContainerDTO(caseDetails);
     rejectHouseholdIndividual(caseServiceResponse);
     if (log.isDebugEnabled()) {
@@ -386,7 +388,7 @@ public class CaseServiceImpl implements CaseService {
           kv("status", invalidateCaseRequestDTO.getStatus()));
     }
 
-    CaseContainerDTO caseDetails = getCaseFromRm2(caseId, false);
+    CaseContainerDTO caseDetails = getCaseFromDb(caseId, false);
     String errorMessage =
         "All CE addresses will be validated by a Field Officer. "
             + "It is not necessary to submit this Invalidation request.";
@@ -471,7 +473,7 @@ public class CaseServiceImpl implements CaseService {
           kv("fulfilmentCode", fulfilmentCode));
     }
 
-    CaseContainerDTO caze = getCaseFromRm2(caseId, false);
+    CaseContainerDTO caze = getCaseFromDb(caseId, false);
     validateSurveyType(caze);
     Product product = findProduct(fulfilmentCode, deliveryChannel, convertRegion(caze));
 
@@ -542,35 +544,19 @@ public class CaseServiceImpl implements CaseService {
     return products.get(0);
   }
 
-  // FIXME rename
-  private CaseContainerDTO getCaseFromRm2(UUID caseId, boolean getCaseEvents) throws CTPException {
-    CaseContainerDTO caze = null;
-    try {
-      caze = getCaseFromRm(caseId, getCaseEvents);
-    } catch (ResponseStatusException ex) {
-      if (ex.getStatus() == HttpStatus.NOT_FOUND) {
-        log.warn("Request for case Not Found", kv("caseId", caseId));
-        throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Case Id Not Found: " + caseId.toString());
-      } else {
-        log.error("Error calling Case Service", kv("caseId", caseId), ex);
-        throw ex;
-      }
-    }
-    return caze;
-  }
-
-  private CaseContainerDTO getCaseFromRm(UUID caseId, boolean getCaseEvents) {
-    CaseContainerDTO caseDetails = caseServiceClient.getCaseById(caseId, getCaseEvents);
+  private CaseContainerDTO getCaseFromDb(UUID caseId, boolean getCaseEvents) throws CTPException {
+    CaseContainerDTO caseDetails = caseDataClient.getCaseById(caseId, getCaseEvents);
     return filterCaseEvents(caseDetails, getCaseEvents);
   }
 
-  private CaseContainerDTO getCaseFromRm(long caseRef, boolean getCaseEvents) {
-    CaseContainerDTO caseDetails = caseServiceClient.getCaseByCaseRef(caseRef, getCaseEvents);
+  private CaseContainerDTO getCaseFromDb(long caseRef, boolean getCaseEvents) throws CTPException {
+    CaseContainerDTO caseDetails = caseDataClient.getCaseByCaseRef(caseRef, getCaseEvents);
     return filterCaseEvents(caseDetails, getCaseEvents);
   }
 
-  private List<CaseContainerDTO> getCasesFromRm(long uprn, boolean getCaseEvents) {
-    var caseList = caseServiceClient.getCaseByUprn(uprn, getCaseEvents);
+  private List<CaseContainerDTO> getCasesFromDb(long uprn, boolean getCaseEvents)
+      throws CTPException {
+    var caseList = caseDataClient.getCaseByUprn(uprn, getCaseEvents);
     return caseList.stream().map(c -> filterCaseEvents(c, getCaseEvents)).collect(toList());
   }
 
@@ -669,9 +655,9 @@ public class CaseServiceImpl implements CaseService {
 
     List<CaseContainerDTO> rmCases = new ArrayList<>();
     try {
-      rmCases = getCasesFromRm(uprn, listCaseEvents);
-    } catch (ResponseStatusException ex) {
-      if (ex.getStatus() == HttpStatus.NOT_FOUND) {
+      rmCases = getCasesFromDb(uprn, listCaseEvents);
+    } catch (CTPException ex) {
+      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
         log.info("Case by UPRN Not Found calling Case Service", kv("uprn", uprn));
         return Collections.emptyList();
       } else {
@@ -759,19 +745,9 @@ public class CaseServiceImpl implements CaseService {
   }
 
   private CaseDTO caseById(UUID caseId, Boolean getCaseEvents) throws CTPException {
-    CaseContainerDTO caseFromRM = null;
-    try {
-      caseFromRM = getCaseFromRm(caseId, getCaseEvents);
-    } catch (ResponseStatusException ex) {
-      if (ex.getStatus() == HttpStatus.NOT_FOUND) {
-        if (log.isDebugEnabled()) {
-          log.debug("Case Id Not Found by Case Service", kv("caseId", caseId));
-        }
-      } else {
-        log.error("Error calling Case Service", kv("caseId", caseId), ex);
-        throw ex;
-      }
-    }
+    CaseContainerDTO caseFromRM = getCaseFromDb(caseId, getCaseEvents);
+
+    // FIXME is this needed ?
     if (caseFromRM == null) {
       log.warn("Request for case Not Found", kv("caseId", caseId));
       throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Case Id Not Found: " + caseId.toString());
@@ -879,9 +855,9 @@ public class CaseServiceImpl implements CaseService {
    */
   private CaseContainerDTO getLaunchCase(UUID caseId) throws CTPException {
     try {
-      CaseContainerDTO caseDetails = getCaseFromRm(caseId, false);
+      CaseContainerDTO caseDetails = getCaseFromDb(caseId, false);
       return caseDetails;
-    } catch (ResponseStatusException ex) {
+    } catch (CTPException ex) {
       log.error(
           "Unable to provide launch URL/UAC, failed to call case service",
           kv("caseId", caseId),

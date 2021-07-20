@@ -65,7 +65,7 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     caseFromCaseService.setCaseType(caseType.name());
     CaseDTO expectedCaseResult;
 
-    Mockito.when(caseServiceClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
+    Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
     expectedCaseResult = createExpectedCaseDTO(caseFromCaseService, caseEvents);
 
     // Run the request
@@ -82,7 +82,7 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
     caseFromCaseService.setEstabType(null);
     caseFromCaseService.setCaseType(CaseType.HH.name());
-    Mockito.when(caseServiceClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
+    Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
 
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
     CaseDTO results = target.getCaseById(UUID_0, requestParams);
@@ -94,7 +94,7 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
     caseFromCaseService.setCaseType(CaseType.CE.name());
     caseFromCaseService.setEstabType(null);
-    Mockito.when(caseServiceClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
+    Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
 
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
     CaseDTO results = target.getCaseById(UUID_0, requestParams);
@@ -104,7 +104,7 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   @Test
   public void shouldGetSecureEstablishmentByCaseId() throws CTPException {
     CaseContainerDTO caseFromCaseService = casesFromCaseService().get(1);
-    Mockito.when(caseServiceClient.getCaseById(eq(UUID_1), any())).thenReturn(caseFromCaseService);
+    Mockito.when(caseDataClient.getCaseById(eq(UUID_1), any())).thenReturn(caseFromCaseService);
 
     CaseDTO results = target.getCaseById(UUID_1, new CaseQueryRequestDTO(false));
     assertTrue(results.isSecureEstablishment());
@@ -116,7 +116,7 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     // Build results to be returned from search
     CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
     caseFromCaseService.setCaseType("HI"); // Household Individual case
-    Mockito.when(caseServiceClient.getCaseById(any(), any())).thenReturn(caseFromCaseService);
+    Mockito.when(caseDataClient.getCaseById(any(), any())).thenReturn(caseFromCaseService);
 
     // Run the request
     try {
@@ -143,8 +143,8 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   }
 
   private void doGetCaseByIdNotFound(UUID caseId) throws CTPException {
-    Mockito.when(caseServiceClient.getCaseById(eq(caseId), any()))
-        .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND)); // Not in RM
+    Mockito.when(caseDataClient.getCaseById(eq(caseId), any()))
+        .thenThrow(new CTPException(Fault.RESOURCE_NOT_FOUND, "Case Id Not Found:"));
 
     Fault fault = null;
     String message = null;
@@ -162,7 +162,7 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   }
 
   private void doGetCaseByIdGetsError(UUID caseId) throws CTPException {
-    Mockito.when(caseServiceClient.getCaseById(eq(caseId), any()))
+    Mockito.when(caseDataClient.getCaseById(eq(caseId), any()))
         .thenThrow(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)); // RM problems
 
     HttpStatus status = null;

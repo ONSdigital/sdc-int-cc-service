@@ -61,6 +61,8 @@ public abstract class CaseServiceImplTestBase {
 
   @Mock CaseServiceClientServiceImpl caseServiceClient;
 
+  @Mock CaseDataClient caseDataClient;
+
   @Mock EqLaunchService eqLaunchService;
 
   @Mock EventPublisher eventPublisher;
@@ -172,13 +174,14 @@ public abstract class CaseServiceImplTestBase {
     return uprn == null ? null : new UniquePropertyReferenceNumber(uprn);
   }
 
-  CaseContainerDTO mockGetCaseById(String caseType, String addressLevel, String region) {
+  CaseContainerDTO mockGetCaseById(String caseType, String addressLevel, String region)
+      throws CTPException {
     CaseContainerDTO caseFromCaseService =
         FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class).get(0);
     caseFromCaseService.setCaseType(caseType);
     caseFromCaseService.setAddressLevel(addressLevel);
     caseFromCaseService.setRegion(region);
-    when(caseServiceClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
+    when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
     return caseFromCaseService;
   }
 
@@ -189,7 +192,7 @@ public abstract class CaseServiceImplTestBase {
     lenient().when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
   }
 
-  void assertCaseQIDRestClientFailureCaught(Exception ex, boolean caught) {
+  void assertCaseQIDRestClientFailureCaught(Exception ex, boolean caught) throws CTPException {
     mockGetCaseById("CE", "U", "W");
     Mockito.doThrow(ex)
         .when(caseServiceClient)
