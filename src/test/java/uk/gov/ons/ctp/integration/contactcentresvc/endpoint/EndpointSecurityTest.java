@@ -72,7 +72,7 @@ public abstract class EndpointSecurityTest {
   public void whenAnonymousUserRequestsInfoPageThenSuccess() {
     restTemplate = new TestRestTemplate();
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/ccsvc/version", String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/info", String.class);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.getBody().contains("ccsvc"), response.getBody());
@@ -118,14 +118,14 @@ public abstract class EndpointSecurityTest {
   void testGetAddresses(HttpStatus expectedStatus) {
     ResponseEntity<String> response =
         restTemplate.getForEntity(
-            base.toString() + "/addresses?input=2A%20Priors%20Way", String.class);
+            base.toString() + "/ccsvc/addresses?input=2A%20Priors%20Way", String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
   void testGetAddressesPostcode(HttpStatus expectedStatus) {
     ResponseEntity<String> response =
         restTemplate.getForEntity(
-            base.toString() + "/addresses/postcode?postcode=EX10 1BD", String.class);
+            base.toString() + "/ccsvc/addresses/postcode?postcode=EX10 1BD", String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
@@ -204,7 +204,8 @@ public abstract class EndpointSecurityTest {
 
   void testGetCCSCaseByPostcode(HttpStatus expectedStatus) {
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/ccsvc/cases/ccs/postcode/SO22 4HJ", String.class);
+        restTemplate.getForEntity(
+            base.toString() + "/ccsvc/cases/ccs/postcode/SO22 4HJ", String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
@@ -232,7 +233,7 @@ public abstract class EndpointSecurityTest {
 
   void testGetFulfilfments(HttpStatus expectedStatus) {
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/fulfilments", String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/fulfilments", String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
@@ -245,7 +246,9 @@ public abstract class EndpointSecurityTest {
 
     ResponseEntity<String> response =
         restTemplate.postForEntity(
-            base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/post", requestBody, String.class);
+            base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/post",
+            requestBody,
+            String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
@@ -259,7 +262,9 @@ public abstract class EndpointSecurityTest {
 
     ResponseEntity<String> response =
         restTemplate.postForEntity(
-            base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/sms", requestBody, String.class);
+            base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/sms",
+            requestBody,
+            String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 }
