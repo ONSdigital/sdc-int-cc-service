@@ -62,7 +62,7 @@ public abstract class EndpointSecurityTest {
   @Test
   public void whenLoggedUserRequestsInfoPageThenSuccess() {
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/info", String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/info", String.class);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.getBody().contains("ccsvc"));
@@ -72,10 +72,10 @@ public abstract class EndpointSecurityTest {
   public void whenAnonymousUserRequestsInfoPageThenSuccess() {
     restTemplate = new TestRestTemplate();
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/info", String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/version", String.class);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.getBody().contains("ccsvc"));
+    assertTrue(response.getBody().contains("ccsvc"), response.getBody());
   }
 
   @Test
@@ -83,7 +83,7 @@ public abstract class EndpointSecurityTest {
 
     restTemplate = new TestRestTemplate("user", "wrongpassword");
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/version", String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/version", String.class);
 
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     assertTrue(response.getBody().contains("Unauthorized"));
@@ -94,7 +94,7 @@ public abstract class EndpointSecurityTest {
 
     restTemplate = new TestRestTemplate("serco_cks", "temporary");
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/version", String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/version", String.class);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
   }
@@ -103,14 +103,14 @@ public abstract class EndpointSecurityTest {
     UUID caseId = UUID.randomUUID();
     ResponseEntity<String> response =
         restTemplate.getForEntity(
-            base.toString() + "/cases/" + caseId + "/uac?adLocationId=12345&individual=false",
+            base.toString() + "/ccsvc/cases/" + caseId + "/uac?adLocationId=12345&individual=false",
             String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
   void testAccessCasesByUPRN(HttpStatus expectedStatus) {
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/cases/uprn/123456789012", String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/cases/uprn/123456789012", String.class);
 
     assertEquals(expectedStatus, response.getStatusCode());
   }
@@ -140,7 +140,7 @@ public abstract class EndpointSecurityTest {
     requestBody.setEstabType(EstabType.RESIDENTIAL_BOAT);
 
     ResponseEntity<String> response =
-        restTemplate.postForEntity(base.toString() + "/cases", requestBody, String.class);
+        restTemplate.postForEntity(base.toString() + "/ccsvc/cases", requestBody, String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
@@ -156,7 +156,7 @@ public abstract class EndpointSecurityTest {
 
     ResponseEntity<String> response =
         restTemplate.postForEntity(
-            base.toString() + "/cases/" + caseId + "/refusal", requestBody, String.class);
+            base.toString() + "/ccsvc/cases/" + caseId + "/refusal", requestBody, String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
@@ -171,7 +171,7 @@ public abstract class EndpointSecurityTest {
 
     ResponseEntity<String> response =
         restTemplate.postForEntity(
-            base.toString() + "/cases/" + requestBody.getCaseId() + "/invalidate",
+            base.toString() + "/ccsvc/cases/" + requestBody.getCaseId() + "/invalidate",
             requestBody,
             String.class);
     assertEquals(expectedStatus, response.getStatusCode());
@@ -193,7 +193,7 @@ public abstract class EndpointSecurityTest {
         new HttpEntity<ModifyCaseRequestDTO>(requestBody, headers);
     ResponseEntity<ResponseDTO> response =
         restTemplate.exchange(
-            base.toString() + "/cases/" + requestBody.getCaseId(),
+            base.toString() + "/ccsvc/cases/" + requestBody.getCaseId(),
             HttpMethod.PUT,
             requestEntity,
             ResponseDTO.class,
@@ -204,20 +204,20 @@ public abstract class EndpointSecurityTest {
 
   void testGetCCSCaseByPostcode(HttpStatus expectedStatus) {
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/cases/ccs/postcode/SO22 4HJ", String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/cases/ccs/postcode/SO22 4HJ", String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
   void testGetCaseByCaseId(HttpStatus expectedStatus) {
     UUID caseId = UUID.randomUUID();
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/cases/" + caseId, String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/cases/" + caseId, String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
   void testGetCaseByCaseRef(HttpStatus expectedStatus) {
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/cases/ref/123456789", String.class);
+        restTemplate.getForEntity(base.toString() + "/ccsvc/cases/ref/123456789", String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
@@ -225,7 +225,7 @@ public abstract class EndpointSecurityTest {
     UUID caseId = UUID.randomUUID();
     ResponseEntity<String> response =
         restTemplate.getForEntity(
-            base.toString() + "/cases/" + caseId + "/launch?individual=false&agentId=12345",
+            base.toString() + "/ccsvc/cases/" + caseId + "/launch?individual=false&agentId=12345",
             String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
@@ -245,7 +245,7 @@ public abstract class EndpointSecurityTest {
 
     ResponseEntity<String> response =
         restTemplate.postForEntity(
-            base.toString() + "/cases/" + caseId + "/fulfilment/post", requestBody, String.class);
+            base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/post", requestBody, String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 
@@ -259,7 +259,7 @@ public abstract class EndpointSecurityTest {
 
     ResponseEntity<String> response =
         restTemplate.postForEntity(
-            base.toString() + "/cases/" + caseId + "/fulfilment/sms", requestBody, String.class);
+            base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/sms", requestBody, String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 }
