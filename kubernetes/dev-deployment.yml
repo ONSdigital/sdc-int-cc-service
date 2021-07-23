@@ -86,21 +86,21 @@ spec:
             memory: "1Gi"
         readinessProbe:
           httpGet:
-            path: /health/readiness
+            path: /ccsvc/health/readiness
             port: 8171
           periodSeconds: 10
           failureThreshold: 3
           successThreshold: 1
         livenessProbe:
           httpGet:
-            path: /health/liveness
+            path: /ccsvc/health/liveness
             port: 8171
           periodSeconds: 10
           failureThreshold: 3
           successThreshold: 1
         startupProbe:
           httpGet:
-            path: /health/readiness
+            path: /ccsvc/health/readiness
             port: 8171
           initialDelaySeconds: 5
           failureThreshold: 240
