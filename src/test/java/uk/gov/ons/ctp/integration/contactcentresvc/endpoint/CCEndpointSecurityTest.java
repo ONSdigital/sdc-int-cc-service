@@ -61,6 +61,11 @@ public class CCEndpointSecurityTest extends EndpointSecurityTest {
   }
 
   @Test
+  public void ccOkPutCase() {
+    testPutCase(HttpStatus.OK);
+  }
+
+  @Test
   public void ccOkPostRefusal() {
     testPostRefusal(HttpStatus.OK);
   }

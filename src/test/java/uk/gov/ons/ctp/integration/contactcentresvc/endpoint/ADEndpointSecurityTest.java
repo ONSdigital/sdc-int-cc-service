@@ -51,6 +51,11 @@ public class ADEndpointSecurityTest extends EndpointSecurityTest {
   }
 
   @Test
+  public void adForbiddenPutCase() {
+    testPutCase(HttpStatus.FORBIDDEN);
+  }
+
+  @Test
   public void adForbiddenGetCCSCaseByPostcode() {
     testGetCCSCaseByPostcode(HttpStatus.FORBIDDEN);
   }

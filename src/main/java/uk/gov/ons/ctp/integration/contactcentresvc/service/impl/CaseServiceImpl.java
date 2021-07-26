@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
+import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.FormType;
@@ -35,8 +36,12 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
+import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
+import uk.gov.ons.ctp.common.event.model.AddressModification;
 import uk.gov.ons.ctp.common.event.model.AddressNotValid;
+import uk.gov.ons.ctp.common.event.model.AddressTypeChanged;
+import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.ContactCompact;
@@ -62,6 +67,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryReque
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
@@ -85,6 +91,9 @@ public class CaseServiceImpl implements CaseService {
       "Telephone capture feature is not available for CCS Communal establishment's. "
           + "CCS CE's must submit their survey via CCS Paper Questionnaire";
   private static final String CCS_CASE_ERROR_MSG = "Operation not permissible for a CCS Case";
+  private static final String ESTAB_TYPE_OTHER_ERROR_MSG =
+      "The pre-existing Establishment Type cannot be changed to OTHER";
+
   private static final List<DeliveryChannel> ALL_DELIVERY_CHANNELS =
       List.of(DeliveryChannel.POST, DeliveryChannel.SMS);
 
@@ -286,6 +295,45 @@ public class CaseServiceImpl implements CaseService {
     }
 
     return caseServiceResponse;
+  }
+
+  @Override
+  public CaseDTO modifyCase(ModifyCaseRequestDTO modifyRequestDTO) throws CTPException {
+    validateCompatibleEstabAndCaseType(
+        modifyRequestDTO.getCaseType(), modifyRequestDTO.getEstabType());
+    UUID originalCaseId = modifyRequestDTO.getCaseId();
+    UUID caseId = originalCaseId;
+
+    CaseContainerDTO caseDetails = getCaseFromDb(originalCaseId, true);
+
+    if (modifyRequestDTO.getEstabType() == EstabType.OTHER
+        && caseDetails.getEstabType() != null
+        && EstabType.forCode(caseDetails.getEstabType()) != EstabType.OTHER) {
+      throw new CTPException(Fault.BAD_REQUEST, ESTAB_TYPE_OTHER_ERROR_MSG);
+    }
+
+    validateSurveyType(caseDetails);
+    caseDetails.setCreatedDateTime(DateTimeUtil.nowUTC());
+    CaseType requestedCaseType = modifyRequestDTO.getCaseType();
+    CaseType existingCaseType = CaseType.valueOf(caseDetails.getCaseType());
+
+    boolean caseTypeChanged = isCaseTypeChange(requestedCaseType, existingCaseType);
+
+    CaseDTO response = caseDTOMapper.map(caseDetails, CaseDTO.class);
+    String caseRef = caseDetails.getCaseRef();
+
+    rejectHouseholdIndividual(response);
+
+    if (caseTypeChanged) {
+      rejectNorthernIrelandHouseholdToCE(requestedCaseType, caseDetails);
+      caseId = UUID.randomUUID();
+      sendAddressTypeChangedEvent(caseId, originalCaseId, modifyRequestDTO);
+      caseRef = null;
+    } else {
+      sendAddressModifiedEvent(originalCaseId, modifyRequestDTO, caseDetails);
+    }
+    prepareModificationResponse(response, modifyRequestDTO, caseId, caseRef);
+    return response;
   }
 
   @Override
@@ -773,6 +821,112 @@ public class CaseServiceImpl implements CaseService {
       log.info("Luhn check failed for case Reference", kv("caseRef", caseRef));
       throw new CTPException(Fault.BAD_REQUEST, "Invalid Case Reference");
     }
+  }
+
+  private void validateCompatibleEstabAndCaseType(CaseType caseType, EstabType estabType)
+      throws CTPException {
+    Optional<AddressType> addrType = estabType.getAddressType();
+    if (addrType.isPresent() && (caseType != CaseType.valueOf(addrType.get().name()))) {
+      log.info(
+          "Mismatching caseType and estabType",
+          kv("caseType", caseType),
+          kv("estabType", estabType));
+      String msg =
+          "Derived address type of '"
+              + addrType.get()
+              + "', from establishment type '"
+              + estabType
+              + "', "
+              + "is not compatible with caseType of '"
+              + caseType
+              + "'";
+      throw new CTPException(Fault.BAD_REQUEST, msg);
+    }
+  }
+
+  private boolean isCaseTypeChange(CaseType requestedCaseType, CaseType existingCaseType) {
+    return requestedCaseType != existingCaseType;
+  }
+
+  private void rejectNorthernIrelandHouseholdToCE(
+      CaseType requestedCaseType, CaseContainerDTO caseDetails) throws CTPException {
+    Region region = convertRegion(caseDetails);
+    if (region == Region.N && requestedCaseType == CaseType.CE) {
+      AddressType addrType = AddressType.valueOf(caseDetails.getCaseType());
+      if (addrType == AddressType.HH) {
+        String msg =
+            "All queries relating to Communal Establishments in Northern Ireland "
+                + "should be escalated to NISRA HQ";
+        log.info(msg, kv("caseType", requestedCaseType), kv("caseDetails", caseDetails));
+        throw new CTPException(Fault.BAD_REQUEST, msg);
+      }
+    }
+  }
+
+  private void sendAddressModifiedEvent(
+      UUID caseId, ModifyCaseRequestDTO modifyRequestDTO, CaseContainerDTO caseDetails) {
+    CollectionCaseCompact collectionCase =
+        CollectionCaseCompact.builder()
+            .id(caseId)
+            .caseType(modifyRequestDTO.getCaseType().name())
+            .ceExpectedCapacity(modifyRequestDTO.getCeUsualResidents())
+            .build();
+    AddressCompact originalAddress = caseDTOMapper.map(caseDetails, AddressCompact.class);
+    AddressCompact newAddress = caseDTOMapper.map(caseDetails, AddressCompact.class);
+
+    newAddress.setAddressLine1(modifyRequestDTO.getAddressLine1());
+    newAddress.setAddressLine2(modifyRequestDTO.getAddressLine2());
+    newAddress.setAddressLine3(modifyRequestDTO.getAddressLine3());
+    newAddress.setEstabType(modifyRequestDTO.getEstabType().getCode());
+    newAddress.setOrganisationName(modifyRequestDTO.getCeOrgName());
+
+    AddressModification payload =
+        AddressModification.builder()
+            .collectionCase(collectionCase)
+            .originalAddress(originalAddress)
+            .newAddress(newAddress)
+            .build();
+    sendEvent(EventType.ADDRESS_MODIFIED, payload, caseId);
+  }
+
+  private void sendAddressTypeChangedEvent(
+      UUID newCaseId, UUID originalCaseId, ModifyCaseRequestDTO modifyRequestDTO) {
+    CollectionCase collectionCase = new CollectionCase();
+    collectionCase.setId(originalCaseId.toString());
+    collectionCase.setCeExpectedCapacity(modifyRequestDTO.getCeUsualResidents());
+    collectionCase.setContact(null);
+
+    Address address = new Address();
+    address.setAddressLine1(modifyRequestDTO.getAddressLine1());
+    address.setAddressLine2(modifyRequestDTO.getAddressLine2());
+    address.setAddressLine3(modifyRequestDTO.getAddressLine3());
+    address.setEstabType(modifyRequestDTO.getEstabType().getCode());
+    address.setOrganisationName(modifyRequestDTO.getCeOrgName());
+    address.setAddressType(modifyRequestDTO.getCaseType().name());
+
+    collectionCase.setAddress(address);
+
+    AddressTypeChanged payload =
+        AddressTypeChanged.builder().newCaseId(newCaseId).collectionCase(collectionCase).build();
+    sendEvent(EventType.ADDRESS_TYPE_CHANGED, payload, newCaseId);
+  }
+
+  private void prepareModificationResponse(
+      CaseDTO response, ModifyCaseRequestDTO modifyRequestDTO, UUID caseId, String caseRef) {
+    CaseType caseType = modifyRequestDTO.getCaseType();
+    response.setId(caseId);
+    response.setCaseRef(caseRef);
+    response.setCaseType(caseType.name());
+    response.setAddressType(caseType.name());
+    EstabType estabType = modifyRequestDTO.getEstabType();
+    response.setEstabType(estabType);
+    response.setEstabDescription(estabType.getCode());
+    response.setAddressLine1(modifyRequestDTO.getAddressLine1());
+    response.setAddressLine2(modifyRequestDTO.getAddressLine2());
+    response.setAddressLine3(modifyRequestDTO.getAddressLine3());
+    response.setCeOrgName(modifyRequestDTO.getCeOrgName());
+    response.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
+    response.setCaseEvents(Collections.emptyList());
   }
 
   private void validateSurveyType(CaseContainerDTO caseDetails) throws CTPException {
