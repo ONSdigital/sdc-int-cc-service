@@ -1,0 +1,34 @@
+{
+	"id": "b7565b5e-1396-4965-91a2-918c0d3642ed",
+	"caseRef": "1000000000000001",
+	"caseType": "HH",
+	"survey": "LMS",
+	"collectionExerciseId": "22684ede-7d5f-4f53-9069-2398055c61b2",
+	"actionableFrom": "2019-05-14T17:11:41.343Z",
+	"handDelivery": false,
+	"addressInvalid": false,
+	"ceExpectedCapacity": null,
+	"contact": {
+		"title": "Mr",
+		"forename": "Fred",
+		"surname": "Bloggs",
+		"telNo": "07427678921"
+	},
+	"address": {
+		"uprn": "334999999999",
+		"addressLine1": "Napier House",
+		"addressLine2": "11 Park Street",
+		"addressLine3": "Parkhead",
+		"townName": "Glasgow",
+		"postcode": "G1 2AA",
+		"region": "E12345678",
+		"estabType": "ET",
+		"organisationName": "ON",
+		"latitude": "41.40338",
+		"longitude": "2.17403",
+		"estabUprn": "334111111111",
+		"addressType": "HH",
+		"addressLevel": "E"
+	},
+	"createdDateTime": "2019-05-14T16:11:41.343Z"
+}

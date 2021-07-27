@@ -3,7 +3,7 @@ info:
   title: ONS Contact Centre API
   version: "5.11.18-oas3"
   description: |
-    Specification for the ONS Census Contact Centre / Assisted Digital service.
+    Specification for the ONS Social Survey Contact Centre / Assisted Digital service.
     This reflects the release candidate that will next be promoted into the integration environment.
 
     Version | Change
@@ -152,41 +152,6 @@ paths:
           description: >-
             Internal server error. Failed to process the request due to an
             internal error.
-
-  /cases:
-    post:
-      operationId: caseCreation
-      tags:
-        - CONTACT_CENTRE
-      summary: Create a case for an address not found through the address search
-      description: >-
-        When an address cannot be found in search, this operation will result in a new case being created for the address
-      responses:
-        '200':
-          description: Success. Confirmation.
-          content:
-            application/json:
-              schema:
-                $ref: >-
-                  #/components/schemas/CaseDTO
-        '400':
-          description: >-
-            Bad request. Indicates an issue with the request. Further details
-            are provided in the response.
-        '401':
-          description: Unauthorised. The API key provided with the request is invalid.
-        '429':
-          description: Server too busy. The ONS API is experiencing exceptional load.
-        '500':
-          description: >-
-            Internal server error. Failed to process the request due to an
-            internal error.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NewCaseRequestDTO'
-        description: object detailing an until now unknown address for a case
 
   /cases/{caseId}/invalidate:
     post:
@@ -874,32 +839,6 @@ components:
             - caseType
             - estabType
             - addressLine1
-            - dateTime
-
-    NewCaseRequestDTO:
-      allOf:
-        - $ref: '#/components/schemas/CaseRequestDTO'
-        - type: object
-          properties:
-            uprn:
-              type: string
-              pattern: '^\d{1,13}$'
-              description: The address UPRN if known, or null if not known.
-            region:
-              $ref: '#/components/schemas/Region'
-            postcode:
-              $ref:  '#/components/schemas/POSTCODE_CONST'
-            townName:
-              type: string
-              maxLength: 30
-              description: The post town of the address
-          required:
-            - caseType
-            - estabType
-            - region
-            - addressLine1
-            - townName
-            - postcode
             - dateTime
 
     InvalidateCaseRequestDTO:

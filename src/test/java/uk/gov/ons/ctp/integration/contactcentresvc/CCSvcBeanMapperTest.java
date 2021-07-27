@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.Date;
 import java.util.List;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,8 @@ import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 
@@ -59,6 +62,36 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(source.getLastUpdated(), destination.getLastUpdated()));
 
     verifyMapping(source.getCaseEvents(), destination.getCaseEvents());
+  }
+
+  @Test
+  public void shouldMapCase_to_CaseContainerDTO() {
+    Case source = FixtureHelper.loadClassFixtures(Case[].class).get(0);
+    CaseAddress addr = source.getAddress();
+    CaseContainerDTO destination = mapperFacade.map(source, CaseContainerDTO.class);
+    Date expectedCreation = new Date(source.getCreatedDateTime().toInstant().toEpochMilli());
+    assertAll(
+        () -> assertEquals(source.getId(), destination.getId()),
+        () -> assertEquals(source.getCaseRef().toString(), destination.getCaseRef()),
+        () -> assertEquals(source.getCaseType().name(), destination.getCaseType()),
+        () -> assertEquals(source.getSurvey(), destination.getSurveyType()),
+        () -> assertEquals(source.getCollectionExerciseId(), destination.getCollectionExerciseId()),
+        () -> assertEquals(source.isHandDelivery(), destination.isHandDelivery()),
+        () -> assertEquals(addr.getUprn(), destination.getUprn()),
+        () -> assertEquals(addr.getAddressLine1(), destination.getAddressLine1()),
+        () -> assertEquals(addr.getAddressLine2(), destination.getAddressLine2()),
+        () -> assertEquals(addr.getAddressLine3(), destination.getAddressLine3()),
+        () -> assertEquals(addr.getTownName(), destination.getTownName()),
+        () -> assertEquals(addr.getPostcode(), destination.getPostcode()),
+        () -> assertEquals(addr.getRegion(), destination.getRegion()),
+        () -> assertEquals(addr.getEstabType(), destination.getEstabType()),
+        () -> assertEquals(addr.getOrganisationName(), destination.getOrganisationName()),
+        () -> assertEquals(addr.getLatitude(), destination.getLatitude()),
+        () -> assertEquals(addr.getLongitude(), destination.getLongitude()),
+        () -> assertEquals(addr.getEstabUprn(), destination.getEstabUprn()),
+        () -> assertEquals(addr.getAddressType(), destination.getAddressType()),
+        () -> assertEquals(addr.getAddressLevel(), destination.getAddressLevel()),
+        () -> assertEquals(expectedCreation, destination.getCreatedDateTime()));
   }
 
   @Test

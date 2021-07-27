@@ -197,7 +197,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     Boolean getCaseEvents = requestParamsDTO.getCaseEvents();
-    CaseDTO caseServiceResponse = caseById(caseId, getCaseEvents);
+    CaseDTO caseServiceResponse = mapCaseContainerDTO(getCaseFromDb(caseId, getCaseEvents));
     rejectHouseholdIndividual(caseServiceResponse);
 
     if (log.isDebugEnabled()) {
@@ -790,17 +790,6 @@ public class CaseServiceImpl implements CaseService {
           EstabType.forCode(caseServiceResponse.getEstabDescription()));
     }
     return caseServiceResponse;
-  }
-
-  private CaseDTO caseById(UUID caseId, Boolean getCaseEvents) throws CTPException {
-    CaseContainerDTO caseFromRM = getCaseFromDb(caseId, getCaseEvents);
-
-    // FIXME is this needed ?
-    if (caseFromRM == null) {
-      log.warn("Request for case Not Found", kv("caseId", caseId));
-      throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Case Id Not Found: " + caseId.toString());
-    }
-    return mapCaseContainerDTO(caseFromRM);
   }
 
   private Optional<CaseDTO> getLatestCaseByUprn(

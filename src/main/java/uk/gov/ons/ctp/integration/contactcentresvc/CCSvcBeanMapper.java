@@ -53,6 +53,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     factory
         .classMap(CaseContainerDTO.class, Case.class)
         .field("uprn", "address.uprn")
+        .field("surveyType", "survey")
         .field("addressLine1", "address.addressLine1")
         .field("addressLine2", "address.addressLine2")
         .field("addressLine3", "address.addressLine3")
