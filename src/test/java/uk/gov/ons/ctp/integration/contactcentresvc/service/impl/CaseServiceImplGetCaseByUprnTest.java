@@ -47,7 +47,6 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
   // the actual census name & id as per the application.yml and also RM
   private static final String SURVEY_NAME = "CENSUS";
-  private static final String COLLECTION_EXERCISE_ID = "34d7f3bb-91c9-45d0-bb2d-90afce4fc790";
 
   List<CaseContainerDTO> casesFromDb;
   private AddressIndexAddressCompositeDTO addressFromAI;
@@ -58,7 +57,6 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
     lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
     lenient().when(appConfig.getSurveyName()).thenReturn(SURVEY_NAME);
-    lenient().when(appConfig.getCollectionExerciseId()).thenReturn(COLLECTION_EXERCISE_ID);
 
     casesFromDb = FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
     addressFromAI = FixtureHelper.loadClassFixtures(AddressIndexAddressCompositeDTO[].class).get(0);
