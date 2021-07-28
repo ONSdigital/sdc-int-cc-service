@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: ONS Contact Centre API
-  version: "5.11.18-oas3"
+  version: "5.11.19"
   description: |
     Specification for the ONS Census Contact Centre / Assisted Digital service.
     This reflects the release candidate that will next be promoted into the integration environment.
