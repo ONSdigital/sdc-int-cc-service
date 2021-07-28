@@ -1,37 +1,15 @@
 openapi: 3.0.0
 info:
   title: ONS Contact Centre API
-  version: "5.11.19"
+  version: "1.0.0"
   description: |
     Specification for the ONS Social Survey Contact Centre / Assisted Digital service.
     This reflects the release candidate that will next be promoted into the integration environment.
 
     Version | Change
     ------- | ----------------------------------------------------------------
-    5.11.19 | All endpoints now prefixed with /ccsvc
-    5.11.18 | Postcode query rejects BFPO postcodes
-    5.11.17 | postalfulfilment title, forename and surname max characters changes (20,35,35)
-    5.10.16 | title no longer mandatory for an individual fulfilment postal request
-    5.10.15 | updated maximum values of offset and limit for /addresses/postcode endpoint
-    5.10.14 | updated the EstabType enum
-    5.10.13 | removed support for 'unknown' from /cases/refusal. Also, the
-            | caseId in the request body can no longer be null.
-    5.10.12 | unrestricted integer agentId
-    5.10.11 | removed tele num and notes from /cases/refusal
-      -     | added isHouseholder to /cases/refusal
-      -     | callId optional for /cases/refusal
-    5.10.10 | PUT /cases/{caseId} address fields reduced
-    5.10.9  | uprn now 13 not 12 digits    
-    5.10.8  | AD location len 8 -> 4
-      -     | 202 response added to launch endpoint
-    5.10.7  | ceOrgName added to Case response
-      -     | added uprn to POST /cases request
-      -     | added estabType to POST /cases request
-      -     | required fields for POST /cases revised
-    5.10.6  | missing callId added to refusal request
-      -     | enums refactored into the schema
-    5.10.5  | /cases/{caseId}/invalidate added
-      -     | NA addressType added to GET /address/* endpoint response
+    1.0.0   | Reset version number
+    -       | All endpoints now prefixed with /ccsvc
 security:
   - basicAuth: []
 tags:
