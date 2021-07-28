@@ -44,7 +44,6 @@ management:
         project-id: ${GOOGLE_CLOUD_PROJECT}
         enabled: true
         step: PT2M
-        
 
 server:
   port: 8171
@@ -53,6 +52,8 @@ server:
     threads:
       worker: 40
       io: 6
+  servlet:
+    context-path: /ccsvc
 
 spring:
   mvc:

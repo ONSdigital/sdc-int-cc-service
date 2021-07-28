@@ -1,13 +1,14 @@
 openapi: 3.0.0
 info:
   title: ONS Contact Centre API
-  version: "5.11.18-oas3"
+  version: "5.11.19"
   description: |
     Specification for the ONS Social Survey Contact Centre / Assisted Digital service.
     This reflects the release candidate that will next be promoted into the integration environment.
 
     Version | Change
     ------- | ----------------------------------------------------------------
+    5.11.19 | All endpoints now prefixed with /ccsvc
     5.11.18 | Postcode query rejects BFPO postcodes
     5.11.17 | postalfulfilment title, forename and surname max characters changes (20,35,35)
     5.10.16 | title no longer mandatory for an individual fulfilment postal request
@@ -36,7 +37,7 @@ security:
 tags:
   - name: routes
 paths:
-  /addresses:
+  /ccsvc/addresses:
     get:
       operationId: addressQuery
       tags:
@@ -100,7 +101,7 @@ paths:
             Internal server error. Failed to process the request due to an
             internal error.
 
-  /addresses/postcode:
+  /ccsvc/addresses/postcode:
     get:
       operationId: postcodeQuery
       tags:
@@ -153,7 +154,7 @@ paths:
             Internal server error. Failed to process the request due to an
             internal error.
 
-  /cases/{caseId}/invalidate:
+  /ccsvc/cases/{caseId}/invalidate:
     post:
       operationId: invalidateCase
       tags:
@@ -196,7 +197,7 @@ paths:
                 #/components/schemas/InvalidateCaseRequestDTO
         description: object detailing status change of case
 
-  /cases/uprn/{uprn}:
+  /ccsvc/cases/uprn/{uprn}:
     get:
       operationId: caseByUprnQuery
       tags:
@@ -245,7 +246,7 @@ paths:
             Internal server error. Failed to process the request due to an
             internal error.
 
-  /cases/ccs/postcode/{postcode}:
+  /ccsvc/cases/ccs/postcode/{postcode}:
     get:
       operationId: ccsCaseByPostcodeQuery
       tags:
@@ -287,7 +288,7 @@ paths:
             Internal server error. Failed to process the request due to an
             internal error.
 
-  /cases/{caseId}:
+  /ccsvc/cases/{caseId}:
     put:
       operationId: caseUpdate
       tags:
@@ -375,7 +376,7 @@ paths:
             Internal server error. Failed to process the request due to an
             internal error.
 
-  /cases/ref/{reference}:
+  /ccsvc/cases/ref/{reference}:
     get:
       operationId: caseByReferenceQuery
       tags:
@@ -421,7 +422,7 @@ paths:
             Internal server error. Failed to process the request due to an
             internal error.
 
-  /cases/{caseId}/launch:
+  /ccsvc/cases/{caseId}/launch:
     get:
       operationId: LaunchByCaseIdQuery
       tags:
@@ -473,7 +474,7 @@ paths:
             Internal server error. Failed to process the request due to an
             internal error.
 
-  /cases/{caseId}/uac:
+  /ccsvc/cases/{caseId}/uac:
     get:
       operationId: GetUACForCase
       tags:
@@ -522,7 +523,7 @@ paths:
             Internal server error. Failed to process the request due to an
             internal error.
 
-  /cases/{caseId}/fulfilment/post:
+  /ccsvc/cases/{caseId}/fulfilment/post:
     post:
       operationId: postFulfilment
       tags:
@@ -569,7 +570,7 @@ paths:
                 #/components/schemas/PostalFulfilmentRequestDTO
         description: object detailing fulfilment request
 
-  /cases/{caseId}/fulfilment/sms:
+  /ccsvc/cases/{caseId}/fulfilment/sms:
     post:
       operationId: smsFulfilment
       tags:
@@ -613,7 +614,7 @@ paths:
                 #/components/schemas/SMSFulfilmentRequestDTO
         description: object detailing fulfilment request
 
-  /fulfilments:
+  /ccsvc/fulfilments:
     get:
       operationId: fulfilments
       tags:
@@ -682,7 +683,7 @@ paths:
             Internal server error. Failed to process the request due to an
             internal error.
 
-  /cases/{caseId}/refusal:
+  /ccsvc/cases/{caseId}/refusal:
     post:
       operationId: refusals
       tags:
@@ -726,7 +727,7 @@ paths:
                 #/components/schemas/RefusalRequestDTO
         description: object detailing refusal
 
-  /version:
+  /ccsvc/version:
     get:
       operationId: versionQuery
       tags:
