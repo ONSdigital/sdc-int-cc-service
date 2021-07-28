@@ -38,15 +38,15 @@ A sample deployment descriptor is provided with instructions here: [deployment R
 
 When running successfully version information can be obtained from the info endpoint:
 
-* localhost:8171/info
+* localhost:8171/ccsvc/info
 
 You can also see the current database flyway migrations with:
 
-* localhost:8171/flyway
+* localhost:8171/ccsvc/flyway
 
 Prototype only: test data in database:
 
-* localhost:8171/data/case
+* localhost:8171/ccsvc/data/case
 
 ## Docker Image Build
 

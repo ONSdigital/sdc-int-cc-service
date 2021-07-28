@@ -60,7 +60,7 @@ spec:
             cpu:    "0.5"
             memory: "1Gi"
       - name: ccsvc
-        image: eu.gcr.io/sdc-int-ci/sdc-int-cc-service:[CONTAINER_VERSION]
+        image: europe-west2-docker.pkg.dev/ons-ci-int/int-docker-snapshot/cc-service:SOCINT-50_Rename_CCSVC_endpoints
         imagePullPolicy: Always
         volumeMounts:
           - name: etc-config-uprn-vol
@@ -86,21 +86,21 @@ spec:
             memory: "1Gi"
         readinessProbe:
           httpGet:
-            path: /health/readiness
+            path: /ccsvc/health/readiness
             port: 8171
           periodSeconds: 10
           failureThreshold: 3
           successThreshold: 1
         livenessProbe:
           httpGet:
-            path: /health/liveness
+            path: /ccsvc/health/liveness
             port: 8171
           periodSeconds: 10
           failureThreshold: 3
           successThreshold: 1
         startupProbe:
           httpGet:
-            path: /health/readiness
+            path: /ccsvc/health/readiness
             port: 8171
           initialDelaySeconds: 5
           failureThreshold: 240
