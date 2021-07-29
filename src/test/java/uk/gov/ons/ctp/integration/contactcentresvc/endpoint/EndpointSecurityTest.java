@@ -34,16 +34,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.ons.ctp.common.domain.CaseType;
-import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.NewCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.Region;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 
@@ -130,21 +126,6 @@ public abstract class EndpointSecurityTest {
     ResponseEntity<String> response =
         restTemplate.getForEntity(
             base.toString() + "/ccsvc/addresses/postcode?postcode=EX10 1BD", String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
-  }
-
-  void testPostCase(HttpStatus expectedStatus) {
-    NewCaseRequestDTO requestBody = new NewCaseRequestDTO();
-    requestBody.setCaseType(CaseType.HH);
-    requestBody.setDateTime(new Date());
-    requestBody.setAddressLine1("1 Contagion Street");
-    requestBody.setTownName("Coronaville");
-    requestBody.setPostcode("SO22 4HJ");
-    requestBody.setRegion(Region.E);
-    requestBody.setEstabType(EstabType.RESIDENTIAL_BOAT);
-
-    ResponseEntity<String> response =
-        restTemplate.postForEntity(base.toString() + "/ccsvc/cases", requestBody, String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 

@@ -73,9 +73,9 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
   @Test
   public void testGetCaseByCaseRef_householdIndividualCase() throws Exception {
     // Build results to be returned from search
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
+    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
     caseFromCaseService.setCaseType("HI"); // Household Individual case
-    Mockito.when(caseServiceClient.getCaseByCaseRef(eq(VALID_CASE_REF), any()))
+    Mockito.when(caseDataClient.getCaseByCaseRef(eq(VALID_CASE_REF), any()))
         .thenReturn(caseFromCaseService);
 
     // Run the request
@@ -90,8 +90,8 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
   @Test
   public void shouldGetSecureEstablishmentByCaseReference() throws Exception {
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(1);
-    Mockito.when(caseServiceClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
+    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(1);
+    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
 
     CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, new CaseQueryRequestDTO(false));
     assertTrue(results.isSecureEstablishment());
@@ -114,8 +114,8 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
   }
 
   private void acceptLuhn(long caseRef) throws Exception {
-    Mockito.when(caseServiceClient.getCaseByCaseRef(any(), any()))
-        .thenReturn(casesFromCaseService().get(0));
+    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any()))
+        .thenReturn(casesFromDatabase().get(0));
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(false);
     target.getCaseByCaseReference(caseRef, requestParams);
   }
@@ -130,10 +130,10 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
   @Test
   public void shouldAdaptNullEstabTypeToHousehold() throws Exception {
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
+    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
     caseFromCaseService.setCaseType(CaseType.HH.name());
     caseFromCaseService.setEstabType(null);
-    Mockito.when(caseServiceClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
+    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
 
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
     CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
@@ -142,10 +142,10 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
   @Test
   public void shouldAdaptNullEstabTypeToOther() throws Exception {
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
+    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
     caseFromCaseService.setCaseType(CaseType.CE.name());
     caseFromCaseService.setEstabType(null);
-    Mockito.when(caseServiceClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
+    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
 
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
     CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
@@ -154,10 +154,10 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
   @Test
   public void shouldReport404ForBlacklistedUPRN() throws Exception {
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
+    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
     caseFromCaseService.setCaseType(CaseType.CE.name());
     caseFromCaseService.setEstabType(null);
-    Mockito.when(caseServiceClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
+    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
 
     when(blacklistedUPRNBean.isUPRNBlacklisted(any())).thenReturn(true);
 
@@ -173,9 +173,9 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
   private void doTestGetCaseByCaseRef(CaseType caseType, boolean caseEvents) throws Exception {
     // Build results to be returned from search
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
+    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
     caseFromCaseService.setCaseType(caseType.name());
-    Mockito.when(caseServiceClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
+    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
@@ -184,7 +184,7 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
     verifyCase(results, expectedCaseResult, caseEvents);
   }
 
-  private List<CaseContainerDTO> casesFromCaseService() {
+  private List<CaseContainerDTO> casesFromDatabase() {
     return FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
   }
 }

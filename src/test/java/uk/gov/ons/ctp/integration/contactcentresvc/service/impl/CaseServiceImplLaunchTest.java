@@ -17,7 +17,6 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUI
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +40,6 @@ import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.EqConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.TelephoneCapture;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
@@ -176,21 +174,10 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testLaunch_caseServiceNotFoundException_cachedCase() throws Exception {
+  public void testLaunch_caseServiceNotFoundException() throws Exception {
     Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-        .when(caseServiceClient)
+        .when(caseDataClient)
         .getCaseById(UUID_0, false);
-    Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.of(new CachedCase()));
-    assertThrows(
-        CTPException.class, () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));
-  }
-
-  @Test
-  public void testLaunch_caseServiceNotFoundException_noCachedCase() throws Exception {
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-        .when(caseServiceClient)
-        .getCaseById(UUID_0, false);
-    Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.empty());
     assertThrows(
         ResponseStatusException.class,
         () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));
@@ -199,7 +186,7 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   @Test
   public void testLaunch_caseServiceResponseStatusException() throws Exception {
     Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
-        .when(caseServiceClient)
+        .when(caseDataClient)
         .getCaseById(UUID_0, false);
     assertThrows(
         ResponseStatusException.class,
@@ -224,7 +211,8 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testLaunch_caseServiceQidRequestResponseStatusExceptionBadRequestCause() {
+  public void testLaunch_caseServiceQidRequestResponseStatusExceptionBadRequestCause()
+      throws Exception {
     assertCaseQIDRestClientFailureCaught(
         new ResponseStatusException(
             HttpStatus.INTERNAL_SERVER_ERROR,
@@ -234,7 +222,7 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testLaunch_caseServiceQidRequestResponseStatusExceptionOtherCause() {
+  public void testLaunch_caseServiceQidRequestResponseStatusExceptionOtherCause() throws Exception {
     assertCaseQIDRestClientFailureCaught(
         new ResponseStatusException(
             HttpStatus.INTERNAL_SERVER_ERROR,
@@ -244,37 +232,37 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testLaunch_caseServiceQidRequestResponseStatusExceptionNoCause() {
+  public void testLaunch_caseServiceQidRequestResponseStatusExceptionNoCause() throws Exception {
     assertCaseQIDRestClientFailureCaught(
         new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal processing error"),
         false);
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromUnitRegionE() {
+  public void shouldRejectCeManagerFormFromUnitRegionE() throws Exception {
     CaseContainerDTO dto = mockGetCaseById("CE", "U", "E");
     assertThatCeManagerFormFromUnitRegionIsRejected(dto);
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromUnitRegionW() {
+  public void shouldRejectCeManagerFormFromUnitRegionW() throws Exception {
     CaseContainerDTO dto = mockGetCaseById("CE", "U", "W");
     assertThatCeManagerFormFromUnitRegionIsRejected(dto);
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromUnitRegionN() {
+  public void shouldRejectCeManagerFormFromUnitRegionN() throws Exception {
     CaseContainerDTO dto = mockGetCaseById("CE", "U", "N");
     assertThatCeManagerFormFromUnitRegionIsRejected(dto);
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromUnitRegionS() {
+  public void shouldRejectCeManagerFormFromUnitRegionS() throws Exception {
     CaseContainerDTO dto = mockGetCaseById("CE", "U", "S");
     assertThatCeManagerFormFromUnitRegionIsRejected(dto);
   }
 
-  private void assertRejectCeManagerFormFromEstabRegionN(String region) {
+  private void assertRejectCeManagerFormFromEstabRegionN(String region) throws Exception {
     CaseContainerDTO dto = mockGetCaseById("CE", "E", region);
     assertThatInvalidLaunchComboIsRejected(
         dto,
@@ -283,17 +271,17 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromEstabRegionN() {
+  public void shouldRejectCeManagerFormFromEstabRegionN() throws Exception {
     assertRejectCeManagerFormFromEstabRegionN("N");
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromEstab_lowercaseRegionN() {
+  public void shouldRejectCeManagerFormFromEstab_lowercaseRegionN() throws Exception {
     assertRejectCeManagerFormFromEstabRegionN("n");
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromEstab_regionNWithTrailingChars() {
+  public void shouldRejectCeManagerFormFromEstab_regionNWithTrailingChars() throws Exception {
     assertRejectCeManagerFormFromEstabRegionN("N0123");
   }
 

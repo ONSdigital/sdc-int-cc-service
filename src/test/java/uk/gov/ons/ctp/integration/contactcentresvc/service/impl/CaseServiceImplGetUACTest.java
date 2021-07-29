@@ -13,7 +13,6 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.NI_
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UNIT_LAUNCH_ERR_MSG;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
 
-import java.util.Optional;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,6 @@ import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -74,35 +72,23 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testGetUAC_caseServiceCaseNotFoundException_cachedCase() throws Exception {
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-        .when(caseServiceClient)
+  public void testGetUAC_caseServiceCaseNotFoundException() throws Exception {
+    Mockito.doThrow(new CTPException(Fault.RESOURCE_NOT_FOUND))
+        .when(caseDataClient)
         .getCaseById(UUID_0, false);
-    Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.of(new CachedCase()));
     assertThrows(CTPException.class, () -> target.getUACForCaseId(UUID_0, new UACRequestDTO()));
   }
 
   @Test
-  public void testGetUAC_caseServiceCaseNotFoundException_noCachedCase() throws Exception {
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-        .when(caseServiceClient)
-        .getCaseById(UUID_0, false);
-    Mockito.when(dataRepo.readCachedCaseById(UUID_0)).thenReturn(Optional.empty());
-    assertThrows(
-        ResponseStatusException.class, () -> target.getUACForCaseId(UUID_0, new UACRequestDTO()));
-  }
-
-  @Test
   public void testGetUAC_caseServiceCaseRequestResponseStatusException() throws Exception {
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
-        .when(caseServiceClient)
-        .getCaseById(UUID_0, false);
+    Mockito.doThrow(new IllegalArgumentException()).when(caseDataClient).getCaseById(UUID_0, false);
     assertThrows(
-        ResponseStatusException.class, () -> target.getUACForCaseId(UUID_0, new UACRequestDTO()));
+        IllegalArgumentException.class, () -> target.getUACForCaseId(UUID_0, new UACRequestDTO()));
   }
 
   @Test
-  public void testGetUAC_caseServiceQidRequestResponseStatusExceptionBadRequestCause() {
+  public void testGetUAC_caseServiceQidRequestResponseStatusExceptionBadRequestCause()
+      throws Exception {
     assertCaseQIDRestClientFailureCaught(
         new ResponseStatusException(
             HttpStatus.INTERNAL_SERVER_ERROR,
@@ -112,7 +98,7 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testGetUAC_caseServiceQidRequestResponseStatusExceptionOtherCause() {
+  public void testGetUAC_caseServiceQidRequestResponseStatusExceptionOtherCause() throws Exception {
     assertCaseQIDRestClientFailureCaught(
         new ResponseStatusException(
             HttpStatus.INTERNAL_SERVER_ERROR,
@@ -122,32 +108,32 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testGetUAC_caseServiceQidRequestResponseStatusExceptionNoCause() {
+  public void testGetUAC_caseServiceQidRequestResponseStatusExceptionNoCause() throws Exception {
     assertCaseQIDRestClientFailureCaught(
         new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal processing error"),
         false);
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromUnitRegionE() {
+  public void shouldRejectCeManagerFormFromUnitRegionE() throws Exception {
     mockGetCaseById("CE", "U", "E");
     assertThatInvalidLaunchComboIsRejected(UNIT_LAUNCH_ERR_MSG);
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromUnitRegionW() {
+  public void shouldRejectCeManagerFormFromUnitRegionW() throws Exception {
     mockGetCaseById("CE", "U", "W");
     assertThatInvalidLaunchComboIsRejected(UNIT_LAUNCH_ERR_MSG);
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromUnitRegionN() {
+  public void shouldRejectCeManagerFormFromUnitRegionN() throws Exception {
     mockGetCaseById("CE", "U", "N");
     assertThatInvalidLaunchComboIsRejected(UNIT_LAUNCH_ERR_MSG);
   }
 
   @Test
-  public void shouldRejectCeManagerFormFromEstabRegionN() {
+  public void shouldRejectCeManagerFormFromEstabRegionN() throws Exception {
     mockGetCaseById("CE", "E", "N");
     assertThatInvalidLaunchComboIsRejected(NI_LAUNCH_ERR_MSG);
   }
