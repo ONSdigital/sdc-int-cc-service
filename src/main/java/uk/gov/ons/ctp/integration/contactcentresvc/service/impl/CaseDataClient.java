@@ -24,8 +24,7 @@ public class CaseDataClient {
   private MapperFacade mapper = new CCSvcBeanMapper();
 
   public CaseContainerDTO getCaseById(UUID caseId, Boolean listCaseEvents) throws CTPException {
-    log.debug(
-        "getCaseById() calling Case Service to find case details by ID", kv("caseId", caseId));
+    log.debug("Find case details by ID", kv("caseId", caseId));
 
     Case caze =
         caseRepo
@@ -36,26 +35,23 @@ public class CaseDataClient {
                         Fault.RESOURCE_NOT_FOUND, "Could not find case for ID: " + caseId));
 
     CaseContainerDTO caseDetails = mapper.map(caze, CaseContainerDTO.class);
-    log.debug("getCaseById() found case details for case ID", kv("caseId", caseId));
+    log.debug("Found case details for case ID", kv("caseId", caseId));
     return caseDetails;
   }
 
   public List<CaseContainerDTO> getCaseByUprn(Long uprn, Boolean listCaseEvents)
       throws CTPException {
-    log.debug(
-        "getCaseByUprn() calling Case Service to find case details by Uprn", kv("uprn", uprn));
+    log.debug("Find case details by Uprn", kv("uprn", uprn));
 
     List<Case> cases = caseRepo.findByAddressUprn(uprn.toString());
 
-    log.debug("getCaseByUprn() found {} case details by Uprn", cases.size(), kv("uprn", uprn));
+    log.debug("Found {} case details by Uprn", cases.size(), kv("uprn", uprn));
     return cases.stream().map(c -> mapper.map(c, CaseContainerDTO.class)).collect(toList());
   }
 
   public CaseContainerDTO getCaseByCaseRef(Long caseReference, Boolean listCaseEvents)
       throws CTPException {
-    log.debug(
-        "getCaseByCaseReference() calling Case Service to find case details by case reference",
-        kv("caseReference", caseReference));
+    log.debug("Find case details by case reference", kv("caseReference", caseReference));
 
     Case caze =
         caseRepo
@@ -68,9 +64,7 @@ public class CaseDataClient {
 
     CaseContainerDTO caseDetails = mapper.map(caze, CaseContainerDTO.class);
 
-    log.debug(
-        "getCaseByCaseReference() found case details by case reference",
-        kv("caseReference", caseReference));
+    log.debug("Found case details by case reference", kv("caseReference", caseReference));
     return caseDetails;
   }
 }
