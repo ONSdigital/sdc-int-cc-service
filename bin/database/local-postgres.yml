@@ -1,0 +1,21 @@
+version: "3.4"
+services:
+  ons-postgres:
+    container_name: postgres
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - "1963:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=ons@ons.gov
+      - PGADMIN_DEFAULT_PASSWORD=secret
+    links:
+      - ons-postgres:postgres
+
