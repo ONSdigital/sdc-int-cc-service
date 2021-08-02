@@ -18,7 +18,6 @@ logging:
   profile: NON_JSON
 
 surveyName: CENSUS
-collectionExerciseId : 34d7f3bb-91c9-45d0-bb2d-90afce4fc790
 public-pgp-key-1 : classpath:pgp/key1.asc
 public-pgp-key-2 : classpath:pgp/key2.asc
 
@@ -45,7 +44,6 @@ management:
         project-id: ${GOOGLE_CLOUD_PROJECT}
         enabled: true
         step: PT2M
-        
 
 server:
   port: 8171
@@ -54,6 +52,8 @@ server:
     threads:
       worker: 40
       io: 6
+  servlet:
+    context-path: /ccsvc
 
 spring:
   mvc:
@@ -142,7 +142,6 @@ case-service-settings:
       - ADDRESS_MODIFIED
       - ADDRESS_NOT_VALID
       - ADDRESS_TYPE_CHANGED
-      - NEW_ADDRESS_REPORTED
       - FIELD_CASE_UPDATED
       - SAMPLE_UNIT_VALIDATED
   
@@ -197,9 +196,6 @@ eq:
   path: /en/start/launch-eq/?token=
   response-id-salt: CENSUS
   
-report-settings:
-  cron-expression: "0 * * * * *"
-
 cloud-storage:
   case-schema-name: new-case
   event-backup-schema-name: event-backup

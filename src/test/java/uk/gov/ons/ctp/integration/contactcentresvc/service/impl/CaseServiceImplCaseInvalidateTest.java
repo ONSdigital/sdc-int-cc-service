@@ -9,23 +9,18 @@ import static org.mockito.Mockito.when;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
 
 import java.util.List;
-import java.util.Optional;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.model.AddressNotValid;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
@@ -50,7 +45,7 @@ public class CaseServiceImplCaseInvalidateTest extends CaseServiceImplTestBase {
     List<CaseContainerDTO> casesFromCaseService =
         FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
     CaseContainerDTO ccDto = casesFromCaseService.get(0);
-    when(caseServiceClient.getCaseById(UUID_0, false)).thenReturn(ccDto);
+    when(caseDataClient.getCaseById(UUID_0, false)).thenReturn(ccDto);
     ResponseDTO response = target.invalidateCase(dto);
 
     assertEquals(dto.getCaseId().toString(), response.getId());
@@ -103,28 +98,14 @@ public class CaseServiceImplCaseInvalidateTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void shouldRejectCaseNotFoundInRMOrCache() throws Exception {
-    when(caseServiceClient.getCaseById(any(), any()))
-        .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND)); // Not in RM
-    when(dataRepo.readCachedCaseById(any())).thenReturn(Optional.empty()); // Not in cache either
+  public void shouldRejectCaseNotFoundInRM() throws Exception {
+    when(caseDataClient.getCaseById(any(), any()))
+        .thenThrow(new CTPException(Fault.RESOURCE_NOT_FOUND));
     List<InvalidateCaseRequestDTO> requestsFromCCSvc =
         FixtureHelper.loadClassFixtures(InvalidateCaseRequestDTO[].class);
     InvalidateCaseRequestDTO dto = requestsFromCCSvc.get(0);
     CTPException exception = assertThrows(CTPException.class, () -> target.invalidateCase(dto));
     assertEquals(Fault.RESOURCE_NOT_FOUND, exception.getFault());
-  }
-
-  @Test
-  public void shouldInvalidateCaseWhenCaseOnlyInCache() throws Exception {
-    when(caseServiceClient.getCaseById(any(), any()))
-        .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND)); // Not in RM
-    CachedCase cc = new CachedCase();
-    cc.setCaseType(CaseType.HH);
-    when(dataRepo.readCachedCaseById(any())).thenReturn(Optional.of(cc));
-    List<InvalidateCaseRequestDTO> requestsFromCCSvc =
-        FixtureHelper.loadClassFixtures(InvalidateCaseRequestDTO[].class);
-    InvalidateCaseRequestDTO dto = requestsFromCCSvc.get(0);
-    target.invalidateCase(dto);
   }
 
   @Test
@@ -137,7 +118,7 @@ public class CaseServiceImplCaseInvalidateTest extends CaseServiceImplTestBase {
         FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
     CaseContainerDTO ccDto = casesFromCaseService.get(0);
     ccDto.setCaseType("CE");
-    when(caseServiceClient.getCaseById(UUID_0, false)).thenReturn(ccDto);
+    when(caseDataClient.getCaseById(UUID_0, false)).thenReturn(ccDto);
     Exception e = assertThrows(Exception.class, () -> target.invalidateCase(dto));
     assertEquals(
         "All CE addresses will be validated by a Field Officer. "

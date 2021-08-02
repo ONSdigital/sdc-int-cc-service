@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.integration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.parallel.ResourceAccessMode.READ_WRITE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -23,6 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
 import uk.gov.ons.ctp.integration.contactcentresvc.endpoint.AddressEndpoint;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
@@ -34,6 +37,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRe
 @Disabled
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
 public final class AddressEndpointIT {
   @Autowired private AddressEndpoint addressEndpoint;
 

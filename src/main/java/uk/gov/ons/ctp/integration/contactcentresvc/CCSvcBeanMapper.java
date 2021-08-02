@@ -19,7 +19,7 @@ import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 
@@ -51,6 +51,26 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .register();
 
     factory
+        .classMap(CaseContainerDTO.class, Case.class)
+        .field("uprn", "address.uprn")
+        .field("surveyType", "survey")
+        .field("addressLine1", "address.addressLine1")
+        .field("addressLine2", "address.addressLine2")
+        .field("addressLine3", "address.addressLine3")
+        .field("townName", "address.townName")
+        .field("postcode", "address.postcode")
+        .field("region", "address.region")
+        .field("estabType", "address.estabType")
+        .field("organisationName", "address.organisationName")
+        .field("latitude", "address.latitude")
+        .field("longitude", "address.longitude")
+        .field("estabUprn", "address.estabUprn")
+        .field("addressType", "address.addressType")
+        .field("addressLevel", "address.addressLevel")
+        .byDefault()
+        .register();
+
+    factory
         .classMap(EventDTO.class, CaseEventDTO.class)
         .field("eventType", "category")
         .byDefault()
@@ -68,27 +88,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .field("censusEstabType", "address.estabType")
         .field("countryCode", "address.region")
         .field("organisationName", "organisationName")
-        .register();
-
-    factory
-        .classMap(AddressIndexAddressCompositeDTO.class, CachedCase.class)
-        .field("censusAddressType", "addressType")
-        .field("censusEstabType", "estabType")
-        .field("countryCode", "region")
-        .field("organisationName", "ceOrgName")
-        .byDefault()
-        .register();
-
-    factory
-        .classMap(CachedCase.class, CaseDTO.class)
-        .field("estabType", "estabDescription")
-        .byDefault()
-        .register();
-
-    factory
-        .classMap(CachedCase.class, CaseContainerDTO.class)
-        .field("ceOrgName", "organisationName")
-        .byDefault()
         .register();
 
     factory.classMap(CaseContainerDTO.class, Address.class).byDefault().register();

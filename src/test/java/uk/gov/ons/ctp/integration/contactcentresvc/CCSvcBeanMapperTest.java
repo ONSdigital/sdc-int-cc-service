@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.Date;
 import java.util.List;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,8 @@ import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.cloud.CachedCase;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 
@@ -63,26 +65,33 @@ public class CCSvcBeanMapperTest {
   }
 
   @Test
-  public void shouldMapCaseContainerDtoToCachedCase() {
-    CaseContainerDTO source = FixtureHelper.loadClassFixtures(CaseContainerDTO[].class).get(0);
-    CachedCase destination = mapperFacade.map(source, CachedCase.class);
-
+  public void shouldMapCase_to_CaseContainerDTO() {
+    Case source = FixtureHelper.loadClassFixtures(Case[].class).get(0);
+    CaseAddress addr = source.getAddress();
+    CaseContainerDTO destination = mapperFacade.map(source, CaseContainerDTO.class);
+    Date expectedCreation = new Date(source.getCreatedDateTime().toInstant().toEpochMilli());
     assertAll(
-        () -> assertEquals(source.getId().toString(), destination.getId()),
-        () -> assertEquals(source.getUprn(), destination.getUprn()),
-        () -> assertEquals(source.getCreatedDateTime(), destination.getCreatedDateTime()),
-        () -> assertEquals(source.getAddressLine1(), destination.getAddressLine1()),
-        () -> assertEquals(source.getAddressLine2(), destination.getAddressLine2()),
-        () -> assertEquals(source.getAddressLine3(), destination.getAddressLine3()),
-        () -> assertEquals(source.getTownName(), destination.getTownName()),
-        () -> assertEquals(source.getPostcode(), destination.getPostcode()),
-        () -> assertEquals(source.getAddressType(), destination.getAddressType()),
-        () -> assertEquals(source.getCaseType(), destination.getCaseType().name()),
-        () -> assertEquals(source.getEstabType(), destination.getEstabType()),
-        () -> assertEquals(source.getRegion(), destination.getRegion()),
-        () -> assertEquals(source.getOrganisationName(), destination.getCeOrgName()));
-
-    verifyMapping(source.getCaseEvents(), destination.getCaseEvents());
+        () -> assertEquals(source.getId(), destination.getId()),
+        () -> assertEquals(source.getCaseRef().toString(), destination.getCaseRef()),
+        () -> assertEquals(source.getCaseType().name(), destination.getCaseType()),
+        () -> assertEquals(source.getSurvey(), destination.getSurveyType()),
+        () -> assertEquals(source.getCollectionExerciseId(), destination.getCollectionExerciseId()),
+        () -> assertEquals(source.isHandDelivery(), destination.isHandDelivery()),
+        () -> assertEquals(addr.getUprn(), destination.getUprn()),
+        () -> assertEquals(addr.getAddressLine1(), destination.getAddressLine1()),
+        () -> assertEquals(addr.getAddressLine2(), destination.getAddressLine2()),
+        () -> assertEquals(addr.getAddressLine3(), destination.getAddressLine3()),
+        () -> assertEquals(addr.getTownName(), destination.getTownName()),
+        () -> assertEquals(addr.getPostcode(), destination.getPostcode()),
+        () -> assertEquals(addr.getRegion(), destination.getRegion()),
+        () -> assertEquals(addr.getEstabType(), destination.getEstabType()),
+        () -> assertEquals(addr.getOrganisationName(), destination.getOrganisationName()),
+        () -> assertEquals(addr.getLatitude(), destination.getLatitude()),
+        () -> assertEquals(addr.getLongitude(), destination.getLongitude()),
+        () -> assertEquals(addr.getEstabUprn(), destination.getEstabUprn()),
+        () -> assertEquals(addr.getAddressType(), destination.getAddressType()),
+        () -> assertEquals(addr.getAddressLevel(), destination.getAddressLevel()),
+        () -> assertEquals(expectedCreation, destination.getCreatedDateTime()));
   }
 
   @Test
@@ -102,46 +111,6 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(source.getCensusEstabType(), destAddr.getEstabType()),
         () -> assertEquals(source.getCountryCode(), destAddr.getRegion()),
         () -> assertEquals(source.getOrganisationName(), destination.getOrganisationName()));
-  }
-
-  @Test
-  public void shouldMapAddressIndexAddressCompositeDTO_CachedCase() {
-    AddressIndexAddressCompositeDTO source =
-        FixtureHelper.loadClassFixtures(AddressIndexAddressCompositeDTO[].class).get(0);
-    CachedCase destination = mapperFacade.map(source, CachedCase.class);
-    assertAll(
-        () -> assertEquals(source.getUprn(), destination.getUprn()),
-        () -> assertEquals(source.getFormattedAddress(), destination.getFormattedAddress()),
-        () -> assertEquals(source.getAddressLine1(), destination.getAddressLine1()),
-        () -> assertEquals(source.getAddressLine2(), destination.getAddressLine2()),
-        () -> assertEquals(source.getAddressLine3(), destination.getAddressLine3()),
-        () -> assertEquals(source.getTownName(), destination.getTownName()),
-        () -> assertEquals(source.getPostcode(), destination.getPostcode()),
-        () -> assertEquals(source.getCensusAddressType(), destination.getAddressType()),
-        () -> assertEquals(source.getCensusEstabType(), destination.getEstabType()),
-        () -> assertEquals(source.getCountryCode(), destination.getRegion()),
-        () -> assertEquals(source.getOrganisationName(), destination.getCeOrgName()));
-  }
-
-  @Test
-  public void shouldMapCachedCaseToCaseDTO() {
-    CachedCase source = FixtureHelper.loadClassFixtures(CachedCase[].class).get(0);
-    CaseDTO destination = mapperFacade.map(source, CaseDTO.class);
-    assertAll(
-        () -> assertEquals(source.getId(), destination.getId().toString()),
-        () -> assertEquals(source.getUprn(), String.valueOf(destination.getUprn().getValue())),
-        () -> assertEquals(source.getCreatedDateTime(), destination.getCreatedDateTime()),
-        () -> assertEquals(source.getAddressLine1(), destination.getAddressLine1()),
-        () -> assertEquals(source.getAddressLine2(), destination.getAddressLine2()),
-        () -> assertEquals(source.getAddressLine3(), destination.getAddressLine3()),
-        () -> assertEquals(source.getTownName(), destination.getTownName()),
-        () -> assertEquals(source.getPostcode(), destination.getPostcode()),
-        () -> assertEquals(source.getAddressType(), destination.getAddressType()),
-        () -> assertEquals(source.getCaseType().name(), destination.getCaseType()),
-        () -> assertNull(destination.getEstabType()),
-        () -> assertEquals(source.getEstabType(), destination.getEstabDescription()),
-        () -> assertEquals(source.getRegion(), destination.getRegion()),
-        () -> assertEquals(source.getCeOrgName(), destination.getCeOrgName()));
   }
 
   private void verifyMapping(AddressCompact destination, CaseContainerDTO source) {
