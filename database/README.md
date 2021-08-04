@@ -83,12 +83,12 @@ Note: this will drop all data!
 - make sure GOOGLE_APPLICATION_CREDENTIALS is not set since it will interfere
 - change context to the GCP environment
 - set running Cloud SQL Auth Proxy on port 6432
-- export GCP_PGPPWD with the dababase password for the CC user
+- export GCP_PGPPWD with the database password for the CC user
 
 Example:
 
 ```
-    curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd6
+    curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd64
     chmod +x cloud_sql_proxy
 
     unset GOOGLE_APPLICATION_CREDENTIALS
@@ -99,9 +99,19 @@ Example:
 In another terminal ...
 
 ```
-    export GCP_PGPPWD=$(kubectl get secret db-credentials -o jsonpath='{.data.password}' | base64 -d)
+    export GCP_PGPPWD=$(kubectl get secret db-credentials -o jsonpath='{.data.password}' | base64 --decode)
 
-    # run scripts below in this terminal
+    # You can now run scripts in this terminal
+    
+    # or to run psql:
+    USER=ccuser
+    PORT=6432
+    export PGPASSWORD=$GCP_PGPPWD
+    psql -h localhost -p $PORT -U "$USER" -w --dbname "cc"
+    > \d cc_schema.caze
+    > \c cc
+    cc=> select id, case_ref, address_line1, case_type, created_date_time from cc_schema.caze;
+    cc=> exit
 ```
 
 ### Drop existing postgres artefacts relating to CC Service in GCP
