@@ -114,7 +114,7 @@ In another terminal ...
     cc=> exit
 ```
 
-### Drop existing postgres artifacts relating to CC Service in GCP
+### Drop existing postgres artefacts relating to CC Service in GCP
 
 Note: this will drop all data!
 
