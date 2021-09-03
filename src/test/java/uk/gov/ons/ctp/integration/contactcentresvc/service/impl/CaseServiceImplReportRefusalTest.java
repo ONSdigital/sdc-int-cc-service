@@ -18,12 +18,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
-import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
+import uk.gov.ons.ctp.common.event.EventType;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.ContactCompact;
-import uk.gov.ons.ctp.common.event.model.RespondentRefusalDetails;
+import uk.gov.ons.ctp.common.event.model.RefusalDetails;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
@@ -106,8 +106,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
 
     assertEquals(expectedResponseCaseId, refusalResponse.getId());
 
-    RespondentRefusalDetails refusal =
-        verifyEventSent(EventType.REFUSAL_RECEIVED, RespondentRefusalDetails.class);
+    RefusalDetails refusal = verifyEventSent(EventType.REFUSAL, RefusalDetails.class);
     assertEquals("123", refusal.getAgentId());
     assertTrue(refusal.isHouseholder());
     verifyEmptyRefusalAddress(refusal);
@@ -161,8 +160,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
         timeBeforeInvocation, timeAfterInvocation, refusalResponse.getDateTime());
 
     // Validate payload of published event
-    RespondentRefusalDetails refusal =
-        verifyEventSent(EventType.REFUSAL_RECEIVED, RespondentRefusalDetails.class);
+    RefusalDetails refusal = verifyEventSent(EventType.REFUSAL, RefusalDetails.class);
     assertEquals("123", refusal.getAgentId());
     assertEquals(A_CALL_ID, refusal.getCallId());
     assertTrue(refusal.isHouseholder());
@@ -202,7 +200,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
     }
   }
 
-  private void verifyRefusalAddress(RespondentRefusalDetails refusal) {
+  private void verifyRefusalAddress(RefusalDetails refusal) {
     // Validate address
     AddressCompact address = refusal.getAddress();
     assertEquals("1 High Street", address.getAddressLine1());
@@ -214,7 +212,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
     assertEquals(A_UPRN, address.getUprn());
   }
 
-  private void verifyEmptyRefusalAddress(RespondentRefusalDetails refusal) {
+  private void verifyEmptyRefusalAddress(RefusalDetails refusal) {
     // Validate address
     AddressCompact address = refusal.getAddress();
     assertNull(address.getAddressLine1());

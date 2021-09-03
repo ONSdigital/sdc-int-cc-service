@@ -7,10 +7,8 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_ADDRESS_LINE_2;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_ADDRESS_LINE_3;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_ESTAB_TYPE;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_CASE_STATUS;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_CASE_TYPE;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_REQUEST_DATE_TIME;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.SOME_NOTES;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
 
 import java.net.MalformedURLException;
@@ -35,7 +33,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
@@ -142,23 +139,6 @@ public abstract class EndpointSecurityTest {
     ResponseEntity<String> response =
         restTemplate.postForEntity(
             base.toString() + "/ccsvc/cases/" + caseId + "/refusal", requestBody, String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
-  }
-
-  void testPostInvalidateCase(HttpStatus expectedStatus) {
-    InvalidateCaseRequestDTO requestBody =
-        InvalidateCaseRequestDTO.builder()
-            .caseId(UUID_0)
-            .status(A_CASE_STATUS)
-            .notes(SOME_NOTES)
-            .dateTime(A_REQUEST_DATE_TIME)
-            .build();
-
-    ResponseEntity<String> response =
-        restTemplate.postForEntity(
-            base.toString() + "/ccsvc/cases/" + requestBody.getCaseId() + "/invalidate",
-            requestBody,
-            String.class);
     assertEquals(expectedStatus, response.getStatusCode());
   }
 

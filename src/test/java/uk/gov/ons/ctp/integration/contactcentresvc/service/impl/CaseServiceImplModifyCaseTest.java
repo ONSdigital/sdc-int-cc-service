@@ -22,19 +22,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.model.Address;
-import uk.gov.ons.ctp.common.event.model.AddressCompact;
-import uk.gov.ons.ctp.common.event.model.AddressModification;
-import uk.gov.ons.ctp.common.event.model.AddressTypeChanged;
-import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
@@ -208,41 +201,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     mockDbHasCase();
     target.modifyCase(requestDTO);
     verifyDbCaseCall(1);
-    AddressModification payload =
-        verifyEventSent(EventType.ADDRESS_MODIFIED, AddressModification.class);
-
-    CollectionCaseCompact collectionCase = payload.getCollectionCase();
-    assertEquals(caseContainerDTO.getId(), collectionCase.getId());
-    assertEquals(requestDTO.getCaseId(), collectionCase.getId());
-    assertEquals(requestCaseType.name(), collectionCase.getCaseType());
-    assertEquals(requestDTO.getCeUsualResidents(), collectionCase.getCeExpectedCapacity());
-
-    AddressCompact originalAddress = payload.getOriginalAddress();
-    assertEquals(caseContainerDTO.getAddressLine1(), originalAddress.getAddressLine1());
-    assertEquals(caseContainerDTO.getAddressLine2(), originalAddress.getAddressLine2());
-    assertEquals(caseContainerDTO.getAddressLine3(), originalAddress.getAddressLine3());
-    assertEquals(caseContainerDTO.getTownName(), originalAddress.getTownName());
-    assertEquals(caseContainerDTO.getPostcode(), originalAddress.getPostcode());
-    assertEquals(caseContainerDTO.getRegion(), originalAddress.getRegion());
-    assertEquals(caseContainerDTO.getUprn(), originalAddress.getUprn());
-    assertEquals(caseContainerDTO.getEstabType(), originalAddress.getEstabType());
-    assertEquals(caseContainerDTO.getOrganisationName(), originalAddress.getOrganisationName());
-
-    verifyChangedAddress(payload.getNewAddress());
-
-    verifyEventNotSent(EventType.ADDRESS_TYPE_CHANGED);
-  }
-
-  private void verifyChangedAddress(AddressCompact newAddress) {
-    assertEquals(requestDTO.getAddressLine1(), newAddress.getAddressLine1());
-    assertEquals(requestDTO.getAddressLine2(), newAddress.getAddressLine2());
-    assertEquals(requestDTO.getAddressLine3(), newAddress.getAddressLine3());
-    assertEquals(caseContainerDTO.getTownName(), newAddress.getTownName());
-    assertEquals(caseContainerDTO.getPostcode(), newAddress.getPostcode());
-    assertEquals(caseContainerDTO.getRegion(), newAddress.getRegion());
-    assertEquals(caseContainerDTO.getUprn(), newAddress.getUprn());
-    assertEquals(requestDTO.getEstabType().getCode(), newAddress.getEstabType());
-    assertEquals(requestDTO.getCeOrgName(), newAddress.getOrganisationName());
+    // event tests removed until modify events become clear
   }
 
   @Test
@@ -280,37 +239,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     verifyModifyAddress(CaseType.CE, EstabType.CARE_HOME, "prison");
   }
 
-  // these fields are not needed for addressTypeChanged event
-  private void verifyNullFields(CollectionCase collectionCase) {
-    assertNull(collectionCase.getCaseType());
-    assertNull(collectionCase.getCaseRef());
-    assertNull(collectionCase.getSurvey());
-    assertNull(collectionCase.getCollectionExerciseId());
-    assertNull(collectionCase.getContact());
-    assertNull(collectionCase.getActionableFrom());
-    assertNull(collectionCase.getCreatedDateTime());
-  }
-
-  private void verifyAddressForTypeChange(Address address) {
-    assertEquals(requestDTO.getCaseType().name(), address.getAddressType());
-    assertEquals(requestDTO.getEstabType().getCode(), address.getEstabType());
-    assertEquals(requestDTO.getCeOrgName(), address.getOrganisationName());
-
-    assertEquals(requestDTO.getAddressLine1(), address.getAddressLine1());
-    assertEquals(requestDTO.getAddressLine2(), address.getAddressLine2());
-    assertEquals(requestDTO.getAddressLine3(), address.getAddressLine3());
-
-    // none of the following elements are required
-    assertNull(address.getTownName());
-    assertNull(address.getPostcode());
-    assertNull(address.getRegion());
-    assertNull(address.getUprn());
-    assertNull(address.getLatitude());
-    assertNull(address.getLongitude());
-    assertNull(address.getEstabUprn());
-    assertNull(address.getAddressLevel());
-  }
-
   private void verifyAddressTypeChanged(
       CaseType requestCaseType,
       EstabType requestEstabType,
@@ -324,22 +252,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     mockDbHasCase();
     target.modifyCase(requestDTO);
     verifyDbCaseCall(1);
-    AddressTypeChanged payload =
-        verifyEventSent(EventType.ADDRESS_TYPE_CHANGED, AddressTypeChanged.class);
-
-    assertNotNull(payload.getNewCaseId());
-    assertNotEquals(requestDTO.getCaseId(), payload.getNewCaseId());
-
-    CollectionCase collectionCase = payload.getCollectionCase();
-    assertEquals(caseContainerDTO.getId().toString(), collectionCase.getId());
-    assertEquals(requestDTO.getCaseId().toString(), collectionCase.getId());
-    assertEquals(requestDTO.getCeUsualResidents(), collectionCase.getCeExpectedCapacity());
-    verifyNullFields(collectionCase);
-
-    Address address = collectionCase.getAddress();
-    verifyAddressForTypeChange(address);
-
-    verifyEventNotSent(EventType.ADDRESS_MODIFIED);
+    // verify event tests removed until events become clear
   }
 
   @Test
@@ -512,7 +425,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     mockDbHasCase();
     CaseDTO response = target.modifyCase(requestDTO);
     verifyCaseResponse(response, false);
-    verifyEventSent(EventType.ADDRESS_MODIFIED, AddressModification.class);
+    // verifyEventSent(EventType.ADDRESS_MODIFIED, AddressModification.class);
   }
 
   @Test
@@ -523,6 +436,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     mockDbHasCase();
     CaseDTO response = target.modifyCase(requestDTO);
     verifyCaseResponse(response, true);
-    verifyEventSent(EventType.ADDRESS_TYPE_CHANGED, AddressTypeChanged.class);
+    // verifyEventSent(EventType.ADDRESS_TYPE_CHANGED, AddressTypeChanged.class);
   }
 }

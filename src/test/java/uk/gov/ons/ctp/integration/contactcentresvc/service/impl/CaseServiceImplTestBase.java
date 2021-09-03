@@ -29,14 +29,14 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.EstabType;
+import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
-import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.EventPublisher.Source;
+import uk.gov.ons.ctp.common.event.EventType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
@@ -187,7 +187,7 @@ public abstract class CaseServiceImplTestBase {
 
   void mockCaseEventWhiteList() {
     CaseServiceSettings caseServiceSettings = new CaseServiceSettings();
-    Set<String> whitelistedSet = Set.of("CASE_CREATED", "CASE_UPDATED");
+    Set<String> whitelistedSet = Set.of("CASE_UPDATE");
     caseServiceSettings.setWhitelistedEventCategories(whitelistedSet);
     lenient().when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
   }

@@ -30,25 +30,20 @@ import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.domain.Language;
+import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.EventPublisher.Source;
-import uk.gov.ons.ctp.common.event.model.Address;
+import uk.gov.ons.ctp.common.event.EventType;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
-import uk.gov.ons.ctp.common.event.model.AddressModification;
-import uk.gov.ons.ctp.common.event.model.AddressNotValid;
-import uk.gov.ons.ctp.common.event.model.AddressTypeChanged;
-import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.ContactCompact;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
-import uk.gov.ons.ctp.common.event.model.RespondentRefusalDetails;
-import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
+import uk.gov.ons.ctp.common.event.model.RefusalDetails;
+import uk.gov.ons.ctp.common.event.model.SurveyLaunchResponse;
 import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
@@ -65,7 +60,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -143,7 +137,7 @@ public class CaseServiceImpl implements CaseService {
         createFulfilmentRequestPayload(
             requestBodyDTO.getFulfilmentCode(), Product.DeliveryChannel.POST, caseId, contact);
 
-    sendEvent(EventType.FULFILMENT_REQUESTED, fulfilmentRequestPayload, caseId);
+    sendEvent(EventType.FULFILMENT, fulfilmentRequestPayload, caseId);
 
     ResponseDTO response =
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
@@ -175,7 +169,7 @@ public class CaseServiceImpl implements CaseService {
     FulfilmentRequest fulfilmentRequestedPayload =
         createFulfilmentRequestPayload(
             requestBodyDTO.getFulfilmentCode(), Product.DeliveryChannel.SMS, caseId, contact);
-    sendEvent(EventType.FULFILMENT_REQUESTED, fulfilmentRequestedPayload, caseId);
+    sendEvent(EventType.FULFILMENT, fulfilmentRequestedPayload, caseId);
 
     ResponseDTO response =
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
@@ -327,10 +321,10 @@ public class CaseServiceImpl implements CaseService {
     if (caseTypeChanged) {
       rejectNorthernIrelandHouseholdToCE(requestedCaseType, caseDetails);
       caseId = UUID.randomUUID();
-      sendAddressTypeChangedEvent(caseId, originalCaseId, modifyRequestDTO);
+      // sendAddressTypeChangedEvent(caseId, originalCaseId, modifyRequestDTO);
       caseRef = null;
     } else {
-      sendAddressModifiedEvent(originalCaseId, modifyRequestDTO, caseDetails);
+      // sendAddressModifiedEvent(originalCaseId, modifyRequestDTO, caseDetails);
     }
     prepareModificationResponse(response, modifyRequestDTO, caseId, caseRef);
     return response;
@@ -351,10 +345,9 @@ public class CaseServiceImpl implements CaseService {
     }
 
     // Create and publish a respondent refusal event
-    RespondentRefusalDetails refusalPayload =
-        createRespondentRefusalPayload(caseId, requestBodyDTO);
+    RefusalDetails refusalPayload = createRespondentRefusalPayload(caseId, requestBodyDTO);
 
-    sendEvent(EventType.REFUSAL_RECEIVED, refusalPayload, caseId);
+    sendEvent(EventType.REFUSAL, refusalPayload, caseId);
 
     // Build response
     ResponseDTO response =
@@ -424,47 +417,6 @@ public class CaseServiceImpl implements CaseService {
         .build();
   }
 
-  @Override
-  public ResponseDTO invalidateCase(InvalidateCaseRequestDTO invalidateCaseRequestDTO)
-      throws CTPException {
-    UUID caseId = invalidateCaseRequestDTO.getCaseId();
-
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Invalidate Case",
-          kv("caseId", caseId),
-          kv("status", invalidateCaseRequestDTO.getStatus()));
-    }
-
-    CaseContainerDTO caseDetails = getCaseFromDb(caseId, false);
-    String errorMessage =
-        "All CE addresses will be validated by a Field Officer. "
-            + "It is not necessary to submit this Invalidation request.";
-    CaseType caseType = CaseType.valueOf(caseDetails.getCaseType());
-    rejectIfCaseIsTypeCE(caseType, errorMessage);
-
-    CollectionCaseCompact collectionCase = new CollectionCaseCompact(caseId);
-
-    if (log.isDebugEnabled()) {
-      log.debug("Case invalidated: publishing AddressNotValid event");
-    }
-    AddressNotValid payload =
-        AddressNotValid.builder()
-            .collectionCase(collectionCase)
-            .notes(invalidateCaseRequestDTO.getNotes())
-            .reason(invalidateCaseRequestDTO.getStatus().name())
-            .build();
-
-    sendEvent(EventType.ADDRESS_NOT_VALID, payload, caseId);
-    ResponseDTO response =
-        ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
-
-    if (log.isDebugEnabled()) {
-      log.debug("Return from invalidate case", kv("response", response));
-    }
-    return response;
-  }
-
   private void publishSurveyLaunchedEvent(UUID caseId, String questionnaireId, Integer agentId) {
     log.info(
         "Generating SurveyLaunched event",
@@ -472,14 +424,14 @@ public class CaseServiceImpl implements CaseService {
         kv("caseId", caseId),
         kv("agentId", agentId));
 
-    SurveyLaunchedResponse response =
-        SurveyLaunchedResponse.builder()
+    SurveyLaunchResponse response =
+        SurveyLaunchResponse.builder()
             .questionnaireId(questionnaireId)
             .caseId(caseId)
             .agentId(Integer.toString(agentId))
             .build();
 
-    sendEvent(EventType.SURVEY_LAUNCHED, response, response.getCaseId());
+    sendEvent(EventType.SURVEY_LAUNCH, response, response.getCaseId());
   }
 
   private CaseContainerDTO filterCaseEvents(CaseContainerDTO caseDTO, Boolean getCaseEvents) {
@@ -622,11 +574,11 @@ public class CaseServiceImpl implements CaseService {
    * @return the request event to be delivered to the events exchange.
    * @throws CTPException if there is a failure.
    */
-  private RespondentRefusalDetails createRespondentRefusalPayload(
+  private RefusalDetails createRespondentRefusalPayload(
       UUID caseId, RefusalRequestDTO refusalRequest) throws CTPException {
 
     // Create message payload
-    RespondentRefusalDetails refusal = new RespondentRefusalDetails();
+    RefusalDetails refusal = new RefusalDetails();
     refusal.setType(mapToType(refusalRequest.getReason()));
     CollectionCaseCompact collectionCase = new CollectionCaseCompact(caseId);
     refusal.setCollectionCase(collectionCase);
@@ -722,13 +674,6 @@ public class CaseServiceImpl implements CaseService {
                 .collect(toList());
 
     return mapCaseContainerDTOList(casesToReturn);
-  }
-
-  private void rejectIfCaseIsTypeCE(CaseType caseType, String errorMessage) throws CTPException {
-    if (caseType == CaseType.CE) {
-      log.warn(errorMessage, kv("caseType", caseType.name()));
-      throw new CTPException(Fault.BAD_REQUEST, errorMessage);
-    }
   }
 
   private void sendEvent(EventType eventType, EventPayload payload, Object caseId) {
@@ -850,54 +795,6 @@ public class CaseServiceImpl implements CaseService {
         throw new CTPException(Fault.BAD_REQUEST, msg);
       }
     }
-  }
-
-  private void sendAddressModifiedEvent(
-      UUID caseId, ModifyCaseRequestDTO modifyRequestDTO, CaseContainerDTO caseDetails) {
-    CollectionCaseCompact collectionCase =
-        CollectionCaseCompact.builder()
-            .id(caseId)
-            .caseType(modifyRequestDTO.getCaseType().name())
-            .ceExpectedCapacity(modifyRequestDTO.getCeUsualResidents())
-            .build();
-    AddressCompact originalAddress = caseDTOMapper.map(caseDetails, AddressCompact.class);
-    AddressCompact newAddress = caseDTOMapper.map(caseDetails, AddressCompact.class);
-
-    newAddress.setAddressLine1(modifyRequestDTO.getAddressLine1());
-    newAddress.setAddressLine2(modifyRequestDTO.getAddressLine2());
-    newAddress.setAddressLine3(modifyRequestDTO.getAddressLine3());
-    newAddress.setEstabType(modifyRequestDTO.getEstabType().getCode());
-    newAddress.setOrganisationName(modifyRequestDTO.getCeOrgName());
-
-    AddressModification payload =
-        AddressModification.builder()
-            .collectionCase(collectionCase)
-            .originalAddress(originalAddress)
-            .newAddress(newAddress)
-            .build();
-    sendEvent(EventType.ADDRESS_MODIFIED, payload, caseId);
-  }
-
-  private void sendAddressTypeChangedEvent(
-      UUID newCaseId, UUID originalCaseId, ModifyCaseRequestDTO modifyRequestDTO) {
-    CollectionCase collectionCase = new CollectionCase();
-    collectionCase.setId(originalCaseId.toString());
-    collectionCase.setCeExpectedCapacity(modifyRequestDTO.getCeUsualResidents());
-    collectionCase.setContact(null);
-
-    Address address = new Address();
-    address.setAddressLine1(modifyRequestDTO.getAddressLine1());
-    address.setAddressLine2(modifyRequestDTO.getAddressLine2());
-    address.setAddressLine3(modifyRequestDTO.getAddressLine3());
-    address.setEstabType(modifyRequestDTO.getEstabType().getCode());
-    address.setOrganisationName(modifyRequestDTO.getCeOrgName());
-    address.setAddressType(modifyRequestDTO.getCaseType().name());
-
-    collectionCase.setAddress(address);
-
-    AddressTypeChanged payload =
-        AddressTypeChanged.builder().newCaseId(newCaseId).collectionCase(collectionCase).build();
-    sendEvent(EventType.ADDRESS_TYPE_CHANGED, payload, newCaseId);
   }
 
   private void prepareModificationResponse(

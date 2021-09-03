@@ -46,11 +46,6 @@ public class ADEndpointSecurityTest extends EndpointSecurityTest {
   }
 
   @Test
-  public void adForbiddenPostInvalidate() {
-    testPostInvalidateCase(HttpStatus.FORBIDDEN);
-  }
-
-  @Test
   public void adForbiddenPutCase() {
     testPutCase(HttpStatus.FORBIDDEN);
   }

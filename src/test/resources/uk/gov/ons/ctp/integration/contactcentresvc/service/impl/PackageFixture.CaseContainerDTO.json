@@ -26,7 +26,7 @@
   "caseEvents": [
     {
       "id": "101",
-      "eventType": "CASE_CREATED",
+      "eventType": "CASE_UPDATE",
       "description": "Initial creation of case",
       "createdDateTime": "2019-05-14T16:11:41.343+01:00"
     },
@@ -38,7 +38,7 @@
     },
     {
       "id": "103",
-      "eventType": "CASE_UPDATED",
+      "eventType": "CASE_UPDATE",
       "description": "Create Household Visit",
       "createdDateTime": "2019-05-16T12:12:12.343Z"
     }
@@ -74,7 +74,7 @@
   "caseEvents": [
     {
       "id": "101",
-      "eventType": "CASE_CREATED",
+      "eventType": "CASE_UPDATE",
       "description": "Initial creation of case",
       "createdDateTime": "2019-05-14T16:11:41.343+01:00"
     },
@@ -86,7 +86,7 @@
     },
     {
       "id": "103",
-      "eventType": "CASE_UPDATED",
+      "eventType": "CASE_UPDATE",
       "description": "Create Household Visit",
       "createdDateTime": "2019-05-16T12:12:12.343Z"
     }
