@@ -321,9 +321,11 @@ public class CaseServiceImpl implements CaseService {
     if (caseTypeChanged) {
       rejectNorthernIrelandHouseholdToCE(requestedCaseType, caseDetails);
       caseId = UUID.randomUUID();
+      // TODO: modify when we know the new event to send
       // sendAddressTypeChangedEvent(caseId, originalCaseId, modifyRequestDTO);
       caseRef = null;
     } else {
+      // TODO: modify when we know the new event to send
       // sendAddressModifiedEvent(originalCaseId, modifyRequestDTO, caseDetails);
     }
     prepareModificationResponse(response, modifyRequestDTO, caseId, caseRef);
