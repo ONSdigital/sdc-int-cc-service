@@ -86,7 +86,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
   public void fulfilmentRequestByPostShouldSucceed(
       Product.CaseType caseType, String title, String forename, String surname, boolean individual)
       throws Exception {
-    Mockito.clearInvocations(eventPublisher);
+    Mockito.clearInvocations(eventTransfer);
 
     CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
     caseFromCaseService.setCaseType(caseType.name());

@@ -223,3 +223,7 @@ ccdb-admin:
     url: jdbc:postgresql://localhost:5432/cc
     username: ccadmin
     password: password
+
+scheduler:
+  frequency: 1000 #milliseconds
+  chunksize: 1000

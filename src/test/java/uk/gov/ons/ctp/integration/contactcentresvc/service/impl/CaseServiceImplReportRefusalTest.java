@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_REGION;
 
 import java.io.ByteArrayInputStream;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.event.EventType;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
@@ -43,8 +41,6 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
 
   @BeforeEach
   public void setup() {
-    when(appConfig.getChannel()).thenReturn(Channel.CC);
-
     Resource pubKey1 = new ClassPathResource(PUBLIC_KEY_1);
     Resource pubKey2 = new ClassPathResource(PUBLIC_KEY_2);
     lenient().when(appConfig.getPublicPgpKey1()).thenReturn(pubKey1);

@@ -30,11 +30,9 @@ import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.domain.Language;
-import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventType;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
@@ -57,6 +55,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
+import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
@@ -103,7 +102,7 @@ public class CaseServiceImpl implements CaseService {
 
   @Autowired private EqLaunchService eqLaunchService;
 
-  @Autowired private EventPublisher eventPublisher;
+  @Autowired private EventTransfer eventTransfer;
 
   @Autowired private CCSPostcodesBean ccsPostcodesBean;
 
@@ -679,16 +678,13 @@ public class CaseServiceImpl implements CaseService {
   }
 
   private void sendEvent(EventType eventType, EventPayload payload, Object caseId) {
-    String transactionId =
-        eventPublisher.sendEvent(
-            eventType, Source.CONTACT_CENTRE_API, appConfig.getChannel(), payload);
-
+    UUID transferId = eventTransfer.send(eventType, payload);
     if (log.isDebugEnabled()) {
       log.debug(
           "{} event published",
           v("eventType", eventType),
           kv("caseId", caseId),
-          kv("transactionId", transactionId));
+          kv("transferId", transferId));
     }
   }
 
