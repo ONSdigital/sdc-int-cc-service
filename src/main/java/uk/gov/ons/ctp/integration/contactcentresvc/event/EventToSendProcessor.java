@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventType;
-import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.EventToSend;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.EventToSendRepository;
@@ -44,10 +43,9 @@ public class EventToSendProcessor {
           event -> {
             try {
               EventType type = EventType.valueOf(event.getType());
-              EventPayload payload = type.getBuilder().createPayload(event.getPayload());
               String transactionId =
                   eventPublisher.sendEvent(
-                      type, Source.CONTACT_CENTRE_API, appConfig.getChannel(), payload);
+                      type, Source.CONTACT_CENTRE_API, appConfig.getChannel(), event.getPayload());
 
               eventsSent.add(event);
               log.info("Event published", kv("transactionId", transactionId));

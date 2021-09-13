@@ -3,10 +3,8 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,8 +27,6 @@ import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventType;
-import uk.gov.ons.ctp.common.event.model.EventPayload;
-import uk.gov.ons.ctp.common.event.model.SurveyLaunchResponse;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.EventToSend;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.EventToSendRepository;
@@ -50,7 +46,7 @@ public class EventToSendProcessorTest {
   @Captor private ArgumentCaptor<EventType> typeCaptor;
   @Captor private ArgumentCaptor<Source> sourceCaptor;
   @Captor private ArgumentCaptor<Channel> channelCaptor;
-  @Captor private ArgumentCaptor<EventPayload> payloadCaptor;
+  @Captor private ArgumentCaptor<String> payloadCaptor;
   @Captor private ArgumentCaptor<Iterable<EventToSend>> sentCaptor;
 
   @BeforeEach
@@ -78,17 +74,9 @@ public class EventToSendProcessorTest {
     verify(eventToSendRepository).findEventsToSend(3);
   }
 
-  @Test
-  public void shouldOmitBrokenJsonPayload() {
-    List<EventToSend> events = new ArrayList<>();
-    EventToSend ev = createEvent(ID_1);
-    ev.setPayload("not json");
-    events.add(ev);
-    when(eventToSendRepository.findEventsToSend(anyInt())).thenReturn(events.stream());
-    processor.processChunk();
-    verify(eventPublisher, never()).sendEvent(any(), any(), any(), any());
-    verify(eventToSendRepository).deleteAllInBatch(sentCaptor.capture());
-    assertTrue(((List<EventToSend>) sentCaptor.getValue()).isEmpty());
+  private void validatePayload(int index) {
+    String payload = payloadCaptor.getAllValues().get(index);
+    assertTrue(payload.contains("\"1358980545\"")); // fixture QID
   }
 
   @Test
@@ -108,9 +96,7 @@ public class EventToSendProcessorTest {
     assertEquals(EventType.SURVEY_LAUNCH, typeCaptor.getValue());
     assertEquals(Source.CONTACT_CENTRE_API, sourceCaptor.getValue());
     assertEquals(Channel.CC, channelCaptor.getValue());
-
-    EventPayload payload = payloadCaptor.getValue();
-    assertTrue(payload instanceof SurveyLaunchResponse);
+    validatePayload(0);
 
     verify(eventToSendRepository).deleteAllInBatch(sentCaptor.capture());
     assertEquals(1, ((List<EventToSend>) sentCaptor.getValue()).size());
@@ -138,9 +124,7 @@ public class EventToSendProcessorTest {
       assertEquals(EventType.SURVEY_LAUNCH, typeCaptor.getAllValues().get(i));
       assertEquals(Source.CONTACT_CENTRE_API, sourceCaptor.getAllValues().get(i));
       assertEquals(Channel.CC, channelCaptor.getAllValues().get(i));
-
-      EventPayload payload = payloadCaptor.getAllValues().get(i);
-      assertTrue(payload instanceof SurveyLaunchResponse);
+      validatePayload(i);
     }
 
     verify(eventToSendRepository).deleteAllInBatch(sentCaptor.capture());
