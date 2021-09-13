@@ -25,7 +25,7 @@ public class EventToSendProcessor {
   private final EventPublisher eventPublisher;
   private final AppConfig appConfig;
 
-  @Value("${scheduler.chunksize}")
+  @Value("${scheduler.chunk-size}")
   private int chunkSize;
 
   public EventToSendProcessor(

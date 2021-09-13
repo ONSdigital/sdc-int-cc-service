@@ -225,5 +225,5 @@ ccdb-admin:
     password: password
 
 scheduler:
-  frequency: 1000 #milliseconds
-  chunksize: 1000
+  fixed-delay-millis: 1000
+  chunk-size: 1000
