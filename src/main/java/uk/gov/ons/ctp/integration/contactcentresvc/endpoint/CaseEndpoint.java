@@ -25,7 +25,6 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.Constants;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -221,27 +220,6 @@ public class CaseEndpoint implements CTPEndpoint {
       log.debug("Exiting reportRefusal", kv("caseId", caseId));
     }
 
-    return ResponseEntity.ok(response);
-  }
-
-  /**
-   * the POST end point to invalidate an existing case due to address status change.
-   *
-   * @param caseId case ID
-   * @param requestBodyDTO the request body
-   * @return response entity
-   * @throws CTPException something went wrong
-   */
-  @RequestMapping(value = "/{caseId}/invalidate", method = RequestMethod.POST)
-  @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<ResponseDTO> invalidateCase(
-      @PathVariable(value = "caseId") final UUID caseId,
-      @Valid @RequestBody InvalidateCaseRequestDTO requestBodyDTO)
-      throws CTPException {
-
-    log.info("Entering POST invalidate", kv("requestBody", requestBodyDTO));
-    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
-    ResponseDTO response = caseService.invalidateCase(requestBodyDTO);
     return ResponseEntity.ok(response);
   }
 

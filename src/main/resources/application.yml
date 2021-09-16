@@ -70,12 +70,10 @@ spring:
     name: ONS ContactCentreService
   lifecycle:
     timeout-per-shutdown-phase: 30s
-  rabbitmq:
-    username: guest
-    password: guest
-    host: localhost
-    port: 35672
-    virtual-host: /
+  cloud:
+    gcp:
+      pubsub:
+        project-id: local    
   jpa:
     open-in-view: false
     hibernate:
@@ -149,28 +147,12 @@ fulfilments:
   blacklisted-codes:
 
 queueconfig:
-  event-exchange: events
-  dead-letter-exchange: events.deadletter.exchange
-  case-queue: case.cc.case
-  case-queue-DLQ: case.cc.case.dlq
-  case-routing-key: event.case.update  
+  case-subscription: event_case-update_cc
+  case-topic: event_case-update
   
 messaging:
-  mismatched-queues-fatal: true
-  recovery-backoff:
-    initial: 2000
-    multiplier: 3
-    max: 30000
-  case-listener:
-    processing-backoff:
-      initial: 5000
-      multiplier: 3
-      max: 45000
-    consuming-threads: 1
-    con-max-attempts: 3
-    prefetch-count: 1
   publish:
-    max-attempts: 10
+    timeout: 4
   
 circuit-breaker:
   timeout: 4
@@ -241,3 +223,7 @@ ccdb-admin:
     url: jdbc:postgresql://localhost:5432/cc
     username: ccadmin
     password: password
+
+scheduler:
+  fixed-delay-millis: 1000
+  chunk-size: 1000

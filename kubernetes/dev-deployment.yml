@@ -144,26 +144,11 @@ spec:
             configMapKeyRef:
               name: cc-config
               key: cloud-storage-case-schema-name
-        - name: SPRING_RABBITMQ_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: rabbit-identity
-              key: username
-        - name: SPRING_RABBITMQ_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: rabbit-identity
-              key: password
-        - name: SPRING_RABBITMQ_HOST
+        - name: SPRING_CLOUD_GCP_PUBSUB_PROJECTID
           valueFrom:
             configMapKeyRef:
               name: cc-config
-              key: rabbitmq-host
-        - name: SPRING_RABBITMQ_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: cc-config
-              key: rabbitmq-port
+              key: project-id
         - name: ADDRESS_INDEX_SETTINGS_REST_CLIENT_CONFIG_HOST
           valueFrom:
             configMapKeyRef:

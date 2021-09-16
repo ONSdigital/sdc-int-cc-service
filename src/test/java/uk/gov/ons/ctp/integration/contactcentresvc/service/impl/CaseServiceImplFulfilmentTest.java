@@ -29,10 +29,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
+import uk.gov.ons.ctp.common.event.EventType;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
@@ -86,7 +86,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
   public void fulfilmentRequestByPostShouldSucceed(
       Product.CaseType caseType, String title, String forename, String surname, boolean individual)
       throws Exception {
-    Mockito.clearInvocations(eventPublisher);
+    Mockito.clearInvocations(eventTransfer);
 
     CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
     caseFromCaseService.setCaseType(caseType.name());
@@ -120,7 +120,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     // Grab the published event
     FulfilmentRequest actualFulfilmentRequest =
-        verifyEventSent(EventType.FULFILMENT_REQUESTED, FulfilmentRequest.class);
+        verifyEventSent(EventType.FULFILMENT, FulfilmentRequest.class);
     assertEquals(
         requestBodyDTOFixture.getFulfilmentCode(), actualFulfilmentRequest.getFulfilmentCode());
     assertEquals(requestBodyDTOFixture.getCaseId().toString(), actualFulfilmentRequest.getCaseId());
@@ -431,7 +431,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     // Grab the published event
     FulfilmentRequest actualFulfilmentRequest =
-        verifyEventSent(EventType.FULFILMENT_REQUESTED, FulfilmentRequest.class);
+        verifyEventSent(EventType.FULFILMENT, FulfilmentRequest.class);
     assertEquals(
         requestBodyDTOFixture.getFulfilmentCode(), actualFulfilmentRequest.getFulfilmentCode());
     assertEquals(requestBodyDTOFixture.getCaseId().toString(), actualFulfilmentRequest.getCaseId());

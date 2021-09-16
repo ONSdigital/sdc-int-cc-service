@@ -71,11 +71,6 @@ public class CCEndpointSecurityTest extends EndpointSecurityTest {
   }
 
   @Test
-  public void ccOkPostInvalidate() {
-    testPostInvalidateCase(HttpStatus.OK);
-  }
-
-  @Test
   public void ccOkPostFulfilfmentPost() {
     testPostFulfilmentPost(HttpStatus.OK);
   }

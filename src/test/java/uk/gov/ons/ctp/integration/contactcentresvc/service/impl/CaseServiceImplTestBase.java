@@ -33,10 +33,7 @@ import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.common.event.EventPublisher;
-import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.EventPublisher.Source;
+import uk.gov.ons.ctp.common.event.EventType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
@@ -47,6 +44,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
+import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
@@ -65,7 +63,7 @@ public abstract class CaseServiceImplTestBase {
 
   @Mock EqLaunchService eqLaunchService;
 
-  @Mock EventPublisher eventPublisher;
+  @Mock EventTransfer eventTransfer;
 
   @Spy MapperFacade mapperFacade = new CCSvcBeanMapper();
 
@@ -91,22 +89,17 @@ public abstract class CaseServiceImplTestBase {
 
   <T extends EventPayload> T verifyEventSent(EventType expectedEventType, Class<T> payloadClazz) {
     ArgumentCaptor<T> payloadCaptor = ArgumentCaptor.forClass(payloadClazz);
-    verify(eventPublisher)
-        .sendEvent(
-            eq(expectedEventType),
-            eq(Source.CONTACT_CENTRE_API),
-            eq(Channel.CC),
-            payloadCaptor.capture());
+    verify(eventTransfer).send(eq(expectedEventType), payloadCaptor.capture());
 
     return payloadCaptor.getValue();
   }
 
   void verifyEventNotSent() {
-    verify(eventPublisher, never()).sendEvent(any(), any(), any(), any());
+    verify(eventTransfer, never()).send(any(), any());
   }
 
   void verifyEventNotSent(EventType type) {
-    verify(eventPublisher, never()).sendEvent(eq(type), any(), any(), any());
+    verify(eventTransfer, never()).send(eq(type), any());
   }
 
   void verifyCase(CaseDTO results, CaseDTO expectedCaseResult, boolean caseEventsExpected)
@@ -187,7 +180,7 @@ public abstract class CaseServiceImplTestBase {
 
   void mockCaseEventWhiteList() {
     CaseServiceSettings caseServiceSettings = new CaseServiceSettings();
-    Set<String> whitelistedSet = Set.of("CASE_CREATED", "CASE_UPDATED");
+    Set<String> whitelistedSet = Set.of("CASE_UPDATE");
     caseServiceSettings.setWhitelistedEventCategories(whitelistedSet);
     lenient().when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
   }
