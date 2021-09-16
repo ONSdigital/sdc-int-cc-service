@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
@@ -70,7 +69,8 @@ public class EventToSendProcessorTest {
   @Test
   public void shouldProcessNothing() {
     when(eventToSendRepository.findEventsToSend(3)).thenReturn(Stream.empty());
-    processor.processChunk();
+    int numProcessed = processor.processChunk();
+    assertEquals(0, numProcessed);
     verify(eventToSendRepository).findEventsToSend(3);
   }
 
@@ -85,7 +85,8 @@ public class EventToSendProcessorTest {
     EventToSend ev = createEvent(ID_1);
     events.add(ev);
     when(eventToSendRepository.findEventsToSend(anyInt())).thenReturn(events.stream());
-    processor.processChunk();
+    int numProcessed = processor.processChunk();
+    assertEquals(1, numProcessed);
     verify(eventPublisher)
         .sendEvent(
             typeCaptor.capture(),
@@ -112,7 +113,8 @@ public class EventToSendProcessorTest {
     events.add(ev2);
     events.add(ev3);
     when(eventToSendRepository.findEventsToSend(anyInt())).thenReturn(events.stream());
-    processor.processChunk();
+    int numProcessed = processor.processChunk();
+    assertEquals(3, numProcessed);
     verify(eventPublisher, times(3))
         .sendEvent(
             typeCaptor.capture(),
@@ -129,17 +131,5 @@ public class EventToSendProcessorTest {
 
     verify(eventToSendRepository).deleteAllInBatch(sentCaptor.capture());
     assertEquals(3, ((List<EventToSend>) sentCaptor.getValue()).size());
-  }
-
-  @Test
-  public void noWorkToDo() {
-    when(eventToSendRepository.count()).thenReturn(0L);
-    assertFalse(processor.isThereWorkToDo());
-  }
-
-  @Test
-  public void someWorkToDo() {
-    when(eventToSendRepository.count()).thenReturn(4L);
-    assertTrue(processor.isThereWorkToDo());
   }
 }

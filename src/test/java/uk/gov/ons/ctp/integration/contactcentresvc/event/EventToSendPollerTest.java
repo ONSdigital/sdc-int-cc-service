@@ -19,17 +19,15 @@ public class EventToSendPollerTest {
 
   @Test
   public void shouldProcessOneChunk() {
-    when(processor.isThereWorkToDo()).thenReturn(false);
+    when(processor.processChunk()).thenReturn(0);
     poller.processQueuedMessages();
     verify(processor).processChunk();
-    verify(processor).isThereWorkToDo();
   }
 
   @Test
   public void shouldProcessTwoChunks() {
-    when(processor.isThereWorkToDo()).thenReturn(true).thenReturn(false);
+    when(processor.processChunk()).thenReturn(3).thenReturn(0);
     poller.processQueuedMessages();
     verify(processor, times(2)).processChunk();
-    verify(processor, times(2)).isThereWorkToDo();
   }
 }

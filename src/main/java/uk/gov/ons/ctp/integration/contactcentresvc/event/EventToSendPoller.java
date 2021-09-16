@@ -17,13 +17,22 @@ public class EventToSendPoller {
     this.processor = messageToSendProcessor;
   }
 
+  /**
+   * Process chunks of queued messages, until we can no longer detect any waiting to be processed.
+   *
+   * <p>This is a scheduled job which will run with a fixed delay between each invocation.
+   */
   @Scheduled(fixedDelayString = "${scheduler.fixed-delay-millis}")
   public void processQueuedMessages() {
     if (trace) {
       log.debug("processing events");
     }
+    long numProcessed;
     do {
-      processor.processChunk();
-    } while (processor.isThereWorkToDo());
+      numProcessed = processor.processChunk();
+      if (trace) {
+        log.debug("processed {} events", numProcessed);
+      }
+    } while (numProcessed > 0);
   }
 }

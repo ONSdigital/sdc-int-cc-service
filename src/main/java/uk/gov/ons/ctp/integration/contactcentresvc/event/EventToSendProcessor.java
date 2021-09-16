@@ -2,8 +2,9 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,12 +36,13 @@ public class EventToSendProcessor {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW) // Start a new transaction for every chunk
-  public void processChunk() {
+  public int processChunk() {
+    AtomicInteger numProcessed = new AtomicInteger();
     try (Stream<EventToSend> events = eventToSendRepository.findEventsToSend(chunkSize)) {
-      List<EventToSend> eventsSent = new LinkedList<>();
-
+      List<EventToSend> eventsSent = new ArrayList<>();
       events.forEach(
           event -> {
+            numProcessed.incrementAndGet();
             try {
               EventType type = EventType.valueOf(event.getType());
               String transactionId =
@@ -56,10 +58,6 @@ public class EventToSendProcessor {
 
       eventToSendRepository.deleteAllInBatch(eventsSent);
     }
-  }
-
-  @Transactional
-  public boolean isThereWorkToDo() {
-    return eventToSendRepository.count() > 0;
+    return numProcessed.get();
   }
 }
