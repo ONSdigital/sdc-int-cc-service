@@ -147,7 +147,7 @@ fulfilments:
   blacklisted-codes:
 
 queueconfig:
-  case-subscription: event_case-update_rh
+  case-subscription: event_case-update_cc
   case-topic: event_case-update
   
 messaging:
