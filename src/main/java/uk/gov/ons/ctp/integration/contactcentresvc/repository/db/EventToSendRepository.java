@@ -17,8 +17,8 @@ public interface EventToSendRepository extends JpaRepository<EventToSend, UUID> 
    * https://www.2ndquadrant.com/en/blog/what-is-select-skip-locked-for-in-postgresql-9-5/
    *
    * @param limit the maximum number of items to return
-   * @return a stream of <code>EventToSend</code> items that have not yet been claimed for
-   *     processing.
+   * @return a stream of <code>EventToSend</code> items that had previously not been claimed for
+   *     processing, but now they are claimed and locked for this transaction context
    */
   @Query(
       value = "SELECT * FROM cc_schema.event_to_send LIMIT :limit FOR UPDATE SKIP LOCKED",
