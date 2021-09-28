@@ -34,7 +34,7 @@ public class CaseEventReceiver {
   public void acceptCaseEvent(CaseEvent caseEvent) {
 
     CollectionCase collectionCase = caseEvent.getPayload().getCollectionCase();
-    String caseTransactionId = caseEvent.getEvent().getTransactionId();
+    String caseTransactionId = caseEvent.getHeader().getMessageId();
 
     log.info(
         "Entering acceptCaseEvent {}, {}",
