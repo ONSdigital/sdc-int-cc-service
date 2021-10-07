@@ -14,7 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.ons.ctp.common.event.EventType;
+import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchResponse;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
@@ -43,12 +43,12 @@ public class EventTransferTest {
   @Test
   public void shouldSend() {
     EventPayload payload = createPayload();
-    UUID transferId = eventTransfer.send(EventType.SURVEY_LAUNCH, payload);
+    UUID transferId = eventTransfer.send(TopicType.SURVEY_LAUNCH, payload);
     assertNotNull(transferId);
     verify(eventToSendRepository).save(eventCaptor.capture());
     EventToSend event = eventCaptor.getValue();
     String payloadJson = event.getPayload();
-    assertEquals(EventType.SURVEY_LAUNCH.name(), event.getType());
+    assertEquals(TopicType.SURVEY_LAUNCH.name(), event.getType());
     assertTrue(payloadJson.contains("\"" + CASE_ID + "\""));
     assertTrue(payloadJson.contains("\"123\""));
     assertTrue(payloadJson.contains("\"456\""));

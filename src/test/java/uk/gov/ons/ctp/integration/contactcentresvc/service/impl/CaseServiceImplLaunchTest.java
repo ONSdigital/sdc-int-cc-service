@@ -36,7 +36,7 @@ import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.domain.Language;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.common.event.EventType;
+import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchResponse;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
@@ -310,7 +310,7 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   private void verifySurveyLaunchedEventPublished(
       String caseType, boolean individual, UUID caseId, String questionnaireId) {
     SurveyLaunchResponse payloadSent =
-        verifyEventSent(EventType.SURVEY_LAUNCH, SurveyLaunchResponse.class);
+        verifyEventSent(TopicType.SURVEY_LAUNCH, SurveyLaunchResponse.class);
     if (caseType.equals("HH") && individual) {
       // Should have used a new caseId, ie, not the uuid that we started with
       assertNotEquals(UUID_0, payloadSent.getCaseId());

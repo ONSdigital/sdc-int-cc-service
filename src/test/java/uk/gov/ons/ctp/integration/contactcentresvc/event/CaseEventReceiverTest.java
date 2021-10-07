@@ -38,7 +38,7 @@ public class CaseEventReceiverTest {
   @Test
   public void shouldReceiveEvent() {
     Header header = new Header();
-    header.setMessageId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
+    header.setMessageId(UUID.fromString("c45de4dc-3c3b-11e9-b210-d663bd873d93"));
     CaseEvent caseEvent = FixtureHelper.loadPackageFixtures(CaseEvent[].class).get(0);
     caseEvent.setHeader(header);
     target.acceptCaseEvent(caseEvent);

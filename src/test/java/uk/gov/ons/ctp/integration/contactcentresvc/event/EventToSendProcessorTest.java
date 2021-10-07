@@ -25,7 +25,7 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.event.EventPublisher;
-import uk.gov.ons.ctp.common.event.EventType;
+import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.EventToSend;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.EventToSendRepository;
@@ -42,7 +42,7 @@ public class EventToSendProcessorTest {
   @InjectMocks private EventToSendProcessor processor;
 
   @Captor private ArgumentCaptor<Integer> chunkSizeCaptor;
-  @Captor private ArgumentCaptor<EventType> typeCaptor;
+  @Captor private ArgumentCaptor<TopicType> typeCaptor;
   @Captor private ArgumentCaptor<Source> sourceCaptor;
   @Captor private ArgumentCaptor<Channel> channelCaptor;
   @Captor private ArgumentCaptor<String> payloadCaptor;
@@ -56,7 +56,7 @@ public class EventToSendProcessorTest {
 
   private EventToSend createEvent(String id) {
     String payload = FixtureHelper.loadPackageObjectNode("SurveyLaunchResponse").toString();
-    return new EventToSend(UUID.fromString(id), EventType.SURVEY_LAUNCH.name(), payload);
+    return new EventToSend(UUID.fromString(id), TopicType.SURVEY_LAUNCH.name(), payload);
   }
 
   @Test
@@ -94,7 +94,7 @@ public class EventToSendProcessorTest {
             channelCaptor.capture(),
             payloadCaptor.capture());
 
-    assertEquals(EventType.SURVEY_LAUNCH, typeCaptor.getValue());
+    assertEquals(TopicType.SURVEY_LAUNCH, typeCaptor.getValue());
     assertEquals(Source.CONTACT_CENTRE_API, sourceCaptor.getValue());
     assertEquals(Channel.CC, channelCaptor.getValue());
     validatePayload(0);
@@ -123,7 +123,7 @@ public class EventToSendProcessorTest {
             payloadCaptor.capture());
 
     for (int i = 0; i < 3; i++) {
-      assertEquals(EventType.SURVEY_LAUNCH, typeCaptor.getAllValues().get(i));
+      assertEquals(TopicType.SURVEY_LAUNCH, typeCaptor.getAllValues().get(i));
       assertEquals(Source.CONTACT_CENTRE_API, sourceCaptor.getAllValues().get(i));
       assertEquals(Channel.CC, channelCaptor.getAllValues().get(i));
       validatePayload(i);

@@ -32,7 +32,7 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.common.event.EventType;
+import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
@@ -120,7 +120,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     // Grab the published event
     FulfilmentRequest actualFulfilmentRequest =
-        verifyEventSent(EventType.FULFILMENT, FulfilmentRequest.class);
+        verifyEventSent(TopicType.FULFILMENT, FulfilmentRequest.class);
     assertEquals(
         requestBodyDTOFixture.getFulfilmentCode(), actualFulfilmentRequest.getFulfilmentCode());
     assertEquals(requestBodyDTOFixture.getCaseId().toString(), actualFulfilmentRequest.getCaseId());
@@ -431,7 +431,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     // Grab the published event
     FulfilmentRequest actualFulfilmentRequest =
-        verifyEventSent(EventType.FULFILMENT, FulfilmentRequest.class);
+        verifyEventSent(TopicType.FULFILMENT, FulfilmentRequest.class);
     assertEquals(
         requestBodyDTOFixture.getFulfilmentCode(), actualFulfilmentRequest.getFulfilmentCode());
     assertEquals(requestBodyDTOFixture.getCaseId().toString(), actualFulfilmentRequest.getCaseId());
