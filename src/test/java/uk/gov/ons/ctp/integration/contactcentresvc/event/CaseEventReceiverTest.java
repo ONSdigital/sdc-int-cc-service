@@ -20,6 +20,7 @@ import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.Contact;
+import uk.gov.ons.ctp.common.event.model.Header;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseContact;
@@ -36,7 +37,10 @@ public class CaseEventReceiverTest {
 
   @Test
   public void shouldReceiveEvent() {
+    Header header = new Header();
+    header.setMessageId(UUID.fromString("c45de4dc-3c3b-11e9-b210-d663bd873d93"));
     CaseEvent caseEvent = FixtureHelper.loadPackageFixtures(CaseEvent[].class).get(0);
+    caseEvent.setHeader(header);
     target.acceptCaseEvent(caseEvent);
 
     verify(repo).save(caseCaptor.capture());

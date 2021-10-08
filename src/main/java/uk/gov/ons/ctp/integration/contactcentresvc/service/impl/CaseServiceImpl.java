@@ -33,7 +33,7 @@ import uk.gov.ons.ctp.common.domain.Language;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.common.event.EventType;
+import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
 import uk.gov.ons.ctp.common.event.model.Contact;
@@ -136,7 +136,7 @@ public class CaseServiceImpl implements CaseService {
         createFulfilmentRequestPayload(
             requestBodyDTO.getFulfilmentCode(), Product.DeliveryChannel.POST, caseId, contact);
 
-    sendEvent(EventType.FULFILMENT, fulfilmentRequestPayload, caseId);
+    sendEvent(TopicType.FULFILMENT, fulfilmentRequestPayload, caseId);
 
     ResponseDTO response =
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
@@ -168,7 +168,7 @@ public class CaseServiceImpl implements CaseService {
     FulfilmentRequest fulfilmentRequestedPayload =
         createFulfilmentRequestPayload(
             requestBodyDTO.getFulfilmentCode(), Product.DeliveryChannel.SMS, caseId, contact);
-    sendEvent(EventType.FULFILMENT, fulfilmentRequestedPayload, caseId);
+    sendEvent(TopicType.FULFILMENT, fulfilmentRequestedPayload, caseId);
 
     ResponseDTO response =
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
@@ -348,7 +348,7 @@ public class CaseServiceImpl implements CaseService {
     // Create and publish a respondent refusal event
     RefusalDetails refusalPayload = createRespondentRefusalPayload(caseId, requestBodyDTO);
 
-    sendEvent(EventType.REFUSAL, refusalPayload, caseId);
+    sendEvent(TopicType.REFUSAL, refusalPayload, caseId);
 
     // Build response
     ResponseDTO response =
@@ -432,7 +432,7 @@ public class CaseServiceImpl implements CaseService {
             .agentId(Integer.toString(agentId))
             .build();
 
-    sendEvent(EventType.SURVEY_LAUNCH, response, response.getCaseId());
+    sendEvent(TopicType.SURVEY_LAUNCH, response, response.getCaseId());
   }
 
   private CaseContainerDTO filterCaseEvents(CaseContainerDTO caseDTO, Boolean getCaseEvents) {
@@ -677,12 +677,12 @@ public class CaseServiceImpl implements CaseService {
     return mapCaseContainerDTOList(casesToReturn);
   }
 
-  private void sendEvent(EventType eventType, EventPayload payload, Object caseId) {
-    UUID transferId = eventTransfer.send(eventType, payload);
+  private void sendEvent(TopicType topicType, EventPayload payload, Object caseId) {
+    UUID transferId = eventTransfer.send(topicType, payload);
     if (log.isDebugEnabled()) {
       log.debug(
           "{} event published",
-          v("eventType", eventType),
+          v("topicType", topicType),
           kv("caseId", caseId),
           kv("transferId", transferId));
     }

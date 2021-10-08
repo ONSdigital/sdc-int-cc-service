@@ -33,7 +33,7 @@ import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.common.event.EventType;
+import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
@@ -87,7 +87,7 @@ public abstract class CaseServiceImplTestBase {
     return dateParser.parse(datetime).getTime();
   }
 
-  <T extends EventPayload> T verifyEventSent(EventType expectedEventType, Class<T> payloadClazz) {
+  <T extends EventPayload> T verifyEventSent(TopicType expectedEventType, Class<T> payloadClazz) {
     ArgumentCaptor<T> payloadCaptor = ArgumentCaptor.forClass(payloadClazz);
     verify(eventTransfer).send(eq(expectedEventType), payloadCaptor.capture());
 
@@ -98,7 +98,7 @@ public abstract class CaseServiceImplTestBase {
     verify(eventTransfer, never()).send(any(), any());
   }
 
-  void verifyEventNotSent(EventType type) {
+  void verifyEventNotSent(TopicType type) {
     verify(eventTransfer, never()).send(eq(type), any());
   }
 

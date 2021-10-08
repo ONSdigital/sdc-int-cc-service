@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
-import uk.gov.ons.ctp.common.event.EventType;
+import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.ContactCompact;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
@@ -102,7 +102,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
 
     assertEquals(expectedResponseCaseId, refusalResponse.getId());
 
-    RefusalDetails refusal = verifyEventSent(EventType.REFUSAL, RefusalDetails.class);
+    RefusalDetails refusal = verifyEventSent(TopicType.REFUSAL, RefusalDetails.class);
     assertEquals("123", refusal.getAgentId());
     assertTrue(refusal.isHouseholder());
     verifyEmptyRefusalAddress(refusal);
@@ -156,7 +156,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
         timeBeforeInvocation, timeAfterInvocation, refusalResponse.getDateTime());
 
     // Validate payload of published event
-    RefusalDetails refusal = verifyEventSent(EventType.REFUSAL, RefusalDetails.class);
+    RefusalDetails refusal = verifyEventSent(TopicType.REFUSAL, RefusalDetails.class);
     assertEquals("123", refusal.getAgentId());
     assertEquals(A_CALL_ID, refusal.getCallId());
     assertTrue(refusal.isHouseholder());

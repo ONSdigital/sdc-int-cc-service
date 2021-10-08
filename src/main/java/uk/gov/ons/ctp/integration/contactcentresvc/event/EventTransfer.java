@@ -3,7 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
-import uk.gov.ons.ctp.common.event.EventType;
+import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.EventToSend;
@@ -19,7 +19,7 @@ public class EventTransfer {
     this.mapper = mapper;
   }
 
-  public UUID send(EventType type, EventPayload payload) {
+  public UUID send(TopicType type, EventPayload payload) {
     EventToSend event = new EventToSend();
     event.setId(UUID.randomUUID());
     event.setType(type.name());

@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +35,11 @@ public class CaseEventReceiver {
   public void acceptCaseEvent(CaseEvent caseEvent) {
 
     CollectionCase collectionCase = caseEvent.getPayload().getCollectionCase();
-    String caseTransactionId = caseEvent.getEvent().getTransactionId();
+    UUID caseMessageId = caseEvent.getHeader().getMessageId();
 
     log.info(
         "Entering acceptCaseEvent {}, {}",
-        kv("transactionId", caseTransactionId),
+        kv("messageId", caseMessageId),
         kv("caseId", collectionCase.getId()));
 
     Case caze = map(collectionCase);
@@ -46,7 +47,7 @@ public class CaseEventReceiver {
 
     log.info(
         "Successful saved Case to database {}, {}",
-        kv("transactionId", caseTransactionId),
+        kv("messageId", caseMessageId),
         kv("caseId", collectionCase.getId()));
   }
 
