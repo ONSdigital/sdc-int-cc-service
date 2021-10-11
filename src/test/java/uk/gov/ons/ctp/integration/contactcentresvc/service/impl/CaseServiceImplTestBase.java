@@ -106,7 +106,6 @@ public abstract class CaseServiceImplTestBase {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
     assertEquals(expectedCaseResult.getCaseType(), results.getCaseType());
-    assertEquals(expectedCaseResult.getCeOrgName(), results.getCeOrgName());
     assertEquals(
         expectedCaseResult.getAllowedDeliveryChannels(), results.getAllowedDeliveryChannels());
 
@@ -132,10 +131,7 @@ public abstract class CaseServiceImplTestBase {
             .townName(caseFromCaseService.getTownName())
             .region(caseFromCaseService.getRegion().substring(0, 1))
             .postcode(caseFromCaseService.getPostcode())
-            .ceOrgName(caseFromCaseService.getOrganisationName())
             .uprn(createUprn(caseFromCaseService.getUprn()))
-            .estabUprn(createUprn(caseFromCaseService.getEstabUprn()))
-            .secureEstablishment(caseFromCaseService.isSecureEstablishment())
             .caseEvents(Collections.emptyList())
             .build();
     if (caseEvents) {

@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
-import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
@@ -36,8 +35,6 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
   private static final boolean CASE_EVENTS_FALSE = false;
 
   private static final long VALID_CASE_REF = 882_345_440L;
-
-  private static final String AN_ESTAB_UPRN = "334111111111";
 
   @BeforeEach
   public void setup() {
@@ -85,16 +82,6 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
       assertEquals("Case is not suitable", e.getReason());
       assertEquals(HttpStatus.FORBIDDEN, e.getStatus());
     }
-  }
-
-  @Test
-  public void shouldGetSecureEstablishmentByCaseReference() throws Exception {
-    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(1);
-    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
-
-    CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, new CaseQueryRequestDTO(false));
-    assertTrue(results.isSecureEstablishment());
-    assertEquals(new UniquePropertyReferenceNumber(AN_ESTAB_UPRN), results.getEstabUprn());
   }
 
   private void rejectNonLuhn(long caseRef) {

@@ -1,9 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.UUID;
-import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -47,21 +45,7 @@ public class CaseDTO {
 
   private String postcode;
 
-  @Size(max = 60)
-  private String ceOrgName;
-
   private UniquePropertyReferenceNumber uprn;
 
-  private UniquePropertyReferenceNumber estabUprn;
-
   private List<CaseEventDTO> caseEvents;
-
-  private boolean secureEstablishment;
-
-  private boolean handDelivery;
-
-  @JsonIgnore
-  public boolean isHandDelivery() {
-    return handDelivery;
-  }
 }

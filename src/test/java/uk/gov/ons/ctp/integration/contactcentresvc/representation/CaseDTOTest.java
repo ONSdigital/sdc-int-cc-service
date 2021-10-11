@@ -11,8 +11,6 @@ import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 public class CaseDTOTest {
   private static final UniquePropertyReferenceNumber A_UPRN =
       new UniquePropertyReferenceNumber("3341111111111");
-  private static final UniquePropertyReferenceNumber ANOTHER_UPRN =
-      new UniquePropertyReferenceNumber("1347459999");
   private static final UUID A_UUID = UUID.randomUUID();
 
   private CaseDTO aCase;
@@ -36,7 +34,6 @@ public class CaseDTOTest {
     aCase = new CaseDTO();
     aCase.setId(A_UUID);
     aCase.setUprn(A_UPRN);
-    aCase.setEstabUprn(ANOTHER_UPRN);
 
     String json = prettySerialise(aCase);
 
@@ -44,6 +41,5 @@ public class CaseDTOTest {
 
     assertEquals(A_UUID, deser.getId());
     assertEquals(A_UPRN, deser.getUprn());
-    assertEquals(ANOTHER_UPRN, deser.getEstabUprn());
   }
 }

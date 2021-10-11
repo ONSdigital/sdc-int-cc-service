@@ -49,7 +49,6 @@ public final class CaseEndpointGetCcsCaseTest {
   private static final String TOWN = "Exeter";
   private static final String REGION = "E";
   private static final String POSTCODE = "GW12 AAA";
-  private static final String ORG_NAME = "Tiddlywink Athletic Club";
 
   private static final String EVENT_CATEGORY = "REFUSAL";
   private static final String EVENT_DESCRIPTION = "Event for testcase";
@@ -131,7 +130,6 @@ public final class CaseEndpointGetCcsCaseTest {
             .townName(TOWN)
             .region(REGION)
             .postcode(POSTCODE)
-            .ceOrgName(ORG_NAME)
             .caseEvents(Arrays.asList(caseEventDTO1))
             .build();
 
@@ -148,7 +146,6 @@ public final class CaseEndpointGetCcsCaseTest {
     actions.andExpect(jsonPath("$[0].townName", is(TOWN)));
     actions.andExpect(jsonPath("$[0].region", is(REGION)));
     actions.andExpect(jsonPath("$[0].postcode", is(POSTCODE)));
-    actions.andExpect(jsonPath("$[0].ceOrgName", is(ORG_NAME)));
 
     actions.andExpect(jsonPath("$[0].caseEvents[0].category", is(EVENT_CATEGORY)));
     actions.andExpect(jsonPath("$[0].caseEvents[0].description", is(EVENT_DESCRIPTION)));
@@ -163,7 +160,6 @@ public final class CaseEndpointGetCcsCaseTest {
     actions.andExpect(jsonPath("$[1].townName", is(TOWN)));
     actions.andExpect(jsonPath("$[1].region", is(REGION)));
     actions.andExpect(jsonPath("$[1].postcode", is(POSTCODE)));
-    actions.andExpect(jsonPath("$[1].ceOrgName", is(ORG_NAME)));
 
     actions.andExpect(jsonPath("$[1].caseEvents[0].category", is(EVENT_CATEGORY)));
     actions.andExpect(jsonPath("$[1].caseEvents[0].description", is(EVENT_DESCRIPTION)));

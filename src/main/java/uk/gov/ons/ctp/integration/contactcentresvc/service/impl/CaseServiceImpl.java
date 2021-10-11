@@ -770,7 +770,6 @@ public class CaseServiceImpl implements CaseService {
     response.setAddressLine1(modifyRequestDTO.getAddressLine1());
     response.setAddressLine2(modifyRequestDTO.getAddressLine2());
     response.setAddressLine3(modifyRequestDTO.getAddressLine3());
-    response.setCeOrgName(modifyRequestDTO.getCeOrgName());
     response.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
     response.setCaseEvents(Collections.emptyList());
   }

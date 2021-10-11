@@ -7,7 +7,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_1;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
-import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
@@ -37,8 +35,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   private static final boolean CASE_EVENTS_TRUE = true;
   private static final boolean CASE_EVENTS_FALSE = false;
-
-  private static final String AN_ESTAB_UPRN = "334111111111";
 
   @BeforeEach
   public void setup() {
@@ -72,16 +68,6 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     CaseDTO results = target.getCaseById(UUID_0, requestParams);
 
     verifyCase(results, expectedCaseResult, caseEvents);
-  }
-
-  @Test
-  public void shouldGetSecureEstablishmentByCaseId() throws CTPException {
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(1);
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_1), any())).thenReturn(caseFromCaseService);
-
-    CaseDTO results = target.getCaseById(UUID_1, new CaseQueryRequestDTO(false));
-    assertTrue(results.isSecureEstablishment());
-    assertEquals(new UniquePropertyReferenceNumber(AN_ESTAB_UPRN), results.getEstabUprn());
   }
 
   @Test

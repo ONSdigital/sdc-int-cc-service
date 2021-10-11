@@ -359,9 +359,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     assertEquals(caseContainerDTO.getTownName(), response.getTownName());
     assertEquals(caseContainerDTO.getPostcode(), response.getPostcode());
     assertEquals(caseContainerDTO.getRegion().substring(0, 1), response.getRegion());
-    assertEquals(requestDTO.getCeOrgName(), response.getCeOrgName());
     assertEquals(caseContainerDTO.getUprn(), uprnStr(response.getUprn()));
-    assertEquals(caseContainerDTO.getEstabUprn(), uprnStr(response.getEstabUprn()));
     assertEquals(ALL_DELIVERY_CHANNELS, response.getAllowedDeliveryChannels());
     assertTrue(response.getCaseEvents().isEmpty());
   }

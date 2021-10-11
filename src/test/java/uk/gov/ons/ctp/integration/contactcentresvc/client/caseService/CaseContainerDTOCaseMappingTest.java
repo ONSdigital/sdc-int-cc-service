@@ -1,18 +1,13 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.client.caseService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 
 public class CaseContainerDTOCaseMappingTest {
-  private static final String A_UPRN = "334999999999";
   private CCSvcBeanMapper mapper = new CCSvcBeanMapper();
   private CaseContainerDTO caseContainerDTO = new CaseContainerDTO();
   private CaseDTO caseDTO;
@@ -37,32 +32,5 @@ public class CaseContainerDTOCaseMappingTest {
     caseContainerDTO.setRegion("");
     map();
     assertEquals("", caseDTO.getRegion());
-  }
-
-  @Test
-  public void shouldMapSecureEstablishment() {
-    caseContainerDTO.setSecureEstablishment(true);
-    map();
-    assertTrue(caseDTO.isSecureEstablishment());
-  }
-
-  @Test
-  public void shouldMapNonSecureEstablishment() {
-    caseContainerDTO.setSecureEstablishment(false);
-    map();
-    assertFalse(caseDTO.isSecureEstablishment());
-  }
-
-  @Test
-  public void shouldAcceptNullEstablishmentUprn() {
-    map();
-    assertNull(caseDTO.getEstabUprn());
-  }
-
-  @Test
-  public void shouldAcceptEstablishmentUprn() {
-    caseContainerDTO.setEstabUprn(A_UPRN);
-    map();
-    assertEquals(new UniquePropertyReferenceNumber(A_UPRN), caseDTO.getEstabUprn());
   }
 }
