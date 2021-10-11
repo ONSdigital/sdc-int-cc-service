@@ -10,7 +10,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_1;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -271,33 +270,6 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
       assertTrue(e.getMessage().contains("is no longer available"), e.getMessage());
       assertEquals(Fault.BAD_REQUEST, e.getFault());
     }
-  }
-
-  @Test
-  public void testFulfilmentRequestBySMS_caseSvcResponseCaseWithSurveyTypeCCS()
-      throws CTPException {
-    CaseContainerDTO caseData = casesFromCaseService().get(1);
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_1), any())).thenReturn(caseData);
-    SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
-    CTPException e =
-        assertThrows(
-            CTPException.class, () -> target.fulfilmentRequestBySMS(requestBodyDTOFixture));
-    assertEquals(CTPException.Fault.BAD_REQUEST, e.getFault());
-    assertEquals("Operation not permissible for a CCS Case", e.getMessage());
-  }
-
-  @Test
-  public void testFulfilmentRequestByPost_caseSvcResponseCaseWithSurveyTypeCCS()
-      throws CTPException {
-    CaseContainerDTO caseData = casesFromCaseService().get(1);
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_1), any())).thenReturn(caseData);
-    PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_1, "Mr", "Mickey", "Mouse");
-    CTPException e =
-        assertThrows(
-            CTPException.class, () -> target.fulfilmentRequestByPost(requestBodyDTOFixture));
-    assertEquals(CTPException.Fault.BAD_REQUEST, e.getFault());
-    assertEquals("Operation not permissible for a CCS Case", e.getMessage());
   }
 
   @Test

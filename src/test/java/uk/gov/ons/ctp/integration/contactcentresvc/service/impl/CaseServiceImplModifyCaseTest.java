@@ -35,7 +35,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
 
   private ModifyCaseRequestDTO requestDTO;
   private CaseContainerDTO caseContainerDTO;
-  private CaseContainerDTO ccsSurveyTypeCaseContainerDTO;
   private CaseContainerDTO householdEstabTypeTypeCaseContainerDTO;
 
   @BeforeEach
@@ -43,8 +42,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     mockCaseEventWhiteList();
     requestDTO = FixtureHelper.loadClassFixtures(ModifyCaseRequestDTO[].class).get(0);
     caseContainerDTO = FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class).get(0);
-    ccsSurveyTypeCaseContainerDTO =
-        FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class).get(1);
     householdEstabTypeTypeCaseContainerDTO =
         FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class).get(2);
     lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
@@ -84,16 +81,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
   private void mockDbCannotFindCase() throws CTPException {
     CTPException ex = new CTPException(Fault.RESOURCE_NOT_FOUND);
     when(caseDataClient.getCaseById(eq(UUID_0), eq(true))).thenThrow(ex);
-  }
-
-  @Test
-  public void shouldReturnBadRequestWhenCCSSurveyTypeExists() throws Exception {
-    when(caseDataClient.getCaseById(eq(UUID_0), eq(true)))
-        .thenReturn(ccsSurveyTypeCaseContainerDTO);
-    CTPException e = assertThrows(CTPException.class, () -> target.modifyCase(requestDTO));
-    assertEquals(Fault.BAD_REQUEST, e.getFault());
-    assertEquals("Operation not permissible for a CCS Case", e.getMessage());
-    verifyDbCaseCall(1);
   }
 
   @Test
@@ -247,37 +234,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
   @Test
   public void shouldChangeAddressType_RequestHH_ExistingOtherNull() throws Exception {
     verifyAddressTypeChanged(CaseType.HH, EstabType.HOUSEHOLD, "Oblivion Sky Tower", CaseType.SPG);
-  }
-
-  private void assertRejectNorthernIrelandChangeFromHouseholdToCE(String region) throws Exception {
-    requestDTO.setCaseType(CaseType.CE);
-    requestDTO.setEstabType(EstabType.CARE_HOME);
-    caseContainerDTO.setEstabType(EstabType.HOUSEHOLD.getCode());
-    caseContainerDTO.setCaseType(CaseType.HH.name());
-    caseContainerDTO.setRegion(region);
-    mockDbHasCase();
-    CTPException e = assertThrows(CTPException.class, () -> target.modifyCase(requestDTO));
-    assertEquals(Fault.BAD_REQUEST, e.getFault());
-    assertEquals(
-        "All queries relating to Communal Establishments in Northern Ireland should be escalated to NISRA HQ",
-        e.getMessage());
-  }
-
-  @Test
-  public void shouldRejectNorthernIrelandChangeFromHouseholdToCE_regionN() throws Exception {
-    assertRejectNorthernIrelandChangeFromHouseholdToCE("N");
-  }
-
-  @Test
-  public void shouldRejectNorthernIrelandChangeFromHouseholdToCE_regionLowerCaseN()
-      throws Exception {
-    assertRejectNorthernIrelandChangeFromHouseholdToCE("n");
-  }
-
-  @Test
-  public void shouldRejectNorthernIrelandChangeFromHouseholdToCE_regionWithTrailingChars()
-      throws Exception {
-    assertRejectNorthernIrelandChangeFromHouseholdToCE("N01234");
   }
 
   @Test

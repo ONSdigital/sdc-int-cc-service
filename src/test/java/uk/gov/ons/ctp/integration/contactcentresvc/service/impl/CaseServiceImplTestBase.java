@@ -101,22 +101,16 @@ public abstract class CaseServiceImplTestBase {
     verify(eventTransfer, never()).send(eq(type), any());
   }
 
-  void verifyCase(CaseDTO results, CaseDTO expectedCaseResult, boolean caseEventsExpected)
-      throws Exception {
+  void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
     assertEquals(
         expectedCaseResult.getAllowedDeliveryChannels(), results.getAllowedDeliveryChannels());
-
-    if (!caseEventsExpected) {
-      assertTrue(results.getCaseEvents().isEmpty());
-    }
-
     assertEquals(expectedCaseResult, results);
     verifyEventNotSent();
   }
 
-  CaseDTO createExpectedCaseDTO(CaseContainerDTO caseFromCaseService, boolean caseEvents) {
+  CaseDTO createExpectedCaseDTO(CaseContainerDTO caseFromCaseService) {
 
     CaseDTO expectedCaseResult =
         CaseDTO.builder()
@@ -132,9 +126,6 @@ public abstract class CaseServiceImplTestBase {
             .uprn(createUprn(caseFromCaseService.getUprn()))
             .caseEvents(Collections.emptyList())
             .build();
-    if (caseEvents) {
-      expectedCaseResult.setCaseEvents(filterEvents(caseFromCaseService));
-    }
     return expectedCaseResult;
   }
 

@@ -54,7 +54,7 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     casesFromDb.get(0).setCaseType(CaseType.HH.name());
     mockCasesFromDb();
     CaseDTO result = getCasesByUprn(true);
-    verifyDbCase(result, true, 0);
+    verifyDbCase(result, 0);
   }
 
   @Test
@@ -62,7 +62,7 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     casesFromDb.get(0).setCaseType(CaseType.HH.name());
     mockCasesFromDb();
     CaseDTO result = getCasesByUprn(false);
-    verifyDbCase(result, false, 0);
+    verifyDbCase(result, 0);
   }
 
   @Test
@@ -88,7 +88,7 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     casesFromDb.get(0).setCaseType("HH");
     mockCasesFromDb();
     CaseDTO result = getCasesByUprn(true);
-    verifyDbCase(result, true, 0);
+    verifyDbCase(result, 0);
   }
 
   // ---- helpers methods below ---
@@ -107,12 +107,9 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
     verify(caseDataClient).getCaseByUprn(any(Long.class), any(Boolean.class));
   }
 
-  private void verifyDbCase(CaseDTO results, boolean caseEventsExpected, int dataIndex)
-      throws Exception {
-    CaseDTO expectedCaseResult =
-        createExpectedCaseDTO(casesFromDb.get(dataIndex), caseEventsExpected);
-
-    verifyCase(results, expectedCaseResult, caseEventsExpected);
+  private void verifyDbCase(CaseDTO results, int dataIndex) throws Exception {
+    CaseDTO expectedCaseResult = createExpectedCaseDTO(casesFromDb.get(dataIndex));
+    verifyCase(results, expectedCaseResult);
   }
 
   private CaseDTO getCasesByUprn(boolean caseEvents) throws CTPException {

@@ -121,8 +121,8 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
     CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
-    CaseDTO expectedCaseResult = createExpectedCaseDTO(caseFromCaseService, caseEvents);
-    verifyCase(results, expectedCaseResult, caseEvents);
+    CaseDTO expectedCaseResult = createExpectedCaseDTO(caseFromCaseService);
+    verifyCase(results, expectedCaseResult);
   }
 
   private List<CaseContainerDTO> casesFromDatabase() {

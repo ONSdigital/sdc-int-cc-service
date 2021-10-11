@@ -21,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
@@ -32,8 +31,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 /** Unit Test {@link CaseService#getCaseById(UUID, CaseQueryRequestDTO) getCaseById}. */
 @ExtendWith(MockitoExtension.class)
 public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
-  private static final boolean CASE_EVENTS_TRUE = true;
-  private static final boolean CASE_EVENTS_FALSE = false;
 
   @BeforeEach
   public void setup() {
@@ -41,32 +38,24 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   }
 
   private static Stream<Arguments> dataForGetCaseByCaseIdSuccess() {
-    return Stream.of(
-        arguments(CaseType.HH, CASE_EVENTS_TRUE),
-        arguments(CaseType.HH, CASE_EVENTS_FALSE),
-        arguments(CaseType.CE, CASE_EVENTS_TRUE),
-        arguments(CaseType.CE, CASE_EVENTS_FALSE),
-        arguments(CaseType.SPG, CASE_EVENTS_FALSE),
-        arguments(CaseType.SPG, CASE_EVENTS_FALSE),
-        arguments(CaseType.SPG, CASE_EVENTS_TRUE));
+    return Stream.of(arguments(true), arguments(false));
   }
 
   @ParameterizedTest
   @MethodSource("dataForGetCaseByCaseIdSuccess")
-  public void shouldGetCaseByCaseId(CaseType caseType, boolean caseEvents) throws Exception {
+  public void shouldGetCaseByCaseId(boolean caseEvents) throws Exception {
     // Build results to be returned from search
     CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
-    caseFromCaseService.setCaseType(caseType.name());
     CaseDTO expectedCaseResult;
 
     Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
-    expectedCaseResult = createExpectedCaseDTO(caseFromCaseService, caseEvents);
+    expectedCaseResult = createExpectedCaseDTO(caseFromCaseService);
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
     CaseDTO results = target.getCaseById(UUID_0, requestParams);
 
-    verifyCase(results, expectedCaseResult, caseEvents);
+    verifyCase(results, expectedCaseResult);
   }
 
   @Test

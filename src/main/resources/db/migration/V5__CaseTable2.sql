@@ -5,12 +5,12 @@ CREATE TABLE caze (
     id UUID,
     survey_id UUID NOT NULL,
     collection_exercise_id UUID NOT NULL,
-    case_ref INT8,
+    case_ref TEXT NOT NULL,
     invalid BOOLEAN DEFAULT false,
     refusal_received TEXT,
 
     -- address
-    uprn VARCHAR(16) NOT NULL,
+    uprn TEXT NOT NULL,
     address_line1 TEXT NOT NULL,
     address_line2 TEXT,
     address_line3 TEXT,

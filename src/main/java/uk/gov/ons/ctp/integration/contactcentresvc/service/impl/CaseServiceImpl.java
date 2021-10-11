@@ -1,6 +1,5 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static java.util.stream.Collectors.toList;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.v;
 
@@ -46,7 +45,6 @@ import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
@@ -82,7 +80,6 @@ public class CaseServiceImpl implements CaseService {
   private static final String CANNOT_LAUNCH_CCS_CASE_FOR_CE_MSG =
       "Telephone capture feature is not available for CCS Communal establishment's. "
           + "CCS CE's must submit their survey via CCS Paper Questionnaire";
-  private static final String CCS_CASE_ERROR_MSG = "Operation not permissible for a CCS Case";
   private static final String ESTAB_TYPE_OTHER_ERROR_MSG =
       "The pre-existing Establishment Type cannot be changed to OTHER";
 
@@ -190,6 +187,7 @@ public class CaseServiceImpl implements CaseService {
 
     Boolean getCaseEvents = requestParamsDTO.getCaseEvents();
     CaseDTO caseServiceResponse = mapCaseContainerDTO(getCaseFromDb(caseId, getCaseEvents));
+    caseServiceResponse.setCaseEvents(Collections.emptyList()); // for now there are no case events
 
     if (log.isDebugEnabled()) {
       log.debug("Returning case details for caseId", kv("caseId", caseId));
@@ -256,6 +254,7 @@ public class CaseServiceImpl implements CaseService {
     Boolean getCaseEvents = requestParamsDTO.getCaseEvents();
     CaseContainerDTO caseDetails = getCaseFromDb(caseRef, getCaseEvents);
     CaseDTO caseServiceResponse = mapCaseContainerDTO(caseDetails);
+    caseServiceResponse.setCaseEvents(Collections.emptyList()); // no case events for now
     if (log.isDebugEnabled()) {
       log.debug("Returning case details for case reference", kv("caseRef", caseRef));
     }
@@ -287,6 +286,7 @@ public class CaseServiceImpl implements CaseService {
     UUID caseId = originalCaseId;
 
     CaseContainerDTO caseDetails = getCaseFromDb(originalCaseId, true);
+    caseDetails.setCaseEvents(Collections.emptyList()); // for now there are no case events.
 
     if (modifyRequestDTO.getEstabType() == EstabType.OTHER
         && caseDetails.getEstabType() != null
@@ -294,7 +294,6 @@ public class CaseServiceImpl implements CaseService {
       throw new CTPException(Fault.BAD_REQUEST, ESTAB_TYPE_OTHER_ERROR_MSG);
     }
 
-    validateSurveyType(caseDetails);
     caseDetails.setCreatedDateTime(DateTimeUtil.nowUTC());
     CaseType requestedCaseType = modifyRequestDTO.getCaseType();
     CaseType existingCaseType = CaseType.valueOf(caseDetails.getCaseType());
@@ -305,7 +304,6 @@ public class CaseServiceImpl implements CaseService {
     String caseRef = caseDetails.getCaseRef();
 
     if (caseTypeChanged) {
-      rejectNorthernIrelandHouseholdToCE(requestedCaseType, caseDetails);
       caseId = UUID.randomUUID();
       // TODO: modify when we know the new event to send
       // sendAddressTypeChangedEvent(caseId, originalCaseId, modifyRequestDTO);
@@ -422,23 +420,6 @@ public class CaseServiceImpl implements CaseService {
     sendEvent(TopicType.SURVEY_LAUNCH, response, response.getCaseId());
   }
 
-  private CaseContainerDTO filterCaseEvents(CaseContainerDTO caseDTO, Boolean getCaseEvents) {
-    if (getCaseEvents) {
-      // Only return whitelisted events
-      Set<String> whitelistedEventCategories =
-          appConfig.getCaseServiceSettings().getWhitelistedEventCategories();
-      List<EventDTO> filteredEvents =
-          caseDTO.getCaseEvents().stream()
-              .filter(e -> whitelistedEventCategories.contains(e.getEventType()))
-              .collect(toList());
-      caseDTO.setCaseEvents(filteredEvents);
-    } else {
-      // Caller doesn't want any event data
-      caseDTO.setCaseEvents(Collections.emptyList());
-    }
-    return caseDTO;
-  }
-
   private Region convertRegion(CaseContainerDTO caseDetails) {
     return Region.valueOf(caseDetails.getRegion().substring(0, 1).toUpperCase());
   }
@@ -462,7 +443,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     CaseContainerDTO caze = getCaseFromDb(caseId, false);
-    validateSurveyType(caze);
+    caze.setCaseEvents(Collections.emptyList());
     Product product = findProduct(fulfilmentCode, deliveryChannel, convertRegion(caze));
 
     if (deliveryChannel == Product.DeliveryChannel.POST) {
@@ -532,20 +513,19 @@ public class CaseServiceImpl implements CaseService {
     return products.get(0);
   }
 
+  // FIXME remove getCaseEvents boolean
+
   private CaseContainerDTO getCaseFromDb(UUID caseId, boolean getCaseEvents) throws CTPException {
-    CaseContainerDTO caseDetails = caseDataClient.getCaseById(caseId, getCaseEvents);
-    return filterCaseEvents(caseDetails, getCaseEvents);
+    return caseDataClient.getCaseById(caseId, getCaseEvents);
   }
 
   private CaseContainerDTO getCaseFromDb(long caseRef, boolean getCaseEvents) throws CTPException {
-    CaseContainerDTO caseDetails = caseDataClient.getCaseByCaseRef(caseRef, getCaseEvents);
-    return filterCaseEvents(caseDetails, getCaseEvents);
+    return caseDataClient.getCaseByCaseRef(caseRef, getCaseEvents);
   }
 
   private List<CaseContainerDTO> getCasesFromDb(long uprn, boolean getCaseEvents)
       throws CTPException {
-    var caseList = caseDataClient.getCaseByUprn(uprn, getCaseEvents);
-    return caseList.stream().map(c -> filterCaseEvents(c, getCaseEvents)).collect(toList());
+    return caseDataClient.getCaseByUprn(uprn, getCaseEvents);
   }
 
   private List<CaseContainerDTO> getCcsCasesFromRm(String postcode) {
@@ -654,14 +634,13 @@ public class CaseServiceImpl implements CaseService {
       }
     }
 
-    // Only return cases that are not of caseType = HI
-    List<CaseContainerDTO> casesToReturn =
-        (List<CaseContainerDTO>)
-            rmCases.stream()
-                .filter(c -> !(c.getCaseType().equals(CaseType.HI.name())))
-                .collect(toList());
+    rmCases.stream()
+        .forEach(
+            c -> {
+              c.setCaseEvents(Collections.emptyList()); // for now there are no case events
+            });
 
-    return mapCaseContainerDTOList(casesToReturn);
+    return mapCaseContainerDTOList(rmCases);
   }
 
   private void sendEvent(TopicType topicType, EventPayload payload, Object caseId) {
@@ -733,21 +712,6 @@ public class CaseServiceImpl implements CaseService {
     return requestedCaseType != existingCaseType;
   }
 
-  private void rejectNorthernIrelandHouseholdToCE(
-      CaseType requestedCaseType, CaseContainerDTO caseDetails) throws CTPException {
-    Region region = convertRegion(caseDetails);
-    if (region == Region.N && requestedCaseType == CaseType.CE) {
-      AddressType addrType = AddressType.valueOf(caseDetails.getCaseType());
-      if (addrType == AddressType.HH) {
-        String msg =
-            "All queries relating to Communal Establishments in Northern Ireland "
-                + "should be escalated to NISRA HQ";
-        log.info(msg, kv("caseType", requestedCaseType), kv("caseDetails", caseDetails));
-        throw new CTPException(Fault.BAD_REQUEST, msg);
-      }
-    }
-  }
-
   private void prepareModificationResponse(
       CaseDTO response, ModifyCaseRequestDTO modifyRequestDTO, UUID caseId, String caseRef) {
     response.setId(caseId);
@@ -757,12 +721,6 @@ public class CaseServiceImpl implements CaseService {
     response.setAddressLine3(modifyRequestDTO.getAddressLine3());
     response.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
     response.setCaseEvents(Collections.emptyList());
-  }
-
-  private void validateSurveyType(CaseContainerDTO caseDetails) throws CTPException {
-    if (!appConfig.getSurveyName().equalsIgnoreCase(caseDetails.getSurveyType())) {
-      throw new CTPException(Fault.BAD_REQUEST, CCS_CASE_ERROR_MSG);
-    }
   }
 
   /**
@@ -840,6 +798,7 @@ public class CaseServiceImpl implements CaseService {
   private CaseContainerDTO getLaunchCase(UUID caseId) throws CTPException {
     try {
       CaseContainerDTO caseDetails = getCaseFromDb(caseId, false);
+      caseDetails.setCaseEvents(Collections.emptyList());
       return caseDetails;
     } catch (CTPException ex) {
       log.error(

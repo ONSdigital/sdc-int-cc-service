@@ -32,7 +32,7 @@ public class Case {
   private UUID surveyId;
   private UUID collectionExerciseId;
 
-  private Long caseRef; // keeping caseRef, since will be re-introduced
+  private String caseRef; // keeping caseRef, since will be re-introduced
 
   private boolean invalid;
 

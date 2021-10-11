@@ -65,7 +65,6 @@ public class CaseDataClient {
                         "Could not find case for case reference: " + caseReference));
 
     CaseContainerDTO caseDetails = mapper.map(caze, CaseContainerDTO.class);
-
     log.debug("Found case details by case reference", kv("caseReference", caseReference));
     return caseDetails;
   }
