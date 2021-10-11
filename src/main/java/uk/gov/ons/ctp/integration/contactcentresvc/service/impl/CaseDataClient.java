@@ -25,7 +25,7 @@ public class CaseDataClient {
     this.mapper = mapper;
   }
 
-  public CaseContainerDTO getCaseById(UUID caseId, Boolean listCaseEvents) throws CTPException {
+  public CaseContainerDTO getCaseById(UUID caseId) throws CTPException {
     log.debug("Find case details by ID", kv("caseId", caseId));
 
     Case caze =
@@ -41,8 +41,7 @@ public class CaseDataClient {
     return caseDetails;
   }
 
-  public List<CaseContainerDTO> getCaseByUprn(Long uprn, Boolean listCaseEvents)
-      throws CTPException {
+  public List<CaseContainerDTO> getCaseByUprn(Long uprn) throws CTPException {
     log.debug("Find case details by Uprn", kv("uprn", uprn));
 
     List<Case> cases = caseRepo.findByAddressUprn(uprn.toString());
@@ -51,8 +50,7 @@ public class CaseDataClient {
     return cases.stream().map(c -> mapper.map(c, CaseContainerDTO.class)).collect(toList());
   }
 
-  public CaseContainerDTO getCaseByCaseRef(Long caseReference, Boolean listCaseEvents)
-      throws CTPException {
+  public Case getCaseByCaseRef(Long caseReference) throws CTPException {
     log.debug("Find case details by case reference", kv("caseReference", caseReference));
 
     Case caze =
@@ -64,8 +62,7 @@ public class CaseDataClient {
                         Fault.RESOURCE_NOT_FOUND,
                         "Could not find case for case reference: " + caseReference));
 
-    CaseContainerDTO caseDetails = mapper.map(caze, CaseContainerDTO.class);
     log.debug("Found case details by case reference", kv("caseReference", caseReference));
-    return caseDetails;
+    return caze;
   }
 }

@@ -14,10 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -40,27 +39,12 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
   @Test
   public void testGetHouseholdCaseByCaseRef_withCaseDetails() throws Exception {
-    doTestGetCaseByCaseRef(CaseType.HH, CASE_EVENTS_TRUE);
+    doTestGetCaseByCaseRef(CASE_EVENTS_TRUE);
   }
 
   @Test
   public void testGetHouseholdCaseByCaseRef_withNoCaseDetails() throws Exception {
-    doTestGetCaseByCaseRef(CaseType.HH, CASE_EVENTS_FALSE);
-  }
-
-  @Test
-  public void testGetCommunalCaseByCaseRef_withCaseDetails() throws Exception {
-    doTestGetCaseByCaseRef(CaseType.CE, CASE_EVENTS_TRUE);
-  }
-
-  @Test
-  public void testGetCommunalCaseByCaseRef_withNoCaseDetails() throws Exception {
-    doTestGetCaseByCaseRef(CaseType.CE, CASE_EVENTS_FALSE);
-  }
-
-  @Test
-  public void testGetCaseByCaseRef_caseSPG() throws Exception {
-    doTestGetCaseByCaseRef(CaseType.SPG, CASE_EVENTS_FALSE);
+    doTestGetCaseByCaseRef(CASE_EVENTS_FALSE);
   }
 
   private void rejectNonLuhn(long caseRef) {
@@ -79,8 +63,7 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
   }
 
   private void acceptLuhn(long caseRef) throws Exception {
-    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any()))
-        .thenReturn(casesFromDatabase().get(0));
+    mockGetCaseByRef(casesFromDatabase().get(0));
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(false);
     target.getCaseByCaseReference(caseRef, requestParams);
   }
@@ -95,10 +78,8 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
   @Test
   public void shouldReport404ForBlacklistedUPRN() throws Exception {
-    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
-    caseFromCaseService.setCaseType(CaseType.CE.name());
-    caseFromCaseService.setEstabType(null);
-    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
+    Case caseFromDb = casesFromDatabase().get(0);
+    mockGetCaseByRef(caseFromDb);
 
     when(blacklistedUPRNBean.isUPRNBlacklisted(any())).thenReturn(true);
 
@@ -112,20 +93,23 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
     }
   }
 
-  private void doTestGetCaseByCaseRef(CaseType caseType, boolean caseEvents) throws Exception {
+  private void doTestGetCaseByCaseRef(boolean caseEvents) throws Exception {
     // Build results to be returned from search
-    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
-    caseFromCaseService.setCaseType(caseType.name());
-    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
+    Case caseFromDb = casesFromDatabase().get(0);
+    mockGetCaseByRef(caseFromDb);
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
     CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
-    CaseDTO expectedCaseResult = createExpectedCaseDTO(caseFromCaseService);
+    CaseDTO expectedCaseResult = createExpectedCaseDTO(caseFromDb);
     verifyCase(results, expectedCaseResult);
   }
 
-  private List<CaseContainerDTO> casesFromDatabase() {
-    return FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
+  private void mockGetCaseByRef(Case result) throws Exception {
+    Mockito.when(caseDataClient.getCaseByCaseRef(any())).thenReturn(result);
+  }
+
+  private List<Case> casesFromDatabase() {
+    return FixtureHelper.loadPackageFixtures(Case[].class);
   }
 }

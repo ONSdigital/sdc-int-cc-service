@@ -80,6 +80,18 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .register();
 
     factory
+        .classMap(CaseDTO.class, Case.class)
+        .field("addressLine1", "address.addressLine1")
+        .field("addressLine2", "address.addressLine2")
+        .field("addressLine3", "address.addressLine3")
+        .field("townName", "address.townName")
+        .field("postcode", "address.postcode")
+        .field("region", "address.region")
+        .field("uprn", "address.uprn")
+        .byDefault()
+        .register();
+
+    factory
         .classMap(EventDTO.class, CaseEventDTO.class)
         .field("eventType", "category")
         .byDefault()

@@ -175,9 +175,7 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
 
   @Test
   public void testLaunch_caseServiceNotFoundException() throws Exception {
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-        .when(caseDataClient)
-        .getCaseById(UUID_0, false);
+    mockGetCaseById(UUID_0, new ResponseStatusException(HttpStatus.NOT_FOUND));
     assertThrows(
         ResponseStatusException.class,
         () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));
@@ -185,9 +183,7 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
 
   @Test
   public void testLaunch_caseServiceResponseStatusException() throws Exception {
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
-        .when(caseDataClient)
-        .getCaseById(UUID_0, false);
+    mockGetCaseById(UUID_0, new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT));
     assertThrows(
         ResponseStatusException.class,
         () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));

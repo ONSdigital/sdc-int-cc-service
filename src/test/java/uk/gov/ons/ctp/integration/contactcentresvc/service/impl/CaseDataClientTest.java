@@ -49,7 +49,7 @@ public class CaseDataClientTest {
   @Test
   public void shouldGetCaseById() throws Exception {
     when(caseRepo.findById(any())).thenReturn(Optional.of(caze));
-    result = target.getCaseById(ID, false);
+    result = target.getCaseById(ID);
     assertEquals(ID, result.getId());
   }
 
@@ -58,7 +58,7 @@ public class CaseDataClientTest {
     List<Case> cases = new ArrayList<>();
     cases.add(caze);
     when(caseRepo.findByAddressUprn(any())).thenReturn(cases);
-    resultList = target.getCaseByUprn(UPRN, false);
+    resultList = target.getCaseByUprn(UPRN);
     assertEquals(1, resultList.size());
     assertEquals(UPRN.toString(), resultList.get(0).getUprn());
   }
@@ -76,21 +76,21 @@ public class CaseDataClientTest {
   @Test
   public void shouldHandleCaseIdNotFound() throws Exception {
     when(caseRepo.findById(any())).thenReturn(Optional.empty());
-    exception = assertThrows(CTPException.class, () -> target.getCaseById(ID, false));
+    exception = assertThrows(CTPException.class, () -> target.getCaseById(ID));
     assertEquals(Fault.RESOURCE_NOT_FOUND, exception.getFault());
   }
 
   @Test
   public void shouldHandleEmptyResultsForGetCaseByUprn() throws Exception {
     when(caseRepo.findByAddressUprn(any())).thenReturn(new ArrayList<>());
-    resultList = target.getCaseByUprn(UPRN, false);
+    resultList = target.getCaseByUprn(UPRN);
     assertEquals(0, resultList.size());
   }
 
   @Test
   public void shouldHandleCaseRefNotFound() throws Exception {
     when(caseRepo.findByCaseRef(CASE_REF)).thenReturn(Optional.empty());
-    exception = assertThrows(CTPException.class, () -> target.getCaseByCaseRef(CASE_REF, false));
+    exception = assertThrows(CTPException.class, () -> target.getCaseByCaseRef(CASE_REF));
     assertEquals(Fault.RESOURCE_NOT_FOUND, exception.getFault());
   }
 }

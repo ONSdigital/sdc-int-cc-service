@@ -3,8 +3,6 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
 
 import java.util.List;
@@ -16,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -48,7 +45,7 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
     CaseDTO expectedCaseResult;
 
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
+    mockGetCaseById(UUID_0, caseFromCaseService);
     expectedCaseResult = createExpectedCaseDTO(caseFromCaseService);
 
     // Run the request
@@ -59,12 +56,12 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testCaseNotFound() throws CTPException {
+  public void testCaseNotFound() throws Exception {
     doGetCaseByIdNotFound(UUID_0);
   }
 
   @Test
-  public void testHandleErrorFromRM() throws CTPException {
+  public void testHandleErrorFromRM() throws Exception {
     doGetCaseByIdGetsError(UUID_0);
   }
 
@@ -72,9 +69,8 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     return FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
   }
 
-  private void doGetCaseByIdNotFound(UUID caseId) throws CTPException {
-    Mockito.when(caseDataClient.getCaseById(eq(caseId), any()))
-        .thenThrow(new CTPException(Fault.RESOURCE_NOT_FOUND, "Case Id Not Found:"));
+  private void doGetCaseByIdNotFound(UUID caseId) throws Exception {
+    mockGetCaseById(caseId, new CTPException(Fault.RESOURCE_NOT_FOUND, "Case Id Not Found:"));
 
     Fault fault = null;
     String message = null;
@@ -91,9 +87,9 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     assertTrue(message.contains("Case Id Not Found:"));
   }
 
-  private void doGetCaseByIdGetsError(UUID caseId) throws CTPException {
-    Mockito.when(caseDataClient.getCaseById(eq(caseId), any()))
-        .thenThrow(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)); // RM problems
+  private void doGetCaseByIdGetsError(UUID caseId) throws Exception {
+    mockGetCaseById(
+        caseId, new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)); // RM problems.
 
     HttpStatus status = null;
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(false);

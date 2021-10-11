@@ -73,15 +73,13 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
 
   @Test
   public void testGetUAC_caseServiceCaseNotFoundException() throws Exception {
-    Mockito.doThrow(new CTPException(Fault.RESOURCE_NOT_FOUND))
-        .when(caseDataClient)
-        .getCaseById(UUID_0, false);
+    mockGetCaseById(UUID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
     assertThrows(CTPException.class, () -> target.getUACForCaseId(UUID_0, new UACRequestDTO()));
   }
 
   @Test
   public void testGetUAC_caseServiceCaseRequestResponseStatusException() throws Exception {
-    Mockito.doThrow(new IllegalArgumentException()).when(caseDataClient).getCaseById(UUID_0, false);
+    mockGetCaseById(UUID_0, new IllegalArgumentException());
     assertThrows(
         IllegalArgumentException.class, () -> target.getUACForCaseId(UUID_0, new UACRequestDTO()));
   }

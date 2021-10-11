@@ -53,6 +53,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
@@ -94,7 +95,7 @@ public class CaseServiceImpl implements CaseService {
 
   @Autowired private ProductReference productReference;
 
-  @Autowired private MapperFacade caseDTOMapper;
+  @Autowired private MapperFacade mapper;
 
   @Autowired private EqLaunchService eqLaunchService;
 
@@ -185,8 +186,7 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching case details by caseId: {}", caseId);
     }
 
-    Boolean getCaseEvents = requestParamsDTO.getCaseEvents();
-    CaseDTO caseServiceResponse = mapCaseContainerDTO(getCaseFromDb(caseId, getCaseEvents));
+    CaseDTO caseServiceResponse = mapCaseContainerDTO(getCaseFromDb(caseId));
     caseServiceResponse.setCaseEvents(Collections.emptyList()); // for now there are no case events
 
     if (log.isDebugEnabled()) {
@@ -229,7 +229,7 @@ public class CaseServiceImpl implements CaseService {
       }
 
       if (isSupportedCaseType) {
-        ccsCases.add(caseDTOMapper.map(ccsCaseDetails, CaseDTO.class));
+        ccsCases.add(mapper.map(ccsCaseDetails, CaseDTO.class));
       } else {
         log.info(
             "Not returning CCS case with unsupported case type",
@@ -250,9 +250,7 @@ public class CaseServiceImpl implements CaseService {
 
     validateCaseRef(caseRef);
 
-    // Get the case details from the case service
-    Boolean getCaseEvents = requestParamsDTO.getCaseEvents();
-    CaseContainerDTO caseDetails = getCaseFromDb(caseRef, getCaseEvents);
+    Case caseDetails = getCaseFromDb(caseRef);
     CaseDTO caseServiceResponse = mapCaseContainerDTO(caseDetails);
     caseServiceResponse.setCaseEvents(Collections.emptyList()); // no case events for now
     if (log.isDebugEnabled()) {
@@ -285,7 +283,7 @@ public class CaseServiceImpl implements CaseService {
     UUID originalCaseId = modifyRequestDTO.getCaseId();
     UUID caseId = originalCaseId;
 
-    CaseContainerDTO caseDetails = getCaseFromDb(originalCaseId, true);
+    CaseContainerDTO caseDetails = getCaseFromDb(originalCaseId);
     caseDetails.setCaseEvents(Collections.emptyList()); // for now there are no case events.
 
     if (modifyRequestDTO.getEstabType() == EstabType.OTHER
@@ -300,7 +298,7 @@ public class CaseServiceImpl implements CaseService {
 
     boolean caseTypeChanged = isCaseTypeChange(requestedCaseType, existingCaseType);
 
-    CaseDTO response = caseDTOMapper.map(caseDetails, CaseDTO.class);
+    CaseDTO response = mapper.map(caseDetails, CaseDTO.class);
     String caseRef = caseDetails.getCaseRef();
 
     if (caseTypeChanged) {
@@ -442,7 +440,7 @@ public class CaseServiceImpl implements CaseService {
           kv("fulfilmentCode", fulfilmentCode));
     }
 
-    CaseContainerDTO caze = getCaseFromDb(caseId, false);
+    CaseContainerDTO caze = getCaseFromDb(caseId);
     caze.setCaseEvents(Collections.emptyList());
     Product product = findProduct(fulfilmentCode, deliveryChannel, convertRegion(caze));
 
@@ -513,19 +511,16 @@ public class CaseServiceImpl implements CaseService {
     return products.get(0);
   }
 
-  // FIXME remove getCaseEvents boolean
-
-  private CaseContainerDTO getCaseFromDb(UUID caseId, boolean getCaseEvents) throws CTPException {
-    return caseDataClient.getCaseById(caseId, getCaseEvents);
+  private CaseContainerDTO getCaseFromDb(UUID caseId) throws CTPException {
+    return caseDataClient.getCaseById(caseId);
   }
 
-  private CaseContainerDTO getCaseFromDb(long caseRef, boolean getCaseEvents) throws CTPException {
-    return caseDataClient.getCaseByCaseRef(caseRef, getCaseEvents);
+  private Case getCaseFromDb(long caseRef) throws CTPException {
+    return caseDataClient.getCaseByCaseRef(caseRef);
   }
 
-  private List<CaseContainerDTO> getCasesFromDb(long uprn, boolean getCaseEvents)
-      throws CTPException {
-    return caseDataClient.getCaseByUprn(uprn, getCaseEvents);
+  private List<CaseContainerDTO> getCasesFromDb(long uprn) throws CTPException {
+    return caseDataClient.getCaseByUprn(uprn);
   }
 
   private List<CaseContainerDTO> getCcsCasesFromRm(String postcode) {
@@ -623,7 +618,7 @@ public class CaseServiceImpl implements CaseService {
 
     List<CaseContainerDTO> rmCases = new ArrayList<>();
     try {
-      rmCases = getCasesFromDb(uprn, listCaseEvents);
+      rmCases = getCasesFromDb(uprn);
     } catch (CTPException ex) {
       if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
         log.info("Case by UPRN Not Found calling Case Service", kv("uprn", uprn));
@@ -662,22 +657,24 @@ public class CaseServiceImpl implements CaseService {
     }
   }
 
+  private CaseDTO mapCaseContainerDTO(Case caze) {
+    CaseDTO caseServiceResponse = mapper.map(caze, CaseDTO.class);
+    caseServiceResponse.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
+    return caseServiceResponse;
+  }
+
   private CaseDTO mapCaseContainerDTO(CaseContainerDTO caseDetails) {
-    CaseDTO caseServiceResponse = caseDTOMapper.map(caseDetails, CaseDTO.class);
-    return adaptCaseDTO(caseServiceResponse);
+    CaseDTO caseServiceResponse = mapper.map(caseDetails, CaseDTO.class);
+    caseServiceResponse.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
+    return caseServiceResponse;
   }
 
   private List<CaseDTO> mapCaseContainerDTOList(List<CaseContainerDTO> casesToReturn) {
-    List<CaseDTO> caseServiceListResponse = caseDTOMapper.mapAsList(casesToReturn, CaseDTO.class);
+    List<CaseDTO> caseServiceListResponse = mapper.mapAsList(casesToReturn, CaseDTO.class);
     for (CaseDTO caseServiceResponse : caseServiceListResponse) {
-      adaptCaseDTO(caseServiceResponse);
+      caseServiceResponse.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
     }
     return caseServiceListResponse;
-  }
-
-  private CaseDTO adaptCaseDTO(CaseDTO caseServiceResponse) {
-    caseServiceResponse.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
-    return caseServiceResponse;
   }
 
   private void validateCaseRef(long caseRef) throws CTPException {
@@ -797,7 +794,7 @@ public class CaseServiceImpl implements CaseService {
    */
   private CaseContainerDTO getLaunchCase(UUID caseId) throws CTPException {
     try {
-      CaseContainerDTO caseDetails = getCaseFromDb(caseId, false);
+      CaseContainerDTO caseDetails = getCaseFromDb(caseId);
       caseDetails.setCaseEvents(Collections.emptyList());
       return caseDetails;
     } catch (CTPException ex) {

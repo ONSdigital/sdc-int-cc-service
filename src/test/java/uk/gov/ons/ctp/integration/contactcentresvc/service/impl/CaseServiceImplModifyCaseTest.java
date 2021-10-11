@@ -7,11 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -71,22 +69,20 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
   }
 
   private void verifyDbCaseCall(int times) throws CTPException {
-    verify(caseDataClient, times(times)).getCaseById(any(), eq(true));
+    verify(caseDataClient, times(times)).getCaseById(any());
   }
 
-  private void mockDbHasCase() throws CTPException {
-    when(caseDataClient.getCaseById(eq(UUID_0), eq(true))).thenReturn(caseContainerDTO);
+  private void mockDbHasCase() throws Exception {
+    mockGetCaseById(UUID_0, caseContainerDTO);
   }
 
-  private void mockDbCannotFindCase() throws CTPException {
-    CTPException ex = new CTPException(Fault.RESOURCE_NOT_FOUND);
-    when(caseDataClient.getCaseById(eq(UUID_0), eq(true))).thenThrow(ex);
+  private void mockDbCannotFindCase() throws Exception {
+    mockGetCaseById(UUID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
   }
 
   @Test
   public void shouldReturnBadRequestWhenModifyHouseholdEstabTypeToOther() throws Exception {
-    when(caseDataClient.getCaseById(eq(UUID_0), eq(true)))
-        .thenReturn(householdEstabTypeTypeCaseContainerDTO);
+    mockGetCaseById(UUID_0, householdEstabTypeTypeCaseContainerDTO);
     requestDTO.setEstabType(EstabType.OTHER);
     CTPException e = assertThrows(CTPException.class, () -> target.modifyCase(requestDTO));
     assertEquals(Fault.BAD_REQUEST, e.getFault());
