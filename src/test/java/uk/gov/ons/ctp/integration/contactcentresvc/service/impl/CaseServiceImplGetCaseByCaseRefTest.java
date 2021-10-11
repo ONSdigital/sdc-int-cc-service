@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -14,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -64,24 +61,6 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
   @Test
   public void testGetCaseByCaseRef_caseSPG() throws Exception {
     doTestGetCaseByCaseRef(CaseType.SPG, CASE_EVENTS_FALSE);
-  }
-
-  @Test
-  public void testGetCaseByCaseRef_householdIndividualCase() throws Exception {
-    // Build results to be returned from search
-    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
-    caseFromCaseService.setCaseType("HI"); // Household Individual case
-    Mockito.when(caseDataClient.getCaseByCaseRef(eq(VALID_CASE_REF), any()))
-        .thenReturn(caseFromCaseService);
-
-    // Run the request
-    try {
-      target.getCaseByCaseReference(VALID_CASE_REF, new CaseQueryRequestDTO(true));
-      fail();
-    } catch (ResponseStatusException e) {
-      assertEquals("Case is not suitable", e.getReason());
-      assertEquals(HttpStatus.FORBIDDEN, e.getStatus());
-    }
   }
 
   private void rejectNonLuhn(long caseRef) {

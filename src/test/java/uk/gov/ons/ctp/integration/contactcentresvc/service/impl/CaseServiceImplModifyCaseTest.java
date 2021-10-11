@@ -18,8 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -122,16 +120,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     mockDbCannotFindCase();
     CTPException e = assertThrows(CTPException.class, () -> target.modifyCase(requestDTO));
     assertEquals(Fault.RESOURCE_NOT_FOUND, e.getFault());
-  }
-
-  @Test
-  public void shouldRejectExistingHouseholdIndividualCase() throws Exception {
-    caseContainerDTO.setCaseType(CaseType.HI.name());
-    mockDbHasCase();
-    ResponseStatusException e =
-        assertThrows(ResponseStatusException.class, () -> target.modifyCase(requestDTO));
-    assertEquals(HttpStatus.FORBIDDEN, e.getStatus());
-    assertEquals("Case is not suitable", e.getReason());
   }
 
   private void verifyModifyAddress(
@@ -352,7 +340,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
       assertEquals(caseContainerDTO.getCaseRef(), response.getCaseRef());
     }
 
-    assertEquals(requestDTO.getCaseType().name(), response.getCaseType());
     assertEquals(requestDTO.getAddressLine1(), response.getAddressLine1());
     assertEquals(requestDTO.getAddressLine2(), response.getAddressLine2());
     assertEquals(requestDTO.getAddressLine3(), response.getAddressLine3());

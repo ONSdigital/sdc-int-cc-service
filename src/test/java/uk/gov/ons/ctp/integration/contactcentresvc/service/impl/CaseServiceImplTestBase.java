@@ -105,7 +105,6 @@ public abstract class CaseServiceImplTestBase {
       throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
-    assertEquals(expectedCaseResult.getCaseType(), results.getCaseType());
     assertEquals(
         expectedCaseResult.getAllowedDeliveryChannels(), results.getAllowedDeliveryChannels());
 
@@ -123,7 +122,6 @@ public abstract class CaseServiceImplTestBase {
         CaseDTO.builder()
             .id(caseFromCaseService.getId())
             .caseRef(caseFromCaseService.getCaseRef())
-            .caseType(caseFromCaseService.getCaseType())
             .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
             .addressLine1(caseFromCaseService.getAddressLine1())
             .addressLine2(caseFromCaseService.getAddressLine2())

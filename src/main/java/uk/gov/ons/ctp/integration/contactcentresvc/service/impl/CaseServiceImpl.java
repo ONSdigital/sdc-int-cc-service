@@ -190,7 +190,6 @@ public class CaseServiceImpl implements CaseService {
 
     Boolean getCaseEvents = requestParamsDTO.getCaseEvents();
     CaseDTO caseServiceResponse = mapCaseContainerDTO(getCaseFromDb(caseId, getCaseEvents));
-    rejectHouseholdIndividual(caseServiceResponse);
 
     if (log.isDebugEnabled()) {
       log.debug("Returning case details for caseId", kv("caseId", caseId));
@@ -257,7 +256,6 @@ public class CaseServiceImpl implements CaseService {
     Boolean getCaseEvents = requestParamsDTO.getCaseEvents();
     CaseContainerDTO caseDetails = getCaseFromDb(caseRef, getCaseEvents);
     CaseDTO caseServiceResponse = mapCaseContainerDTO(caseDetails);
-    rejectHouseholdIndividual(caseServiceResponse);
     if (log.isDebugEnabled()) {
       log.debug("Returning case details for case reference", kv("caseRef", caseRef));
     }
@@ -305,8 +303,6 @@ public class CaseServiceImpl implements CaseService {
 
     CaseDTO response = caseDTOMapper.map(caseDetails, CaseDTO.class);
     String caseRef = caseDetails.getCaseRef();
-
-    rejectHouseholdIndividual(response);
 
     if (caseTypeChanged) {
       rejectNorthernIrelandHouseholdToCE(requestedCaseType, caseDetails);
@@ -687,15 +683,6 @@ public class CaseServiceImpl implements CaseService {
     }
   }
 
-  private void rejectHouseholdIndividual(CaseDTO caseDetails) {
-    if (caseDetails.getCaseType().equals(CaseType.HI.name())) {
-      log.info(
-          "Case is not suitable as it is a household individual case",
-          kv("caseId", caseDetails.getId()));
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Case is not suitable");
-    }
-  }
-
   private CaseDTO mapCaseContainerDTO(CaseContainerDTO caseDetails) {
     CaseDTO caseServiceResponse = caseDTOMapper.map(caseDetails, CaseDTO.class);
     return adaptCaseDTO(caseServiceResponse);
@@ -763,10 +750,8 @@ public class CaseServiceImpl implements CaseService {
 
   private void prepareModificationResponse(
       CaseDTO response, ModifyCaseRequestDTO modifyRequestDTO, UUID caseId, String caseRef) {
-    CaseType caseType = modifyRequestDTO.getCaseType();
     response.setId(caseId);
     response.setCaseRef(caseRef);
-    response.setCaseType(caseType.name());
     response.setAddressLine1(modifyRequestDTO.getAddressLine1());
     response.setAddressLine2(modifyRequestDTO.getAddressLine2());
     response.setAddressLine3(modifyRequestDTO.getAddressLine3());

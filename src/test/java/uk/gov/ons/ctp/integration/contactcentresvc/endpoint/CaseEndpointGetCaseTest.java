@@ -41,7 +41,6 @@ public final class CaseEndpointGetCaseTest {
 
   private static final String CASE_UUID_STRING = "dca05c61-8b95-46af-8f73-36f0dc2cbf5e";
   private static final String CASE_REF = "123456";
-  private static final String CASE_TYPE = "R1";
   private static final String ADDRESS_LINE_1 = "Smiths Renovations";
   private static final String ADDRESS_LINE_2 = "Rock House";
   private static final String ADDRESS_LINE_3 = "Cowick Lane";
@@ -186,7 +185,6 @@ public final class CaseEndpointGetCaseTest {
         CaseDTO.builder()
             .id(UUID.fromString(CASE_UUID_STRING))
             .caseRef(CASE_REF)
-            .caseType(CASE_TYPE)
             .addressLine1(ADDRESS_LINE_1)
             .addressLine2(ADDRESS_LINE_2)
             .addressLine3(ADDRESS_LINE_3)
@@ -202,7 +200,6 @@ public final class CaseEndpointGetCaseTest {
   private void verifyStructureOfResultsActions(ResultActions actions) throws Exception {
     actions.andExpect(jsonPath("$.id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$.caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$.caseType", is(CASE_TYPE)));
     actions.andExpect(jsonPath("$.addressLine1", is(ADDRESS_LINE_1)));
     actions.andExpect(jsonPath("$.addressLine2", is(ADDRESS_LINE_2)));
     actions.andExpect(jsonPath("$.addressLine3", is(ADDRESS_LINE_3)));
@@ -220,7 +217,6 @@ public final class CaseEndpointGetCaseTest {
     // assertions repeatedly
     actions.andExpect(jsonPath("$[0].id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$[0].caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$[0].caseType", is(CASE_TYPE)));
     actions.andExpect(jsonPath("$[0].addressLine1", is(ADDRESS_LINE_1)));
     actions.andExpect(jsonPath("$[0].addressLine2", is(ADDRESS_LINE_2)));
     actions.andExpect(jsonPath("$[0].addressLine3", is(ADDRESS_LINE_3)));
@@ -234,7 +230,6 @@ public final class CaseEndpointGetCaseTest {
 
     actions.andExpect(jsonPath("$[1].id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$[1].caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$[1].caseType", is(CASE_TYPE)));
     actions.andExpect(jsonPath("$[1].addressLine1", is(ADDRESS_LINE_1)));
     actions.andExpect(jsonPath("$[1].addressLine2", is(ADDRESS_LINE_2)));
     actions.andExpect(jsonPath("$[1].addressLine3", is(ADDRESS_LINE_3)));

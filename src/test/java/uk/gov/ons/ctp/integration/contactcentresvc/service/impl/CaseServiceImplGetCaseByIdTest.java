@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -68,23 +67,6 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     CaseDTO results = target.getCaseById(UUID_0, requestParams);
 
     verifyCase(results, expectedCaseResult, caseEvents);
-  }
-
-  @Test
-  public void testGetCaseByCaseId_householdIndividualCase() throws CTPException {
-    // Build results to be returned from search
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
-    caseFromCaseService.setCaseType("HI"); // Household Individual case
-    Mockito.when(caseDataClient.getCaseById(any(), any())).thenReturn(caseFromCaseService);
-
-    // Run the request
-    try {
-      target.getCaseById(UUID_0, new CaseQueryRequestDTO(true));
-      fail();
-    } catch (ResponseStatusException e) {
-      assertEquals("Case is not suitable", e.getReason());
-      assertEquals(HttpStatus.FORBIDDEN, e.getStatus());
-    }
   }
 
   @Test

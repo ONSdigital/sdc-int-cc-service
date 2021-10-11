@@ -26,8 +26,6 @@ public class CaseDTO {
   @LoggingScope(scope = Scope.HASH)
   private String caseRef;
 
-  private String caseType;
-
   private List<DeliveryChannel> allowedDeliveryChannels;
 
   private String addressLine1;
