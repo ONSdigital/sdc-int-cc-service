@@ -110,54 +110,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void shouldModifyNonExistEstabTypeToOther() throws Exception {
-    householdEstabTypeTypeCaseContainerDTO.setEstabType("floating palace");
-    when(caseDataClient.getCaseById(eq(UUID_0), eq(true)))
-        .thenReturn(householdEstabTypeTypeCaseContainerDTO);
-    requestDTO.setEstabType(EstabType.OTHER);
-    CaseDTO response = target.modifyCase(requestDTO);
-    assertNotNull(response);
-    assertEquals(EstabType.OTHER, response.getEstabType());
-    verifyDbCaseCall(1);
-  }
-
-  @Test
-  public void shouldModifyOtherEstabTypeToOther() throws Exception {
-    householdEstabTypeTypeCaseContainerDTO.setEstabType(EstabType.OTHER.name());
-    when(caseDataClient.getCaseById(eq(UUID_0), eq(true)))
-        .thenReturn(householdEstabTypeTypeCaseContainerDTO);
-    requestDTO.setEstabType(EstabType.OTHER);
-    CaseDTO response = target.modifyCase(requestDTO);
-    assertNotNull(response);
-    assertEquals(EstabType.OTHER, response.getEstabType());
-    verifyDbCaseCall(1);
-  }
-
-  @Test
-  public void shouldModifyNullEstabTypeToOther() throws Exception {
-    householdEstabTypeTypeCaseContainerDTO.setEstabType(null);
-    when(caseDataClient.getCaseById(eq(UUID_0), eq(true)))
-        .thenReturn(householdEstabTypeTypeCaseContainerDTO);
-    requestDTO.setEstabType(EstabType.OTHER);
-    CaseDTO response = target.modifyCase(requestDTO);
-    assertNotNull(response);
-    assertEquals(EstabType.OTHER, response.getEstabType());
-    verifyDbCaseCall(1);
-  }
-
-  @Test
-  public void shouldModifyNullEstabTypeToHousehold() throws Exception {
-    householdEstabTypeTypeCaseContainerDTO.setEstabType(null);
-    when(caseDataClient.getCaseById(eq(UUID_0), eq(true)))
-        .thenReturn(householdEstabTypeTypeCaseContainerDTO);
-    requestDTO.setEstabType(EstabType.HOUSEHOLD);
-    CaseDTO response = target.modifyCase(requestDTO);
-    assertNotNull(response);
-    assertEquals(EstabType.HOUSEHOLD, response.getEstabType());
-    verifyDbCaseCall(1);
-  }
-
-  @Test
   public void shouldAcceptCompatibleCaseTypeAndEstabType() throws Exception {
     mockDbHasCase();
     verifyAcceptCompatible(EstabType.APPROVED_PREMISES, CaseType.CE);
@@ -401,9 +353,6 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
     }
 
     assertEquals(requestDTO.getCaseType().name(), response.getCaseType());
-    assertEquals(requestDTO.getCaseType().name(), response.getAddressType());
-    assertEquals(requestDTO.getEstabType(), response.getEstabType());
-    assertEquals(requestDTO.getEstabType().getCode(), response.getEstabDescription());
     assertEquals(requestDTO.getAddressLine1(), response.getAddressLine1());
     assertEquals(requestDTO.getAddressLine2(), response.getAddressLine2());
     assertEquals(requestDTO.getAddressLine3(), response.getAddressLine3());

@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.contactcentresvc;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.List;
 import ma.glasnost.orika.MapperFacade;
@@ -46,9 +45,6 @@ public class CCSvcBeanMapperTest {
     assertAll(
         () -> assertEquals(source.getId(), destination.getId()),
         () -> assertEquals(source.getCaseRef(), destination.getCaseRef()),
-        () -> assertEquals(source.getAddressType(), destination.getAddressType()),
-        () -> assertNull(destination.getEstabType()),
-        () -> assertEquals(source.getEstabType(), destination.getEstabDescription()),
         () -> assertEquals(source.getAddressLine1(), destination.getAddressLine1()),
         () -> assertEquals(source.getAddressLine2(), destination.getAddressLine2()),
         () -> assertEquals(source.getAddressLine3(), destination.getAddressLine3()),

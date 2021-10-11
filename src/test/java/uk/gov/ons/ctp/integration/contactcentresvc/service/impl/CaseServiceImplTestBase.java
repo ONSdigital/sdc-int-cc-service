@@ -29,7 +29,6 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -126,13 +125,10 @@ public abstract class CaseServiceImplTestBase {
             .id(caseFromCaseService.getId())
             .caseRef(caseFromCaseService.getCaseRef())
             .caseType(caseFromCaseService.getCaseType())
-            .estabType(EstabType.forCode(caseFromCaseService.getEstabType()))
-            .estabDescription(caseFromCaseService.getEstabType())
             .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
             .addressLine1(caseFromCaseService.getAddressLine1())
             .addressLine2(caseFromCaseService.getAddressLine2())
             .addressLine3(caseFromCaseService.getAddressLine3())
-            .addressType(caseFromCaseService.getAddressType())
             .townName(caseFromCaseService.getTownName())
             .region(caseFromCaseService.getRegion().substring(0, 1))
             .postcode(caseFromCaseService.getPostcode())

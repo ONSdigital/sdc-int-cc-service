@@ -43,7 +43,6 @@ public final class CaseEndpointGetCcsCaseTest {
   private static final String CASE_UUID_STRING = "dca05c61-8b95-46af-8f73-36f0dc2cbf5e";
   private static final String CASE_REF = "123456";
   private static final String CASE_TYPE = "R1";
-  private static final String CASE_CREATED_DATE_TIME = "2019-01-29T14:14:27.512Z";
   private static final String ADDRESS_LINE_1 = "Smiths Renovations";
   private static final String ADDRESS_LINE_2 = "Rock House";
   private static final String ADDRESS_LINE_3 = "Cowick Lane";

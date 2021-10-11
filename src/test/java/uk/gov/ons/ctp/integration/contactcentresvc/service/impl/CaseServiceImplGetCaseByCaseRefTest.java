@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
-import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -126,30 +125,6 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
     acceptLuhn(VALID_CASE_REF);
     acceptLuhn(100000009);
     acceptLuhn(999999998);
-  }
-
-  @Test
-  public void shouldAdaptNullEstabTypeToHousehold() throws Exception {
-    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
-    caseFromCaseService.setCaseType(CaseType.HH.name());
-    caseFromCaseService.setEstabType(null);
-    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
-
-    CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
-    CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
-    assertEquals(EstabType.HOUSEHOLD, results.getEstabType());
-  }
-
-  @Test
-  public void shouldAdaptNullEstabTypeToOther() throws Exception {
-    CaseContainerDTO caseFromCaseService = casesFromDatabase().get(0);
-    caseFromCaseService.setCaseType(CaseType.CE.name());
-    caseFromCaseService.setEstabType(null);
-    Mockito.when(caseDataClient.getCaseByCaseRef(any(), any())).thenReturn(caseFromCaseService);
-
-    CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
-    CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
-    assertEquals(EstabType.OTHER, results.getEstabType());
   }
 
   @Test

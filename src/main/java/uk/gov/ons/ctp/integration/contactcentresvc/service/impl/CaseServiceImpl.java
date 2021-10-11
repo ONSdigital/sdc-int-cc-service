@@ -711,18 +711,6 @@ public class CaseServiceImpl implements CaseService {
 
   private CaseDTO adaptCaseDTO(CaseDTO caseServiceResponse) {
     caseServiceResponse.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
-    if (null == caseServiceResponse.getEstabDescription()) {
-      String caseType = caseServiceResponse.getCaseType();
-      caseServiceResponse.setEstabType(
-          CaseType.HH.name().equals(caseType) ? EstabType.HOUSEHOLD : EstabType.OTHER);
-      log.info(
-          "Case has a null estabDescription so estabType is based on the caseType",
-          kv("caseType", caseType),
-          kv("estabType", caseServiceResponse.getEstabType()));
-    } else {
-      caseServiceResponse.setEstabType(
-          EstabType.forCode(caseServiceResponse.getEstabDescription()));
-    }
     return caseServiceResponse;
   }
 
@@ -779,10 +767,6 @@ public class CaseServiceImpl implements CaseService {
     response.setId(caseId);
     response.setCaseRef(caseRef);
     response.setCaseType(caseType.name());
-    response.setAddressType(caseType.name());
-    EstabType estabType = modifyRequestDTO.getEstabType();
-    response.setEstabType(estabType);
-    response.setEstabDescription(estabType.getCode());
     response.setAddressLine1(modifyRequestDTO.getAddressLine1());
     response.setAddressLine2(modifyRequestDTO.getAddressLine2());
     response.setAddressLine3(modifyRequestDTO.getAddressLine3());

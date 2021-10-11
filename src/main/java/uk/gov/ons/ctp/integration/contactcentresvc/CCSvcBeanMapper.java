@@ -43,7 +43,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     factory
         .classMap(CaseContainerDTO.class, CaseDTO.class)
-        .field("estabType", "estabDescription")
         .field("organisationName", "ceOrgName")
         .byDefault()
         .fieldMap("region", "region")

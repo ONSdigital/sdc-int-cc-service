@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.log.LoggingScope;
 import uk.gov.ons.ctp.common.log.Scope;
@@ -30,12 +29,6 @@ public class CaseDTO {
   private String caseRef;
 
   private String caseType;
-
-  private String addressType;
-
-  private EstabType estabType;
-
-  private String estabDescription;
 
   private List<DeliveryChannel> allowedDeliveryChannels;
 
