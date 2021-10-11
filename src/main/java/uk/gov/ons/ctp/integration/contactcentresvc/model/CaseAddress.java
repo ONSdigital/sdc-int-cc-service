@@ -1,10 +1,13 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 import javax.persistence.Embeddable;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.ons.ctp.common.domain.Region;
 
 @Data
 @Builder
@@ -20,13 +23,6 @@ public class CaseAddress {
   private String townName;
   private String postcode;
 
-  private String region; // E, W or N
-  private String estabType;
-  private String organisationName;
-
-  private String latitude;
-  private String longitude;
-  private String estabUprn;
-  private String addressType;
-  private String addressLevel;
+  @Enumerated(EnumType.STRING)
+  private Region region;
 }

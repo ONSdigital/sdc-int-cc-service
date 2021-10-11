@@ -53,7 +53,6 @@ import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
-import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
@@ -98,7 +97,7 @@ public class CaseServiceImpl implements CaseService {
 
   @Autowired private ProductReference productReference;
 
-  private MapperFacade caseDTOMapper = new CCSvcBeanMapper();
+  @Autowired private MapperFacade caseDTOMapper;
 
   @Autowired private EqLaunchService eqLaunchService;
 

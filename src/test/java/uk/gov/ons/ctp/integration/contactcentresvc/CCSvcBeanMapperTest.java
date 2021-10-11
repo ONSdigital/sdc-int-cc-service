@@ -4,13 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.util.Date;
 import java.util.List;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
+import uk.gov.ons.ctp.common.event.model.CaseUpdateSample;
+import uk.gov.ons.ctp.common.event.model.CaseUpdateSampleSensitive;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
@@ -64,6 +66,10 @@ public class CCSvcBeanMapperTest {
     verifyMapping(source.getCaseEvents(), destination.getCaseEvents());
   }
 
+  /*
+   * FIXME remove when sure this has no value after refactor.
+   *
+
   @Test
   public void shouldMapCase_to_CaseContainerDTO() {
     Case source = FixtureHelper.loadClassFixtures(Case[].class).get(0);
@@ -92,6 +98,33 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(addr.getAddressType(), destination.getAddressType()),
         () -> assertEquals(addr.getAddressLevel(), destination.getAddressLevel()),
         () -> assertEquals(expectedCreation, destination.getCreatedDateTime()));
+  }
+
+  */
+
+  @Test
+  public void shouldMapCaseUpdate_to_Case() {
+    CaseUpdate source = FixtureHelper.loadClassFixtures(CaseUpdate[].class).get(0);
+    Case destination = mapperFacade.map(source, Case.class);
+    CaseUpdateSample sample = source.getSample();
+    CaseUpdateSampleSensitive sensitive = source.getSampleSensitive();
+    CaseAddress addr = destination.getAddress();
+    assertAll(
+        () -> assertEquals(source.getCaseId(), destination.getId().toString()),
+        () -> assertEquals(source.getSurveyId(), destination.getSurveyId().toString()),
+        () ->
+            assertEquals(
+                source.getCollectionExerciseId(), destination.getCollectionExerciseId().toString()),
+        () -> assertEquals(source.isInvalid(), destination.isInvalid()),
+        () -> assertEquals(source.getRefusalReceived(), destination.getRefusalReceived().name()),
+        () -> assertEquals(sample.getAddressLine1(), addr.getAddressLine1()),
+        () -> assertEquals(sample.getAddressLine2(), addr.getAddressLine2()),
+        () -> assertEquals(sample.getAddressLine3(), addr.getAddressLine3()),
+        () -> assertEquals(sample.getTownName(), addr.getTownName()),
+        () -> assertEquals(sample.getPostcode(), addr.getPostcode()),
+        () -> assertEquals(sample.getRegion(), addr.getRegion().name()),
+        () -> assertEquals(sample.getUprn(), addr.getUprn()),
+        () -> assertEquals(sensitive.getPhoneNumber(), destination.getContact().getPhoneNumber()));
   }
 
   @Test

@@ -5,12 +5,10 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
-import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 
@@ -21,10 +19,13 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 @Slf4j
 @MessageEndpoint
 public class CaseEventReceiver {
+  private CaseRepository caseRepo;
+  private MapperFacade mapper;
 
-  @Autowired CaseRepository caseRepo;
-
-  private MapperFacade mapper = new CCSvcBeanMapper();
+  public CaseEventReceiver(CaseRepository caseRepo, MapperFacade mapper) {
+    this.caseRepo = caseRepo;
+    this.mapper = mapper;
+  }
 
   /**
    * Message end point for events from Response Management.
@@ -34,25 +35,25 @@ public class CaseEventReceiver {
   @ServiceActivator(inputChannel = "acceptCaseEvent")
   public void acceptCaseEvent(CaseEvent caseEvent) {
 
-    CollectionCase collectionCase = caseEvent.getPayload().getCollectionCase();
+    CaseUpdate caseUpdate = caseEvent.getPayload().getCaseUpdate();
     UUID caseMessageId = caseEvent.getHeader().getMessageId();
 
     log.info(
         "Entering acceptCaseEvent {}, {}",
         kv("messageId", caseMessageId),
-        kv("caseId", collectionCase.getId()));
+        kv("caseId", caseUpdate.getCaseId()));
 
-    Case caze = map(collectionCase);
+    Case caze = map(caseUpdate);
     caseRepo.save(caze);
 
     log.info(
         "Successful saved Case to database {}, {}",
         kv("messageId", caseMessageId),
-        kv("caseId", collectionCase.getId()));
+        kv("caseId", caseUpdate.getCaseId()));
   }
 
-  private Case map(CollectionCase collectionCase) {
-    Case caze = mapper.map(collectionCase, Case.class);
+  private Case map(CaseUpdate caseUpdate) {
+    Case caze = mapper.map(caseUpdate, Case.class);
     return caze;
   }
 }

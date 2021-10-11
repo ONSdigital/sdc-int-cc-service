@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
@@ -50,23 +51,33 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .add()
         .register();
 
+    /*
+     *  FIXME remove or adapt
+     *
+     */
     factory
         .classMap(CaseContainerDTO.class, Case.class)
         .field("uprn", "address.uprn")
-        .field("surveyType", "survey")
         .field("addressLine1", "address.addressLine1")
         .field("addressLine2", "address.addressLine2")
         .field("addressLine3", "address.addressLine3")
         .field("townName", "address.townName")
         .field("postcode", "address.postcode")
         .field("region", "address.region")
-        .field("estabType", "address.estabType")
-        .field("organisationName", "address.organisationName")
-        .field("latitude", "address.latitude")
-        .field("longitude", "address.longitude")
-        .field("estabUprn", "address.estabUprn")
-        .field("addressType", "address.addressType")
-        .field("addressLevel", "address.addressLevel")
+        .byDefault()
+        .register();
+
+    factory
+        .classMap(CaseUpdate.class, Case.class)
+        .field("caseId", "id")
+        .field("sample.addressLine1", "address.addressLine1")
+        .field("sample.addressLine2", "address.addressLine2")
+        .field("sample.addressLine3", "address.addressLine3")
+        .field("sample.townName", "address.townName")
+        .field("sample.postcode", "address.postcode")
+        .field("sample.region", "address.region")
+        .field("sample.uprn", "address.uprn")
+        .field("sampleSensitive.phoneNumber", "contact.phoneNumber")
         .byDefault()
         .register();
 

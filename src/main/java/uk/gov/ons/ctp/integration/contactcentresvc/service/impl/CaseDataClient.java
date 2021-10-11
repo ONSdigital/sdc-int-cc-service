@@ -7,21 +7,23 @@ import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 
 @Slf4j
 @Service
 public class CaseDataClient {
+  private CaseRepository caseRepo;
+  private MapperFacade mapper;
 
-  @Autowired private CaseRepository caseRepo;
-  private MapperFacade mapper = new CCSvcBeanMapper();
+  public CaseDataClient(CaseRepository caseRepo, MapperFacade mapper) {
+    this.caseRepo = caseRepo;
+    this.mapper = mapper;
+  }
 
   public CaseContainerDTO getCaseById(UUID caseId, Boolean listCaseEvents) throws CTPException {
     log.debug("Find case details by ID", kv("caseId", caseId));
