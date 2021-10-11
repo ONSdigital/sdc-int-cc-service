@@ -207,15 +207,7 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching latest case details by UPRN", kv("uprn", uprn));
     }
 
-    Optional<CaseDTO> latest = getLatestCaseByUprn(uprn, requestParamsDTO.getCaseEvents());
-
-    CaseDTO response;
-    if (latest.isPresent()) {
-      response = latest.get();
-    } else {
-      return Collections.emptyList();
-    }
-    return Collections.singletonList(response);
+    return callCaseSvcByUPRN(uprn.getValue(), requestParamsDTO.getCaseEvents());
   }
 
   @Override
@@ -732,19 +724,6 @@ public class CaseServiceImpl implements CaseService {
           EstabType.forCode(caseServiceResponse.getEstabDescription()));
     }
     return caseServiceResponse;
-  }
-
-  private Optional<CaseDTO> getLatestCaseByUprn(
-      UniquePropertyReferenceNumber uprn, boolean addCaseEvents) throws CTPException {
-    TimeOrderedCases timeOrderedCases = new TimeOrderedCases();
-
-    List<CaseDTO> rmCases = callCaseSvcByUPRN(uprn.getValue(), addCaseEvents);
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Found {} case details in RM for UPRN", v("cases", rmCases.size()), kv("uprn", uprn));
-    }
-    timeOrderedCases.add(rmCases);
-    return timeOrderedCases.latest();
   }
 
   private void validateCaseRef(long caseRef) throws CTPException {

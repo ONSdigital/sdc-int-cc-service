@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import javax.validation.constraints.Size;
@@ -39,10 +38,6 @@ public class CaseDTO {
   private String estabDescription;
 
   private List<DeliveryChannel> allowedDeliveryChannels;
-
-  private Date createdDateTime;
-
-  private Date lastUpdated;
 
   private String addressLine1;
 

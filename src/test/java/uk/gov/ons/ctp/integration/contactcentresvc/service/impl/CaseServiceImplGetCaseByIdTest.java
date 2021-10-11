@@ -73,8 +73,6 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     CaseDTO results = target.getCaseById(UUID_0, requestParams);
 
     verifyCase(results, expectedCaseResult, caseEvents);
-
-    assertEquals(asMillis("2019-05-14T16:11:41.343+01:00"), results.getCreatedDateTime().getTime());
   }
 
   @Test

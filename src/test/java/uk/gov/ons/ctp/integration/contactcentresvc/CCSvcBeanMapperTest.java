@@ -59,9 +59,7 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(source.getUprn(), String.valueOf(destination.getUprn().getValue())),
         () ->
             assertEquals(
-                source.getEstabUprn(), String.valueOf(destination.getEstabUprn().getValue())),
-        () -> assertEquals(source.getCreatedDateTime(), destination.getCreatedDateTime()),
-        () -> assertEquals(source.getLastUpdated(), destination.getLastUpdated()));
+                source.getEstabUprn(), String.valueOf(destination.getEstabUprn().getValue())));
 
     verifyMapping(source.getCaseEvents(), destination.getCaseEvents());
   }

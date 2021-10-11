@@ -129,8 +129,6 @@ public abstract class CaseServiceImplTestBase {
             .estabType(EstabType.forCode(caseFromCaseService.getEstabType()))
             .estabDescription(caseFromCaseService.getEstabType())
             .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
-            .createdDateTime(caseFromCaseService.getCreatedDateTime())
-            .lastUpdated(caseFromCaseService.getLastUpdated())
             .addressLine1(caseFromCaseService.getAddressLine1())
             .addressLine2(caseFromCaseService.getAddressLine2())
             .addressLine3(caseFromCaseService.getAddressLine3())
