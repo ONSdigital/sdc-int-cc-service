@@ -33,7 +33,7 @@ public class CaseDataClientTest {
 
   private Case caze;
   private CaseContainerDTO result;
-  private List<CaseContainerDTO> resultList;
+  private List<Case> resultList;
   private CTPException exception;
 
   @Mock private CaseRepository caseRepo;
@@ -60,7 +60,7 @@ public class CaseDataClientTest {
     when(caseRepo.findByAddressUprn(any())).thenReturn(cases);
     resultList = target.getCaseByUprn(UPRN);
     assertEquals(1, resultList.size());
-    assertEquals(UPRN.toString(), resultList.get(0).getUprn());
+    assertEquals(UPRN.toString(), resultList.get(0).getAddress().getUprn());
   }
 
   /*

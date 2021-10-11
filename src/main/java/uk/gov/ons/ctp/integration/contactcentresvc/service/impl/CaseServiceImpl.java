@@ -519,7 +519,7 @@ public class CaseServiceImpl implements CaseService {
     return caseDataClient.getCaseByCaseRef(caseRef);
   }
 
-  private List<CaseContainerDTO> getCasesFromDb(long uprn) throws CTPException {
+  private List<Case> getCasesFromDb(long uprn) throws CTPException {
     return caseDataClient.getCaseByUprn(uprn);
   }
 
@@ -616,9 +616,9 @@ public class CaseServiceImpl implements CaseService {
    */
   private List<CaseDTO> callCaseSvcByUPRN(Long uprn, Boolean listCaseEvents) throws CTPException {
 
-    List<CaseContainerDTO> rmCases = new ArrayList<>();
+    List<Case> dbCases = new ArrayList<>();
     try {
-      rmCases = getCasesFromDb(uprn);
+      dbCases = getCasesFromDb(uprn);
     } catch (CTPException ex) {
       if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
         log.info("Case by UPRN Not Found calling Case Service", kv("uprn", uprn));
@@ -628,14 +628,7 @@ public class CaseServiceImpl implements CaseService {
         throw ex;
       }
     }
-
-    rmCases.stream()
-        .forEach(
-            c -> {
-              c.setCaseEvents(Collections.emptyList()); // for now there are no case events
-            });
-
-    return mapCaseContainerDTOList(rmCases);
+    return mapCaseContainerDTOList(dbCases);
   }
 
   private void sendEvent(TopicType topicType, EventPayload payload, Object caseId) {
@@ -669,12 +662,13 @@ public class CaseServiceImpl implements CaseService {
     return caseServiceResponse;
   }
 
-  private List<CaseDTO> mapCaseContainerDTOList(List<CaseContainerDTO> casesToReturn) {
-    List<CaseDTO> caseServiceListResponse = mapper.mapAsList(casesToReturn, CaseDTO.class);
-    for (CaseDTO caseServiceResponse : caseServiceListResponse) {
-      caseServiceResponse.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
+  private List<CaseDTO> mapCaseContainerDTOList(List<Case> casesToReturn) {
+    List<CaseDTO> dtoList = mapper.mapAsList(casesToReturn, CaseDTO.class);
+    for (CaseDTO dto : dtoList) {
+      dto.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
+      dto.setCaseEvents(Collections.emptyList());
     }
-    return caseServiceListResponse;
+    return dtoList;
   }
 
   private void validateCaseRef(long caseRef) throws CTPException {

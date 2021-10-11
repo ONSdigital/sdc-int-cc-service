@@ -1,6 +1,5 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static java.util.stream.Collectors.toList;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.List;
@@ -41,13 +40,13 @@ public class CaseDataClient {
     return caseDetails;
   }
 
-  public List<CaseContainerDTO> getCaseByUprn(Long uprn) throws CTPException {
+  public List<Case> getCaseByUprn(Long uprn) throws CTPException {
     log.debug("Find case details by Uprn", kv("uprn", uprn));
 
     List<Case> cases = caseRepo.findByAddressUprn(uprn.toString());
 
     log.debug("Found {} case details by Uprn", cases.size(), kv("uprn", uprn));
-    return cases.stream().map(c -> mapper.map(c, CaseContainerDTO.class)).collect(toList());
+    return cases;
   }
 
   public Case getCaseByCaseRef(Long caseReference) throws CTPException {
