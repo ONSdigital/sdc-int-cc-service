@@ -33,13 +33,13 @@ public class CaseDTOTest {
   public void shouldSerialiseAndDeserialise() {
     aCase = new CaseDTO();
     aCase.setId(A_UUID);
-    aCase.setUprn(A_UPRN);
+    aCase.getAddress().setUprn(A_UPRN);
 
     String json = prettySerialise(aCase);
 
     CaseDTO deser = deserialise(json, CaseDTO.class);
 
     assertEquals(A_UUID, deser.getId());
-    assertEquals(A_UPRN, deser.getUprn());
+    assertEquals(A_UPRN, deser.getAddress().getUprn());
   }
 }

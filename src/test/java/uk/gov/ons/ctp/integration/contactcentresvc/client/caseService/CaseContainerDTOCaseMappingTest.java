@@ -19,18 +19,18 @@ public class CaseContainerDTOCaseMappingTest {
   @Test
   public void regionTest() {
     map();
-    assertEquals(null, caseDTO.getRegion());
+    assertEquals(null, caseDTO.getAddress().getRegion());
 
     caseContainerDTO.setRegion("E12345678");
     map();
-    assertEquals("E", caseDTO.getRegion());
+    assertEquals("E", caseDTO.getAddress().getRegion());
 
     caseContainerDTO.setRegion("E");
     map();
-    assertEquals("E", caseDTO.getRegion());
+    assertEquals("E", caseDTO.getAddress().getRegion());
 
     caseContainerDTO.setRegion("");
     map();
-    assertEquals("", caseDTO.getRegion());
+    assertEquals("", caseDTO.getAddress().getRegion());
   }
 }

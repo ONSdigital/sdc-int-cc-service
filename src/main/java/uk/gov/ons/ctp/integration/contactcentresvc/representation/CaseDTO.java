@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.log.LoggingScope;
 import uk.gov.ons.ctp.common.log.Scope;
 
@@ -28,22 +27,7 @@ public class CaseDTO {
 
   private List<DeliveryChannel> allowedDeliveryChannels;
 
-  private String addressLine1;
-
-  @LoggingScope(scope = Scope.MASK)
-  private String addressLine2;
-
-  @LoggingScope(scope = Scope.MASK)
-  private String addressLine3;
-
-  @LoggingScope(scope = Scope.MASK)
-  private String townName;
-
-  private String region;
-
-  private String postcode;
-
-  private UniquePropertyReferenceNumber uprn;
+  @Builder.Default private CaseAddressDTO address = new CaseAddressDTO();
 
   private List<CaseEventDTO> caseEvents;
 }

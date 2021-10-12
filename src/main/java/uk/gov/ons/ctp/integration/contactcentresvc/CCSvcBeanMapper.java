@@ -43,8 +43,14 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     factory
         .classMap(CaseContainerDTO.class, CaseDTO.class)
+        .field("uprn", "address.uprn")
+        .field("addressLine1", "address.addressLine1")
+        .field("addressLine2", "address.addressLine2")
+        .field("addressLine3", "address.addressLine3")
+        .field("townName", "address.townName")
+        .field("postcode", "address.postcode")
         .byDefault()
-        .fieldMap("region", "region")
+        .fieldMap("region", "address.region")
         .converter("regionConverter")
         .add()
         .register();
@@ -76,18 +82,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .register();
 
     factory
-        .classMap(CaseDTO.class, Case.class)
-        .field("addressLine1", "address.addressLine1")
-        .field("addressLine2", "address.addressLine2")
-        .field("addressLine3", "address.addressLine3")
-        .field("townName", "address.townName")
-        .field("postcode", "address.postcode")
-        .field("region", "address.region")
-        .field("uprn", "address.uprn")
-        .byDefault()
-        .register();
-
-    factory
         .classMap(EventDTO.class, CaseEventDTO.class)
         .field("eventType", "category")
         .byDefault()
@@ -109,6 +103,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     factory.classMap(CaseContainerDTO.class, Address.class).byDefault().register();
     factory.classMap(CaseContainerDTO.class, AddressCompact.class).byDefault().register();
+    factory.classMap(CaseDTO.class, Case.class).byDefault().register();
   }
 
   static class RegionConverter extends BidirectionalConverter<String, String> {

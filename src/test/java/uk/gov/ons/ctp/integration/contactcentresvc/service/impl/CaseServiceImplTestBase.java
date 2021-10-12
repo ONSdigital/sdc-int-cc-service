@@ -49,6 +49,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
@@ -117,11 +118,8 @@ public abstract class CaseServiceImplTestBase {
 
   CaseDTO createExpectedCaseDTO(CaseContainerDTO caseFromCaseService) {
 
-    CaseDTO expectedCaseResult =
-        CaseDTO.builder()
-            .id(caseFromCaseService.getId())
-            .caseRef(caseFromCaseService.getCaseRef())
-            .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
+    CaseAddressDTO addrDto =
+        CaseAddressDTO.builder()
             .addressLine1(caseFromCaseService.getAddressLine1())
             .addressLine2(caseFromCaseService.getAddressLine2())
             .addressLine3(caseFromCaseService.getAddressLine3())
@@ -129,6 +127,14 @@ public abstract class CaseServiceImplTestBase {
             .region(caseFromCaseService.getRegion().substring(0, 1))
             .postcode(caseFromCaseService.getPostcode())
             .uprn(createUprn(caseFromCaseService.getUprn()))
+            .build();
+
+    CaseDTO expectedCaseResult =
+        CaseDTO.builder()
+            .id(caseFromCaseService.getId())
+            .caseRef(caseFromCaseService.getCaseRef())
+            .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
+            .address(addrDto)
             .caseEvents(Collections.emptyList())
             .build();
     return expectedCaseResult;
@@ -137,11 +143,8 @@ public abstract class CaseServiceImplTestBase {
   CaseDTO createExpectedCaseDTO(Case caseFromDb) {
     CaseAddress addr = caseFromDb.getAddress();
 
-    CaseDTO expectedCaseResult =
-        CaseDTO.builder()
-            .id(caseFromDb.getId())
-            .caseRef(caseFromDb.getCaseRef())
-            .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
+    CaseAddressDTO addrDto =
+        CaseAddressDTO.builder()
             .addressLine1(addr.getAddressLine1())
             .addressLine2(addr.getAddressLine2())
             .addressLine3(addr.getAddressLine3())
@@ -149,6 +152,14 @@ public abstract class CaseServiceImplTestBase {
             .region(addr.getRegion().name())
             .postcode(addr.getPostcode())
             .uprn(createUprn(addr.getUprn()))
+            .build();
+
+    CaseDTO expectedCaseResult =
+        CaseDTO.builder()
+            .id(caseFromDb.getId())
+            .caseRef(caseFromDb.getCaseRef())
+            .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
+            .address(addrDto)
             .caseEvents(Collections.emptyList())
             .build();
     return expectedCaseResult;

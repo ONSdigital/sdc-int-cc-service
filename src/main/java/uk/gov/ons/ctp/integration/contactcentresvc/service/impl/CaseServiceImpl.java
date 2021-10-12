@@ -53,6 +53,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
@@ -247,7 +248,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     // Return a 404 if the UPRN is blacklisted
-    UniquePropertyReferenceNumber foundUprn = caseServiceResponse.getUprn();
+    UniquePropertyReferenceNumber foundUprn = caseServiceResponse.getAddress().getUprn();
     if (blacklistedUPRNBean.isUPRNBlacklisted(foundUprn)) {
       log.info(
           "UPRN is blacklisted. Not returning case",
@@ -652,9 +653,10 @@ public class CaseServiceImpl implements CaseService {
       CaseDTO response, ModifyCaseRequestDTO modifyRequestDTO, UUID caseId, String caseRef) {
     response.setId(caseId);
     response.setCaseRef(caseRef);
-    response.setAddressLine1(modifyRequestDTO.getAddressLine1());
-    response.setAddressLine2(modifyRequestDTO.getAddressLine2());
-    response.setAddressLine3(modifyRequestDTO.getAddressLine3());
+    CaseAddressDTO addr = response.getAddress();
+    addr.setAddressLine1(modifyRequestDTO.getAddressLine1());
+    addr.setAddressLine2(modifyRequestDTO.getAddressLine2());
+    addr.setAddressLine3(modifyRequestDTO.getAddressLine3());
     response.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
     response.setCaseEvents(Collections.emptyList());
   }
