@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -170,18 +171,14 @@ public abstract class CaseServiceImplTestBase {
     return uprn == null ? null : new UniquePropertyReferenceNumber(uprn);
   }
 
-  CaseContainerDTO mockGetCaseById(String caseType, String addressLevel, String region)
-      throws Exception {
-    CaseContainerDTO caseFromCaseService =
-        FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class).get(0);
-    caseFromCaseService.setCaseType(caseType);
-    caseFromCaseService.setAddressLevel(addressLevel);
-    caseFromCaseService.setRegion(region);
-    mockGetCaseById(UUID_0, caseFromCaseService);
-    return caseFromCaseService;
+  Case mockGetCaseById(String region) throws Exception {
+    Case caze = FixtureHelper.loadPackageFixtures(Case[].class).get(0);
+    caze.getAddress().setRegion(Region.valueOf(region));
+    mockGetCaseById(UUID_0, caze);
+    return caze;
   }
 
-  void mockGetCaseById(UUID id, CaseContainerDTO result) throws Exception {
+  void mockGetCaseById(UUID id, Case result) throws Exception {
     when(caseDataClient.getCaseById(eq(id))).thenReturn(result);
   }
 
@@ -197,7 +194,7 @@ public abstract class CaseServiceImplTestBase {
   }
 
   void assertCaseQIDRestClientFailureCaught(Exception ex, boolean caught) throws Exception {
-    mockGetCaseById("CE", "U", "W");
+    mockGetCaseById("W");
     Mockito.doThrow(ex)
         .when(caseServiceClient)
         .getSingleUseQuestionnaireId(eq(UUID_0), anyBoolean(), any());

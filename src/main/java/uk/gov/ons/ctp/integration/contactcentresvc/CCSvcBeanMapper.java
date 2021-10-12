@@ -49,10 +49,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .add()
         .register();
 
-    /*
-     *  FIXME remove or adapt
-     *
-     */
     factory
         .classMap(CaseContainerDTO.class, Case.class)
         .field("uprn", "address.uprn")

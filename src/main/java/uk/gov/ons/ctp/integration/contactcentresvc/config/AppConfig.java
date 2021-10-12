@@ -31,7 +31,6 @@ public class AppConfig {
   private CustomCircuitBreakerConfig circuitBreaker;
   private QueueConfig queueConfig;
   private MessagingConfig messaging;
-  private TelephoneCapture telephoneCapture;
 
   public void setChannel(Channel channel) {
     if (channel.equals(Channel.CC) || channel.equals(Channel.AD)) {

@@ -208,9 +208,6 @@ uprn-blacklist:
         - 100060447618
         - 666666666666
 
-telephone-capture:
-  disabled:
-
 # datasources
 ccdb:
   datasource:

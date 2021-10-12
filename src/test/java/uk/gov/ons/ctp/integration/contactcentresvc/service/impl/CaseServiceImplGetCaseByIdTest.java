@@ -20,7 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -42,11 +42,11 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   @MethodSource("dataForGetCaseByCaseIdSuccess")
   public void shouldGetCaseByCaseId(boolean caseEvents) throws Exception {
     // Build results to be returned from search
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
+    Case caze = casesFromDb().get(0);
     CaseDTO expectedCaseResult;
 
-    mockGetCaseById(UUID_0, caseFromCaseService);
-    expectedCaseResult = createExpectedCaseDTO(caseFromCaseService);
+    mockGetCaseById(UUID_0, caze);
+    expectedCaseResult = createExpectedCaseDTO(caze);
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
@@ -65,8 +65,8 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     doGetCaseByIdGetsError(UUID_0);
   }
 
-  private List<CaseContainerDTO> casesFromCaseService() {
-    return FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
+  private List<Case> casesFromDb() {
+    return FixtureHelper.loadPackageFixtures(Case[].class);
   }
 
   private void doGetCaseByIdNotFound(UUID caseId) throws Exception {

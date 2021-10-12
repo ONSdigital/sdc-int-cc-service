@@ -9,8 +9,6 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_QUESTIONNAIRE_ID;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_REGION;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_UAC;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.NI_LAUNCH_ERR_MSG;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UNIT_LAUNCH_ERR_MSG;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
 
 import java.util.UUID;
@@ -35,40 +33,13 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
 
   @Test
-  public void testGetUACCECase() throws Exception {
-    mockGetCaseById("CE", "E", A_REGION.name());
-    doGetUACTest(false, FormType.C);
-  }
-
-  @Test
-  public void testGetUACCECaseForIndividual() throws Exception {
-    doGetUACTest("CE", true);
-  }
-
-  @Test
   public void testGetUACHHCase() throws Exception {
-    doGetUACTest("HH", false);
+    doGetUACTest(false);
   }
 
   @Test
   public void testGetUACHHCaseForIndividual() throws Exception {
-    doGetUACTest("HH", true);
-  }
-
-  @Test
-  public void testGetUACSPGCase() throws Exception {
-    doGetUACTest("SPG", false);
-  }
-
-  @Test
-  public void testGetUACSPGCaseForIndividual() throws Exception {
-    doGetUACTest("SPG", true);
-  }
-
-  @Test
-  public void testGetUACHICase() {
-    Exception e = assertThrows(Exception.class, () -> doGetUACTest("HI", false));
-    assertTrue(e.getMessage().contains("must be SPG, CE or HH"), e.toString());
+    doGetUACTest(true);
   }
 
   @Test
@@ -112,30 +83,6 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
         false);
   }
 
-  @Test
-  public void shouldRejectCeManagerFormFromUnitRegionE() throws Exception {
-    mockGetCaseById("CE", "U", "E");
-    assertThatInvalidLaunchComboIsRejected(UNIT_LAUNCH_ERR_MSG);
-  }
-
-  @Test
-  public void shouldRejectCeManagerFormFromUnitRegionW() throws Exception {
-    mockGetCaseById("CE", "U", "W");
-    assertThatInvalidLaunchComboIsRejected(UNIT_LAUNCH_ERR_MSG);
-  }
-
-  @Test
-  public void shouldRejectCeManagerFormFromUnitRegionN() throws Exception {
-    mockGetCaseById("CE", "U", "N");
-    assertThatInvalidLaunchComboIsRejected(UNIT_LAUNCH_ERR_MSG);
-  }
-
-  @Test
-  public void shouldRejectCeManagerFormFromEstabRegionN() throws Exception {
-    mockGetCaseById("CE", "E", "N");
-    assertThatInvalidLaunchComboIsRejected(NI_LAUNCH_ERR_MSG);
-  }
-
   @SneakyThrows
   private void assertThatInvalidLaunchComboIsRejected(String expectedMsg) {
     CTPException e = assertThrows(CTPException.class, () -> doGetUACTest(false, FormType.C));
@@ -143,8 +90,8 @@ public class CaseServiceImplGetUACTest extends CaseServiceImplTestBase {
     assertTrue(e.getMessage().contains(expectedMsg), e.toString());
   }
 
-  private void doGetUACTest(String caseType, boolean individual) throws Exception {
-    mockGetCaseById(caseType, "U", A_REGION.name());
+  private void doGetUACTest(boolean individual) throws Exception {
+    mockGetCaseById(A_REGION.name());
     doGetUACTest(individual, FormType.H);
   }
 

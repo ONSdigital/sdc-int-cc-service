@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
@@ -32,7 +31,7 @@ public class CaseDataClientTest {
   private static final Long CASE_REF = 1000000000000001L;
 
   private Case caze;
-  private CaseContainerDTO result;
+  private Case result;
   private List<Case> resultList;
   private CTPException exception;
 
@@ -63,15 +62,12 @@ public class CaseDataClientTest {
     assertEquals(UPRN.toString(), resultList.get(0).getAddress().getUprn());
   }
 
-  /*
-   *  TODO case Ref will be resurrected soon
   @Test
   public void shouldGetCaseByRef() throws Exception {
     when(caseRepo.findByCaseRef(CASE_REF)).thenReturn(Optional.of(caze));
-    result = target.getCaseByCaseRef(CASE_REF, false);
+    result = target.getCaseByCaseRef(CASE_REF);
     assertEquals(CASE_REF.toString(), result.getCaseRef());
   }
-  */
 
   @Test
   public void shouldHandleCaseIdNotFound() throws Exception {
