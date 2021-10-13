@@ -49,7 +49,7 @@ public class CaseDataClient {
 
     Case caze =
         caseRepo
-            .findByCaseRef(caseReference)
+            .findByCaseRef(caseReference.toString())
             .orElseThrow(
                 () ->
                     new CTPException(

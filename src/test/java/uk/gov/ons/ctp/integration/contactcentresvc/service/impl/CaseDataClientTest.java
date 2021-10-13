@@ -64,7 +64,7 @@ public class CaseDataClientTest {
 
   @Test
   public void shouldGetCaseByRef() throws Exception {
-    when(caseRepo.findByCaseRef(CASE_REF)).thenReturn(Optional.of(caze));
+    when(caseRepo.findByCaseRef(CASE_REF.toString())).thenReturn(Optional.of(caze));
     result = target.getCaseByCaseRef(CASE_REF);
     assertEquals(CASE_REF.toString(), result.getCaseRef());
   }
@@ -85,7 +85,7 @@ public class CaseDataClientTest {
 
   @Test
   public void shouldHandleCaseRefNotFound() throws Exception {
-    when(caseRepo.findByCaseRef(CASE_REF)).thenReturn(Optional.empty());
+    when(caseRepo.findByCaseRef(CASE_REF.toString())).thenReturn(Optional.empty());
     exception = assertThrows(CTPException.class, () -> target.getCaseByCaseRef(CASE_REF));
     assertEquals(Fault.RESOURCE_NOT_FOUND, exception.getFault());
   }

@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
-@Disabled("FIXME")
+@Disabled("Will be removed soon")
 @ActiveProfiles("test-ad")
 public class ADEndpointSecurityTest extends EndpointSecurityTest {
 

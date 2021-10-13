@@ -22,7 +22,6 @@ public class DataEndpoint {
     log.info("Entering GET findCases");
 
     List<Case> result = caseRepo.findAll();
-
     return ResponseEntity.ok(result);
   }
 }

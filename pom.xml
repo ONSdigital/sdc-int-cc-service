@@ -20,7 +20,7 @@
     <groupId>ons.sdc.int.common</groupId>
     <artifactId>common</artifactId>
     <!-- change this to the version of ALL common libs to be used by this build -->
-    <version>1.0.37</version>
+    <version>1.0.38-SNAPSHOT</version> <!-- FIXME -->
   </parent>
 
   <scm>
@@ -206,6 +206,12 @@
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vladmihalcea</groupId>
+      <artifactId>hibernate-types-55</artifactId>
+      <version>2.13.0</version>
     </dependency>
 
     <!-- Testing -->

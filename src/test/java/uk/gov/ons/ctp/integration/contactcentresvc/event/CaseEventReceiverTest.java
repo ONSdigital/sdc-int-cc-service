@@ -30,7 +30,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 @ExtendWith(MockitoExtension.class)
 public class CaseEventReceiverTest {
   private static final String CASE_ID = "ad24e36c-2a61-11ec-aa00-4c3275913db5";
-  private static final String SURVEY_ID = "b66e57b4-2a61-11ec-b90f-4c3275913db5";
   private static final String COLLECTION_EX_ID = "bdfc0ada-2a61-11ec-8c02-4c3275913db5";
 
   @Mock private CaseRepository repo;
@@ -55,8 +54,7 @@ public class CaseEventReceiverTest {
 
   private void verifyMappedCase(Case caze, CaseUpdate ccase) {
     assertEquals(UUID.fromString(CASE_ID), caze.getId());
-    assertEquals(UUID.fromString(COLLECTION_EX_ID), caze.getCollectionExerciseId());
-    assertEquals(UUID.fromString(SURVEY_ID), caze.getSurveyId());
+    assertEquals(UUID.fromString(COLLECTION_EX_ID), caze.getCollectionExercise().getId());
     assertTrue(caze.isInvalid());
     assertEquals(RefusalType.HARD_REFUSAL, caze.getRefusalReceived());
 

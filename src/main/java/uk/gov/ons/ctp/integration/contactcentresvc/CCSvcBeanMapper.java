@@ -57,6 +57,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     factory
         .classMap(CaseContainerDTO.class, Case.class)
+        .field("collectionExerciseId", "collectionExercise.id")
         .field("uprn", "address.uprn")
         .field("addressLine1", "address.addressLine1")
         .field("addressLine2", "address.addressLine2")
@@ -69,6 +70,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     factory
         .classMap(CaseUpdate.class, Case.class)
+        .field("collectionExerciseId", "collectionExercise.id")
         .field("caseId", "id")
         .field("sample.addressLine1", "address.addressLine1")
         .field("sample.addressLine2", "address.addressLine2")

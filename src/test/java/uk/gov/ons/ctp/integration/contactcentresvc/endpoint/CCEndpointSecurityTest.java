@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import java.net.URL;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -11,7 +10,6 @@ import org.springframework.test.context.ActiveProfiles;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
-@Disabled("FIXME")
 @ActiveProfiles("test-cc")
 public class CCEndpointSecurityTest extends EndpointSecurityTest {
 

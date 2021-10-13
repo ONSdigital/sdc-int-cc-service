@@ -2,9 +2,13 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
+import java.time.OffsetDateTime;
+import java.util.Random;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
+import org.apache.commons.validator.routines.checkdigit.CheckDigitException;
+import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
@@ -54,6 +58,24 @@ public class CaseEventReceiver {
 
   private Case map(CaseUpdate caseUpdate) {
     Case caze = mapper.map(caseUpdate, Case.class);
+
+    // TODO: remove this later. this is temporary code .
+    // Hard code this until elements added to CaseUpdate
+    // these lines should then be removed.
+    if (caze.getCaseRef() == null) {
+      String base = Integer.toString(10_000_000 + new Random().nextInt(9_999_999));
+      try {
+        String caseRef = base + new LuhnCheckDigit().calculate(base);
+        caze.setCaseRef(caseRef);
+        caze.setCreatedAt(OffsetDateTime.now());
+        caze.setLastUpdatedAt(OffsetDateTime.now());
+
+      } catch (CheckDigitException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    // -----
+
     return caze;
   }
 }

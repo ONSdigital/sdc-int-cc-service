@@ -65,8 +65,10 @@ public class CCSvcBeanMapperTest {
     CaseContainerDTO destination = mapperFacade.map(source, CaseContainerDTO.class);
     assertAll(
         () -> assertEquals(source.getId(), destination.getId()),
-        () -> assertEquals(source.getCaseRef().toString(), destination.getCaseRef()),
-        () -> assertEquals(source.getCollectionExerciseId(), destination.getCollectionExerciseId()),
+        () -> assertEquals(source.getCaseRef(), destination.getCaseRef()),
+        () ->
+            assertEquals(
+                source.getCollectionExercise().getId(), destination.getCollectionExerciseId()),
         () -> assertEquals(addr.getUprn(), destination.getUprn()),
         () -> assertEquals(addr.getAddressLine1(), destination.getAddressLine1()),
         () -> assertEquals(addr.getAddressLine2(), destination.getAddressLine2()),
@@ -74,6 +76,24 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(addr.getTownName(), destination.getTownName()),
         () -> assertEquals(addr.getPostcode(), destination.getPostcode()),
         () -> assertEquals(addr.getRegion().name(), destination.getRegion()));
+  }
+
+  @Test
+  public void shouldMapCase_to_CaseDTO() {
+    Case source = FixtureHelper.loadClassFixtures(Case[].class).get(0);
+    CaseAddress addr = source.getAddress();
+    CaseDTO destination = mapperFacade.map(source, CaseDTO.class);
+    CaseAddressDTO addrDto = destination.getAddress();
+    assertAll(
+        () -> assertEquals(source.getId(), destination.getId()),
+        () -> assertEquals(source.getCaseRef(), destination.getCaseRef()),
+        () -> assertEquals(Long.valueOf(addr.getUprn()), addrDto.getUprn().getValue()),
+        () -> assertEquals(addr.getAddressLine1(), addrDto.getAddressLine1()),
+        () -> assertEquals(addr.getAddressLine2(), addrDto.getAddressLine2()),
+        () -> assertEquals(addr.getAddressLine3(), addrDto.getAddressLine3()),
+        () -> assertEquals(addr.getTownName(), addrDto.getTownName()),
+        () -> assertEquals(addr.getPostcode(), addrDto.getPostcode()),
+        () -> assertEquals(addr.getRegion().name(), addrDto.getRegion()));
   }
 
   @Test
@@ -85,10 +105,10 @@ public class CCSvcBeanMapperTest {
     CaseAddress addr = destination.getAddress();
     assertAll(
         () -> assertEquals(source.getCaseId(), destination.getId().toString()),
-        () -> assertEquals(source.getSurveyId(), destination.getSurveyId().toString()),
         () ->
             assertEquals(
-                source.getCollectionExerciseId(), destination.getCollectionExerciseId().toString()),
+                source.getCollectionExerciseId(),
+                destination.getCollectionExercise().getId().toString()),
         () -> assertEquals(source.isInvalid(), destination.isInvalid()),
         () -> assertEquals(source.getRefusalReceived(), destination.getRefusalReceived().name()),
         () -> assertEquals(sample.getAddressLine1(), addr.getAddressLine1()),

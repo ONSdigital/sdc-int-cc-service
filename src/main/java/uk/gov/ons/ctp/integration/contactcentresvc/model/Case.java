@@ -1,11 +1,13 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,14 +27,15 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "caze")
+@Table(name = "collection_case")
 public class Case {
 
   @Id private UUID id;
-  private UUID surveyId;
-  private UUID collectionExerciseId;
 
-  private String caseRef; // keeping caseRef, since will be re-introduced
+  @ManyToOne(optional = false)
+  private CollectionExercise collectionExercise;
+
+  private String caseRef;
 
   private boolean invalid;
 
@@ -41,4 +44,7 @@ public class Case {
 
   @Embedded private CaseAddress address;
   @Embedded private CaseContact contact;
+
+  private OffsetDateTime createdAt;
+  private OffsetDateTime lastUpdatedAt;
 }
