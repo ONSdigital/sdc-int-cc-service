@@ -2,7 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -67,8 +67,8 @@ public class CaseEventReceiver {
       try {
         String caseRef = base + new LuhnCheckDigit().calculate(base);
         caze.setCaseRef(caseRef);
-        caze.setCreatedAt(OffsetDateTime.now());
-        caze.setLastUpdatedAt(OffsetDateTime.now());
+        caze.setCreatedAt(LocalDateTime.now());
+        caze.setLastUpdatedAt(LocalDateTime.now());
 
       } catch (CheckDigitException e) {
         throw new RuntimeException(e);

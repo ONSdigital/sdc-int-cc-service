@@ -24,8 +24,8 @@ CREATE TABLE collection_exercise (
 	survey_id UUID REFERENCES survey NOT NULL,
 	name TEXT NOT NULL,
 	reference TEXT NOT NULL,
-	start_date TIMESTAMP WITH TIME ZONE NOT NULL,
-	end_date TIMESTAMP WITH TIME ZONE NOT NULL,
+	start_date TIMESTAMP NOT NULL,
+	end_date TIMESTAMP NOT NULL,
 	cohort_schedule INTEGER NOT NULL,
 	cohorts INTEGER NOT NULL,
 	number_of_waves INTEGER NOT NULL,
@@ -39,8 +39,8 @@ CREATE TABLE collection_case (
     case_ref TEXT UNIQUE NOT NULL,
     invalid BOOLEAN DEFAULT false NOT NULL,
     refusal_received TEXT,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    last_updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    last_updated_at TIMESTAMP NOT NULL,
 
     -- address
     uprn TEXT NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE case_interaction (
 	id UUID PRIMARY KEY,
 	case_id UUID REFERENCES collection_case NOT NULL,
 	operator_id UUID REFERENCES operator NOT NULL,
-	date_time TIMESTAMP WITH TIME ZONE NOT NULL,
+	date_time TIMESTAMP NOT NULL,
 	type TEXT NOT NULL,
 	outcome TEXT NOT NULL,
 	note TEXT
@@ -88,11 +88,11 @@ CREATE TABLE case_appointment (
 	case_id UUID REFERENCES collection_case NOT NULL,
 	interaction_id UUID REFERENCES case_interaction NOT NULL,
 	type TEXT NOT NULL,
-	date_time TIMESTAMP WITH TIME ZONE,
+	date_time TIMESTAMP,
 	start_date DATE,
 	end_date DATE,
-	start_time TIME WITH TIME ZONE,
-	end_time TIME WITH TIME ZONE,
+	start_time TIME,
+	end_time TIME,
 	days_of_week TEXT NOT NULL
 );
 
@@ -136,8 +136,8 @@ VALUES (
     'fae3f57c-c54c-11eb-9d99-4c3275913db5',
     'dummy-coll-ex',
     'dummy-ref',
-    '2021-10-12 19:10:25-00',
-    '2022-11-12 19:10:25-00',
+    '2021-10-12 19:10:25',
+    '2022-11-12 19:10:25',
     1,
     2,
     3,

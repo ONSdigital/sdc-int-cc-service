@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -14,15 +14,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Representation of Case entity from database table.
  *
  * <p>Implementation note: avoid Lombok Data annotation, since generated toString, equals and
- * hashcode are dangerous in combination with Entity annotation.
+ * hashcode are considered dangerous in combination with Entity annotation.
  */
 @Getter
 @Setter
+@ToString(onlyExplicitlyIncluded = true)
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,12 +32,12 @@ import lombok.Setter;
 @Table(name = "collection_case")
 public class Case {
 
-  @Id private UUID id;
+  @ToString.Include @Id private UUID id;
 
   @ManyToOne(optional = false)
   private CollectionExercise collectionExercise;
 
-  private String caseRef;
+  @ToString.Include private String caseRef;
 
   private boolean invalid;
 
@@ -45,6 +47,6 @@ public class Case {
   @Embedded private CaseAddress address;
   @Embedded private CaseContact contact;
 
-  private OffsetDateTime createdAt;
-  private OffsetDateTime lastUpdatedAt;
+  private LocalDateTime createdAt;
+  private LocalDateTime lastUpdatedAt;
 }
