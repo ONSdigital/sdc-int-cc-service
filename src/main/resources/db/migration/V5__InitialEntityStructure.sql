@@ -34,25 +34,25 @@ CREATE TABLE collection_exercise (
 
 -- Named 'collection_case' since 'case' is a reserved word.
 CREATE TABLE collection_case (
-    id UUID PRIMARY KEY,
-    collection_exercise_id UUID REFERENCES collection_exercise NOT NULL,
-    case_ref TEXT UNIQUE NOT NULL,
-    invalid BOOLEAN DEFAULT false NOT NULL,
-    refusal_received TEXT,
-    created_at TIMESTAMP NOT NULL,
-    last_updated_at TIMESTAMP NOT NULL,
+	id UUID PRIMARY KEY,
+	collection_exercise_id UUID REFERENCES collection_exercise NOT NULL,
+	case_ref TEXT UNIQUE NOT NULL,
+	invalid BOOLEAN DEFAULT false NOT NULL,
+	refusal_received TEXT,
+	created_at TIMESTAMP NOT NULL,
+	last_updated_at TIMESTAMP NOT NULL,
 
-    -- address
-    uprn TEXT NOT NULL,
-    address_line1 TEXT NOT NULL,
-    address_line2 TEXT,
-    address_line3 TEXT,
-    town_name TEXT NOT NULL,
-    postcode TEXT NOT NULL,
+	-- address
+	uprn TEXT NOT NULL,
+	address_line1 TEXT NOT NULL,
+	address_line2 TEXT,
+	address_line3 TEXT,
+	town_name TEXT NOT NULL,
+	postcode TEXT NOT NULL,
 	region TEXT NOT NULL,
 
-    -- contact
-    phone_number TEXT
+	-- contact
+	phone_number TEXT
 );
 
 CREATE INDEX collection_case_case_ref_idx ON collection_case (case_ref);
