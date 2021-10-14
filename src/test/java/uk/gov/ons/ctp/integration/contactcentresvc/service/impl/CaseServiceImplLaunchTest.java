@@ -33,6 +33,7 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.domain.Language;
+import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
@@ -146,8 +147,8 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
     EqLaunchData eqLaunchData = eqLaunchDataCaptor.getValue();
 
     assertEquals(Language.ENGLISH, eqLaunchData.getLanguage());
-    assertEquals(uk.gov.ons.ctp.common.domain.Source.CONTACT_CENTRE_API, eqLaunchData.getSource());
-    assertEquals(uk.gov.ons.ctp.common.domain.Channel.CC, eqLaunchData.getChannel());
+    assertEquals(Source.CONTACT_CENTRE_API, eqLaunchData.getSource());
+    assertEquals(Channel.CC, eqLaunchData.getChannel());
     assertEquals(AN_AGENT_ID, eqLaunchData.getUserId());
     assertEquals(questionnaireId, eqLaunchData.getQuestionnaireId());
     assertEquals(formType.name(), eqLaunchData.getFormType());

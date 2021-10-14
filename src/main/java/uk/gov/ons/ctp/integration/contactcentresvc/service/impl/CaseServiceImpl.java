@@ -26,9 +26,11 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.Language;
 import uk.gov.ons.ctp.common.domain.Region;
+import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -742,8 +744,8 @@ public class CaseServiceImpl implements CaseService {
       EqLaunchData eqLuanchCoreDate =
           EqLaunchData.builder()
               .language(Language.ENGLISH)
-              .source(uk.gov.ons.ctp.common.domain.Source.CONTACT_CENTRE_API)
-              .channel(uk.gov.ons.ctp.common.domain.Channel.CC)
+              .source(Source.CONTACT_CENTRE_API)
+              .channel(Channel.CC)
               .questionnaireId(questionnaireId)
               .formType(formType)
               .salt(appConfig.getEq().getResponseIdSalt())
