@@ -11,6 +11,7 @@ import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
@@ -108,13 +109,13 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     factory.classMap(CaseDTO.class, Case.class).byDefault().register();
   }
 
-  static class RegionConverter extends BidirectionalConverter<String, String> {
-    public String convertTo(String src, Type<String> dstType, MappingContext context) {
-      return convert(src);
+  static class RegionConverter extends BidirectionalConverter<String, Region> {
+    public Region convertTo(String src, Type<Region> dstType, MappingContext context) {
+      return Region.valueOf(convert(src));
     }
 
-    public String convertFrom(String src, Type<String> dstType, MappingContext context) {
-      return convert(src);
+    public String convertFrom(Region src, Type<String> dstType, MappingContext context) {
+      return src.name();
     }
 
     private String convert(String src) {

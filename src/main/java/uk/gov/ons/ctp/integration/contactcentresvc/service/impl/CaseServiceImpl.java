@@ -28,6 +28,7 @@ import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.Language;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -47,7 +48,6 @@ import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerD
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
-import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
@@ -378,8 +378,8 @@ public class CaseServiceImpl implements CaseService {
     sendEvent(TopicType.SURVEY_LAUNCH, response, response.getCaseId());
   }
 
-  private Region convertRegion(Case caze) {
-    return Region.valueOf(caze.getAddress().getRegion().name());
+  private Product.Region convertRegion(Case caze) {
+    return Product.Region.valueOf(caze.getAddress().getRegion().name());
   }
 
   /**
@@ -516,8 +516,7 @@ public class CaseServiceImpl implements CaseService {
     address.setAddressLine3(refusalRequest.getAddressLine3());
     address.setTownName(refusalRequest.getTownName());
     address.setPostcode(refusalRequest.getPostcode());
-    uk.gov.ons.ctp.integration.contactcentresvc.representation.Region region =
-        refusalRequest.getRegion();
+    Region region = refusalRequest.getRegion();
     if (region != null) {
       address.setRegion(region.name());
     }

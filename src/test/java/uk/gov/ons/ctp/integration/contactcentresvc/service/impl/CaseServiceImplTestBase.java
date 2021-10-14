@@ -124,7 +124,7 @@ public abstract class CaseServiceImplTestBase {
             .addressLine2(caseFromCaseService.getAddressLine2())
             .addressLine3(caseFromCaseService.getAddressLine3())
             .townName(caseFromCaseService.getTownName())
-            .region(caseFromCaseService.getRegion().substring(0, 1))
+            .region(Region.valueOf(caseFromCaseService.getRegion().substring(0, 1)))
             .postcode(caseFromCaseService.getPostcode())
             .uprn(createUprn(caseFromCaseService.getUprn()))
             .build();
@@ -149,7 +149,7 @@ public abstract class CaseServiceImplTestBase {
             .addressLine2(addr.getAddressLine2())
             .addressLine3(addr.getAddressLine3())
             .townName(addr.getTownName())
-            .region(addr.getRegion().name())
+            .region(addr.getRegion())
             .postcode(addr.getPostcode())
             .uprn(createUprn(addr.getUprn()))
             .build();

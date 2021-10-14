@@ -52,7 +52,7 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(source.getAddressLine3(), addr.getAddressLine3()),
         () -> assertEquals(source.getTownName(), addr.getTownName()),
         () -> assertEquals(source.getPostcode(), addr.getPostcode()),
-        () -> assertEquals(source.getRegion().substring(0, 1), addr.getRegion()),
+        () -> assertEquals(source.getRegion().substring(0, 1), addr.getRegion().name()),
         () -> assertEquals(source.getUprn(), String.valueOf(addr.getUprn().getValue())));
 
     verifyMapping(source.getCaseEvents(), destination.getCaseEvents());
@@ -93,7 +93,7 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(addr.getAddressLine3(), addrDto.getAddressLine3()),
         () -> assertEquals(addr.getTownName(), addrDto.getTownName()),
         () -> assertEquals(addr.getPostcode(), addrDto.getPostcode()),
-        () -> assertEquals(addr.getRegion().name(), addrDto.getRegion()));
+        () -> assertEquals(addr.getRegion(), addrDto.getRegion()));
   }
 
   @Test

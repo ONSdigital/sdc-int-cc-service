@@ -25,6 +25,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
@@ -46,7 +47,7 @@ public final class CaseEndpointGetCaseTest {
   private static final String ADDRESS_LINE_2 = "Rock House";
   private static final String ADDRESS_LINE_3 = "Cowick Lane";
   private static final String TOWN = "Exeter";
-  private static final String REGION = "E";
+  private static final Region REGION = Region.E;
   private static final String POSTCODE = "EX2 9HY";
 
   private static final String EVENT_CATEGORY = "REFUSAL";
@@ -210,7 +211,7 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(jsonPath("$.address.addressLine2", is(ADDRESS_LINE_2)));
     actions.andExpect(jsonPath("$.address.addressLine3", is(ADDRESS_LINE_3)));
     actions.andExpect(jsonPath("$.address.townName", is(TOWN)));
-    actions.andExpect(jsonPath("$.address.region", is(REGION)));
+    actions.andExpect(jsonPath("$.address.region", is(REGION.name())));
     actions.andExpect(jsonPath("$.address.postcode", is(POSTCODE)));
 
     actions.andExpect(jsonPath("$.caseEvents[0].category", is(EVENT_CATEGORY)));
@@ -227,7 +228,7 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(jsonPath("$[0].address.addressLine2", is(ADDRESS_LINE_2)));
     actions.andExpect(jsonPath("$[0].address.addressLine3", is(ADDRESS_LINE_3)));
     actions.andExpect(jsonPath("$[0].address.townName", is(TOWN)));
-    actions.andExpect(jsonPath("$[0].address.region", is(REGION)));
+    actions.andExpect(jsonPath("$[0].address.region", is(REGION.name())));
     actions.andExpect(jsonPath("$[0].address.postcode", is(POSTCODE)));
 
     actions.andExpect(jsonPath("$[0].caseEvents[0].category", is(EVENT_CATEGORY)));
@@ -240,7 +241,7 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(jsonPath("$[1].address.addressLine2", is(ADDRESS_LINE_2)));
     actions.andExpect(jsonPath("$[1].address.addressLine3", is(ADDRESS_LINE_3)));
     actions.andExpect(jsonPath("$[1].address.townName", is(TOWN)));
-    actions.andExpect(jsonPath("$[1].address.region", is(REGION)));
+    actions.andExpect(jsonPath("$[1].address.region", is(REGION.name())));
     actions.andExpect(jsonPath("$[1].address.postcode", is(POSTCODE)));
 
     actions.andExpect(jsonPath("$[1].caseEvents[0].category", is(EVENT_CATEGORY)));

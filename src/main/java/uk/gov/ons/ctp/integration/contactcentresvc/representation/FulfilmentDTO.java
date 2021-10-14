@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.Region;
 
 /**
  * The response object representing a single fulfilment record

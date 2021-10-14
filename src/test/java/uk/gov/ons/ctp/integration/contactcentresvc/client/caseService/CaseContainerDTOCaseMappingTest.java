@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.client.caseService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
@@ -23,14 +24,10 @@ public class CaseContainerDTOCaseMappingTest {
 
     caseContainerDTO.setRegion("E12345678");
     map();
-    assertEquals("E", caseDTO.getAddress().getRegion());
+    assertEquals(Region.E, caseDTO.getAddress().getRegion());
 
     caseContainerDTO.setRegion("E");
     map();
-    assertEquals("E", caseDTO.getAddress().getRegion());
-
-    caseContainerDTO.setRegion("");
-    map();
-    assertEquals("", caseDTO.getAddress().getRegion());
+    assertEquals(Region.E, caseDTO.getAddress().getRegion());
   }
 }

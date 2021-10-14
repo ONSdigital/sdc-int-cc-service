@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
@@ -27,7 +28,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.Fulfilments;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ProductGroup;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.Region;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
 
 @ExtendWith(MockitoExtension.class)
@@ -101,10 +101,7 @@ public class FulfilmentServiceImplTest {
         fulfilment.getDeliveryChannel().name(),
         uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel.POST.name());
     assertEquals(fulfilment.getFulfilmentCode(), "ABC123");
-    assertTrue(
-        fulfilment
-            .getRegions()
-            .contains(uk.gov.ons.ctp.integration.contactcentresvc.representation.Region.E));
+    assertTrue(fulfilment.getRegions().contains(Region.E));
   }
 
   @Test
