@@ -126,7 +126,7 @@ VALUES (
     'fae3f57c-c54c-11eb-9d99-4c3275913db5',
     'dummy-survey',
     '{"dummy": "blah"}'::jsonb,
-    'https://testing.com/dummy-survey.json'
+    'https://raw.githubusercontent.com/ONSdigital/ssdc-shared-events/main/sample/social/0.1.0-DRAFT/social.json'
 );
 
 INSERT INTO collection_exercise (id, survey_id, name, reference,
