@@ -3,7 +3,9 @@ package uk.gov.ons.ctp.integration.contactcentresvc;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -13,11 +15,14 @@ import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CaseUpdateSample;
 import uk.gov.ons.ctp.common.event.model.CaseUpdateSampleSensitive;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
+import uk.gov.ons.ctp.common.event.model.CollectionExercise;
+import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
@@ -165,6 +170,46 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(source.getEstabUprn(), destination.getEstabUprn()),
         () -> assertEquals(source.getAddressType(), destination.getAddressType()),
         () -> assertEquals(source.getAddressLevel(), destination.getAddressLevel()));
+  }
+
+  @Test
+  public void shouldMapSurveyUpdateToSurvey() {
+    SurveyUpdate source = FixtureHelper.loadClassFixtures(SurveyUpdate[].class).get(0);
+    Survey destination = mapperFacade.map(source, Survey.class);
+
+    assertAll(
+        () -> assertEquals(UUID.fromString(source.getSurveyId()), destination.getId()),
+        () -> assertEquals(source.getName(), destination.getName()));
+    // WRITEME when available:
+    // sampleDefinition
+    // sampleDefinitionUrl
+  }
+
+  @Test
+  public void shouldMapCollectionExerciseUpdateToCollectionExercise() {
+    CollectionExercise source = FixtureHelper.loadClassFixtures(CollectionExercise[].class).get(0);
+    var meta = source.getMetadata();
+    var destination =
+        mapperFacade.map(
+            source, uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise.class);
+
+    assertAll(
+        () -> assertEquals(UUID.fromString(source.getCollectionExerciseId()), destination.getId()),
+        () -> assertEquals(UUID.fromString(source.getSurveyId()), destination.getSurvey().getId()),
+        () -> assertEquals(source.getName(), destination.getName()),
+        () -> assertEquals(source.getReference(), destination.getReference()),
+        () ->
+            assertEquals(
+                source.getStartDate().toInstant(),
+                destination.getStartDate().toInstant(ZoneOffset.UTC)),
+        () ->
+            assertEquals(
+                source.getEndDate().toInstant(),
+                destination.getEndDate().toInstant(ZoneOffset.UTC)),
+        () -> assertEquals(meta.getNumberOfWaves(), destination.getNumberOfWaves()),
+        () -> assertEquals(meta.getWaveLength(), destination.getWaveLength()),
+        () -> assertEquals(meta.getCohorts(), destination.getCohorts()),
+        () -> assertEquals(meta.getCohortSchedule(), destination.getCohortSchedule()));
   }
 
   @Test
