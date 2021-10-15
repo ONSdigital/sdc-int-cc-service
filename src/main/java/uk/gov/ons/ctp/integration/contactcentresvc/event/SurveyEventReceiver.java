@@ -38,6 +38,12 @@ public class SurveyEventReceiver {
         kv("surveyId", payload.getSurveyId()));
 
     Survey survey = mapper.map(payload, Survey.class);
+
+    // FIXME temporary code until we get new stuff.
+    survey.setSampleDefinitionUrl("http://dummy/thing.json");
+    survey.setSampleDefinition("{\"dummy\": 0}");
+    // ----
+
     repo.save(survey);
   }
 }
