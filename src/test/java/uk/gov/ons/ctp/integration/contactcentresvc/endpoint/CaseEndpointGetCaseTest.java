@@ -25,9 +25,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -41,15 +43,12 @@ public final class CaseEndpointGetCaseTest {
 
   private static final String CASE_UUID_STRING = "dca05c61-8b95-46af-8f73-36f0dc2cbf5e";
   private static final String CASE_REF = "123456";
-  private static final String CASE_TYPE = "R1";
-  private static final String CASE_CREATED_DATE_TIME = "2019-01-29T14:14:27.512Z";
   private static final String ADDRESS_LINE_1 = "Smiths Renovations";
   private static final String ADDRESS_LINE_2 = "Rock House";
   private static final String ADDRESS_LINE_3 = "Cowick Lane";
   private static final String TOWN = "Exeter";
-  private static final String REGION = "E";
+  private static final Region REGION = Region.E;
   private static final String POSTCODE = "EX2 9HY";
-  private static final String ORG_NAME = "Tiddlywink Athletic Club";
 
   private static final String EVENT_CATEGORY = "REFUSAL";
   private static final String EVENT_DESCRIPTION = "Event for testcase";
@@ -184,19 +183,21 @@ public final class CaseEndpointGetCaseTest {
             .createdDateTime(formatter.parse(EVENT_DATE_TIME))
             .build();
 
-    CaseDTO fakeCaseDTO =
-        CaseDTO.builder()
-            .id(UUID.fromString(CASE_UUID_STRING))
-            .caseRef(CASE_REF)
-            .caseType(CASE_TYPE)
-            .createdDateTime(formatter.parse(CASE_CREATED_DATE_TIME))
+    CaseAddressDTO fakeAddr =
+        CaseAddressDTO.builder()
             .addressLine1(ADDRESS_LINE_1)
             .addressLine2(ADDRESS_LINE_2)
             .addressLine3(ADDRESS_LINE_3)
             .townName(TOWN)
-            .region(REGION)
             .postcode(POSTCODE)
-            .ceOrgName(ORG_NAME)
+            .region(REGION)
+            .build();
+
+    CaseDTO fakeCaseDTO =
+        CaseDTO.builder()
+            .id(UUID.fromString(CASE_UUID_STRING))
+            .caseRef(CASE_REF)
+            .address(fakeAddr)
             .caseEvents(Arrays.asList(caseEventDTO1))
             .build();
 
@@ -206,15 +207,12 @@ public final class CaseEndpointGetCaseTest {
   private void verifyStructureOfResultsActions(ResultActions actions) throws Exception {
     actions.andExpect(jsonPath("$.id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$.caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$.caseType", is(CASE_TYPE)));
-    actions.andExpect(jsonPath("$.createdDateTime", is(CASE_CREATED_DATE_TIME)));
-    actions.andExpect(jsonPath("$.addressLine1", is(ADDRESS_LINE_1)));
-    actions.andExpect(jsonPath("$.addressLine2", is(ADDRESS_LINE_2)));
-    actions.andExpect(jsonPath("$.addressLine3", is(ADDRESS_LINE_3)));
-    actions.andExpect(jsonPath("$.townName", is(TOWN)));
-    actions.andExpect(jsonPath("$.region", is(REGION)));
-    actions.andExpect(jsonPath("$.postcode", is(POSTCODE)));
-    actions.andExpect(jsonPath("$.ceOrgName", is(ORG_NAME)));
+    actions.andExpect(jsonPath("$.address.addressLine1", is(ADDRESS_LINE_1)));
+    actions.andExpect(jsonPath("$.address.addressLine2", is(ADDRESS_LINE_2)));
+    actions.andExpect(jsonPath("$.address.addressLine3", is(ADDRESS_LINE_3)));
+    actions.andExpect(jsonPath("$.address.townName", is(TOWN)));
+    actions.andExpect(jsonPath("$.address.region", is(REGION.name())));
+    actions.andExpect(jsonPath("$.address.postcode", is(POSTCODE)));
 
     actions.andExpect(jsonPath("$.caseEvents[0].category", is(EVENT_CATEGORY)));
     actions.andExpect(jsonPath("$.caseEvents[0].description", is(EVENT_DESCRIPTION)));
@@ -226,15 +224,12 @@ public final class CaseEndpointGetCaseTest {
     // assertions repeatedly
     actions.andExpect(jsonPath("$[0].id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$[0].caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$[0].caseType", is(CASE_TYPE)));
-    actions.andExpect(jsonPath("$[0].createdDateTime", is(CASE_CREATED_DATE_TIME)));
-    actions.andExpect(jsonPath("$[0].addressLine1", is(ADDRESS_LINE_1)));
-    actions.andExpect(jsonPath("$[0].addressLine2", is(ADDRESS_LINE_2)));
-    actions.andExpect(jsonPath("$[0].addressLine3", is(ADDRESS_LINE_3)));
-    actions.andExpect(jsonPath("$[0].townName", is(TOWN)));
-    actions.andExpect(jsonPath("$[0].region", is(REGION)));
-    actions.andExpect(jsonPath("$[0].postcode", is(POSTCODE)));
-    actions.andExpect(jsonPath("$[0].ceOrgName", is(ORG_NAME)));
+    actions.andExpect(jsonPath("$[0].address.addressLine1", is(ADDRESS_LINE_1)));
+    actions.andExpect(jsonPath("$[0].address.addressLine2", is(ADDRESS_LINE_2)));
+    actions.andExpect(jsonPath("$[0].address.addressLine3", is(ADDRESS_LINE_3)));
+    actions.andExpect(jsonPath("$[0].address.townName", is(TOWN)));
+    actions.andExpect(jsonPath("$[0].address.region", is(REGION.name())));
+    actions.andExpect(jsonPath("$[0].address.postcode", is(POSTCODE)));
 
     actions.andExpect(jsonPath("$[0].caseEvents[0].category", is(EVENT_CATEGORY)));
     actions.andExpect(jsonPath("$[0].caseEvents[0].description", is(EVENT_DESCRIPTION)));
@@ -242,15 +237,12 @@ public final class CaseEndpointGetCaseTest {
 
     actions.andExpect(jsonPath("$[1].id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$[1].caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$[1].caseType", is(CASE_TYPE)));
-    actions.andExpect(jsonPath("$[1].createdDateTime", is(CASE_CREATED_DATE_TIME)));
-    actions.andExpect(jsonPath("$[1].addressLine1", is(ADDRESS_LINE_1)));
-    actions.andExpect(jsonPath("$[1].addressLine2", is(ADDRESS_LINE_2)));
-    actions.andExpect(jsonPath("$[1].addressLine3", is(ADDRESS_LINE_3)));
-    actions.andExpect(jsonPath("$[1].townName", is(TOWN)));
-    actions.andExpect(jsonPath("$[1].region", is(REGION)));
-    actions.andExpect(jsonPath("$[1].postcode", is(POSTCODE)));
-    actions.andExpect(jsonPath("$[1].ceOrgName", is(ORG_NAME)));
+    actions.andExpect(jsonPath("$[1].address.addressLine1", is(ADDRESS_LINE_1)));
+    actions.andExpect(jsonPath("$[1].address.addressLine2", is(ADDRESS_LINE_2)));
+    actions.andExpect(jsonPath("$[1].address.addressLine3", is(ADDRESS_LINE_3)));
+    actions.andExpect(jsonPath("$[1].address.townName", is(TOWN)));
+    actions.andExpect(jsonPath("$[1].address.region", is(REGION.name())));
+    actions.andExpect(jsonPath("$[1].address.postcode", is(POSTCODE)));
 
     actions.andExpect(jsonPath("$[1].caseEvents[0].category", is(EVENT_CATEGORY)));
     actions.andExpect(jsonPath("$[1].caseEvents[0].description", is(EVENT_DESCRIPTION)));

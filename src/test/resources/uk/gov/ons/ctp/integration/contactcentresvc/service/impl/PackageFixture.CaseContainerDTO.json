@@ -32,8 +32,8 @@
     },
     {
       "id": "102",
-      "eventType": "X11",
-      "description": "Should be filtered out",
+      "eventType": "CASE_UPDATE",
+      "description": "A modification",
       "createdDateTime": "2019-05-15T17:02:12.343+04:00"
     },
     {
@@ -80,8 +80,8 @@
     },
     {
       "id": "102",
-      "eventType": "X11",
-      "description": "Should be filtered out",
+      "eventType": "CASE_UPDATE",
+      "description": "A modification",
       "createdDateTime": "2019-05-15T17:02:12.343+04:00"
     },
     {

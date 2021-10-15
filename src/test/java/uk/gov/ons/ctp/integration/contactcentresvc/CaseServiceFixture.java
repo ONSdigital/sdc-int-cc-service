@@ -6,8 +6,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.EstabType;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseStatus;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.Region;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CaseServiceFixture {

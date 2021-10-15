@@ -11,8 +11,10 @@ import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
@@ -42,31 +44,43 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     factory
         .classMap(CaseContainerDTO.class, CaseDTO.class)
-        .field("estabType", "estabDescription")
-        .field("organisationName", "ceOrgName")
+        .field("uprn", "address.uprn")
+        .field("addressLine1", "address.addressLine1")
+        .field("addressLine2", "address.addressLine2")
+        .field("addressLine3", "address.addressLine3")
+        .field("townName", "address.townName")
+        .field("postcode", "address.postcode")
         .byDefault()
-        .fieldMap("region", "region")
+        .fieldMap("region", "address.region")
         .converter("regionConverter")
         .add()
         .register();
 
     factory
         .classMap(CaseContainerDTO.class, Case.class)
+        .field("collectionExerciseId", "collectionExercise.id")
         .field("uprn", "address.uprn")
-        .field("surveyType", "survey")
         .field("addressLine1", "address.addressLine1")
         .field("addressLine2", "address.addressLine2")
         .field("addressLine3", "address.addressLine3")
         .field("townName", "address.townName")
         .field("postcode", "address.postcode")
         .field("region", "address.region")
-        .field("estabType", "address.estabType")
-        .field("organisationName", "address.organisationName")
-        .field("latitude", "address.latitude")
-        .field("longitude", "address.longitude")
-        .field("estabUprn", "address.estabUprn")
-        .field("addressType", "address.addressType")
-        .field("addressLevel", "address.addressLevel")
+        .byDefault()
+        .register();
+
+    factory
+        .classMap(CaseUpdate.class, Case.class)
+        .field("collectionExerciseId", "collectionExercise.id")
+        .field("caseId", "id")
+        .field("sample.addressLine1", "address.addressLine1")
+        .field("sample.addressLine2", "address.addressLine2")
+        .field("sample.addressLine3", "address.addressLine3")
+        .field("sample.townName", "address.townName")
+        .field("sample.postcode", "address.postcode")
+        .field("sample.region", "address.region")
+        .field("sample.uprn", "address.uprn")
+        .field("sampleSensitive.phoneNumber", "contact.phoneNumber")
         .byDefault()
         .register();
 
@@ -92,15 +106,16 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     factory.classMap(CaseContainerDTO.class, Address.class).byDefault().register();
     factory.classMap(CaseContainerDTO.class, AddressCompact.class).byDefault().register();
+    factory.classMap(CaseDTO.class, Case.class).byDefault().register();
   }
 
-  static class RegionConverter extends BidirectionalConverter<String, String> {
-    public String convertTo(String src, Type<String> dstType, MappingContext context) {
-      return convert(src);
+  static class RegionConverter extends BidirectionalConverter<String, Region> {
+    public Region convertTo(String src, Type<Region> dstType, MappingContext context) {
+      return Region.valueOf(convert(src));
     }
 
-    public String convertFrom(String src, Type<String> dstType, MappingContext context) {
-      return convert(src);
+    public String convertFrom(Region src, Type<String> dstType, MappingContext context) {
+      return src.name();
     }
 
     private String convert(String src) {

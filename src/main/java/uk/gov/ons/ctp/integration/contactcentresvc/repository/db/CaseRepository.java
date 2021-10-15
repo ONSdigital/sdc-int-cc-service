@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 
 public interface CaseRepository extends JpaRepository<Case, UUID> {
-  Optional<Case> findByCaseRef(Long caseRef);
+  Optional<Case> findByCaseRef(String caseRef);
 
   List<Case> findByAddressUprn(String uprn);
 }

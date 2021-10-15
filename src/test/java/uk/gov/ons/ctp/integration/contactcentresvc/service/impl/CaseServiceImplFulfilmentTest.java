@@ -7,10 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_1;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,9 +34,9 @@ import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.Fulfilments;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
@@ -67,31 +65,25 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
   private static Stream<Arguments> dataForFulfilmentPostSuccess() {
     return Stream.of(
         // Test that individual cases allow null/empty contact details
-        arguments(Product.CaseType.HH, null, "Bill", "Bloggs", true),
-        arguments(Product.CaseType.HH, "", "Bill", "Bloggs", true),
-        arguments(Product.CaseType.CE, null, "Bill", "Bloggs", true),
-        arguments(Product.CaseType.CE, "", "Bill", "Bloggs", true),
+        arguments(null, "Bill", "Bloggs", true),
+        arguments("", "Bill", "Bloggs", true),
 
         // Test that non-individual cases allow null/empty contact details
-        arguments(Product.CaseType.HH, null, null, null, false),
-        arguments(Product.CaseType.HH, "", "", "", false),
-        arguments(Product.CaseType.CE, null, null, null, false),
-        arguments(Product.CaseType.CE, "", "", "", false),
-        arguments(Product.CaseType.HH, "Mr", "Mickey", "Mouse", false),
-        arguments(Product.CaseType.HH, "Mr", "Mickey", "Mouse", true));
+        arguments(null, null, null, false),
+        arguments("", "", "", false),
+        arguments("Mr", "Mickey", "Mouse", false),
+        arguments("Mr", "Mickey", "Mouse", true));
   }
 
   @ParameterizedTest
   @MethodSource("dataForFulfilmentPostSuccess")
   public void fulfilmentRequestByPostShouldSucceed(
-      Product.CaseType caseType, String title, String forename, String surname, boolean individual)
-      throws Exception {
+      String title, String forename, String surname, boolean individual) throws Exception {
     Mockito.clearInvocations(eventTransfer);
 
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
-    caseFromCaseService.setCaseType(caseType.name());
+    Case caze = casesFromDb().get(0);
 
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
+    mockGetCaseById(UUID_0, caze);
 
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
         getPostalFulfilmentRequestDTO(UUID_0, title, forename, surname);
@@ -104,7 +96,8 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     // The mocked productReference will return this product
     Product productFoundFixture =
-        getProductFoundFixture(Arrays.asList(caseType), Product.DeliveryChannel.POST, individual);
+        getProductFoundFixture(
+            Arrays.asList(Product.CaseType.HH), Product.DeliveryChannel.POST, individual);
     Mockito.when(productReference.searchProducts(eq(expectedSearchCriteria)))
         .thenReturn(new ArrayList<Product>(List.of(productFoundFixture)));
 
@@ -125,7 +118,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
         requestBodyDTOFixture.getFulfilmentCode(), actualFulfilmentRequest.getFulfilmentCode());
     assertEquals(requestBodyDTOFixture.getCaseId().toString(), actualFulfilmentRequest.getCaseId());
 
-    if (caseType == Product.CaseType.HH && individual) {
+    if (individual) {
       assertNotNull(actualFulfilmentRequest.getIndividualCaseId());
     } else {
       assertEquals(null, actualFulfilmentRequest.getIndividualCaseId());
@@ -140,37 +133,33 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   private static Stream<Arguments> dataForFailingValidation() {
     return Stream.of(
-        arguments(Product.CaseType.HH, "Mr", null, "Smith", true),
-        arguments(Product.CaseType.HH, "Mr", "", "Smith", true),
-        arguments(Product.CaseType.HH, "Mr", "John", null, true),
-        arguments(Product.CaseType.HH, "Mr", "John", "", true),
-        arguments(Product.CaseType.CE, "Mr", null, "Smith", true),
-        arguments(Product.CaseType.CE, "Mr", "", "Smith", true),
-        arguments(Product.CaseType.CE, "Mr", "John", null, true),
-        arguments(Product.CaseType.CE, "Mr", "John", "", true));
+        arguments("Mr", null, "Smith", true),
+        arguments("Mr", "", "Smith", true),
+        arguments("Mr", "John", null, true),
+        arguments("Mr", "John", "", true));
   }
 
   @ParameterizedTest
   @MethodSource("dataForFailingValidation")
   public void fulfilmentRequestByPostShouldFailValidation(
-      Product.CaseType caseType, String title, String forename, String surname, boolean individual)
-      throws Exception {
+      String title, String forename, String surname, boolean individual) throws Exception {
     // Build results to be returned from search
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
+    Case caze = casesFromDb().get(0);
+    mockGetCaseById(UUID_0, caze);
 
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
         getPostalFulfilmentRequestDTO(UUID_0, title, forename, surname);
 
     Product expectedSearchCriteria =
         getExpectedSearchCriteria(
-            Product.Region.valueOf(caseFromCaseService.getRegion().substring(0, 1)),
+            Product.Region.valueOf(caze.getAddress().getRegion().name()),
             requestBodyDTOFixture.getFulfilmentCode(),
             Product.DeliveryChannel.POST);
 
     // The mocked productReference will return this product
     Product productFoundFixture =
-        getProductFoundFixture(Arrays.asList(caseType), Product.DeliveryChannel.POST, individual);
+        getProductFoundFixture(
+            Arrays.asList(Product.CaseType.HH), Product.DeliveryChannel.POST, individual);
     Mockito.when(productReference.searchProducts(eq(expectedSearchCriteria)))
         .thenReturn(new ArrayList<Product>(List.of(productFoundFixture)));
 
@@ -199,8 +188,8 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
   public void testFulfilmentRequestByPostFailure_productNotFound() throws Exception {
 
     // Build results to be returned from search
-    CaseContainerDTO caseData = casesFromCaseService().get(0);
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseData);
+    Case caze = casesFromDb().get(0);
+    mockGetCaseById(UUID_0, caze);
 
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
         getPostalFulfilmentRequestDTO(UUID_0, "Mr", "Mickey", "Mouse");
@@ -226,9 +215,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   @Test
   public void testFulfilmentRequestByPost_caseSvcNotFoundResponse() throws Exception {
-    Mockito.doThrow(new CTPException(Fault.RESOURCE_NOT_FOUND))
-        .when(caseDataClient)
-        .getCaseById(eq(UUID_0), any());
+    mockGetCaseById(UUID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
         getPostalFulfilmentRequestDTO(UUID_0, "Mrs", "Sally", "Smurf");
     assertThrows(CTPException.class, () -> target.fulfilmentRequestByPost(requestBodyDTOFixture));
@@ -236,10 +223,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   @Test
   public void testFulfilmentRequestByPost_caseSvcRestClientException() throws Exception {
-
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
-        .when(caseDataClient)
-        .getCaseById(eq(UUID_0), any());
+    mockGetCaseById(UUID_0, new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT));
 
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
         getPostalFulfilmentRequestDTO(UUID_0, "Mrs", "Sally", "Smurf");
@@ -260,7 +244,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   @Test
   public void testFulfilmentRequestBySMS_blackListedFulfilmentCode() throws Exception {
-    CaseContainerDTO caseData = casesFromCaseService().get(1);
+    Case caseData = casesFromDb().get(0);
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
     requestBodyDTOFixture.setFulfilmentCode(BLACK_LISTED_FULFILMENT_CODE);
 
@@ -274,40 +258,13 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testFulfilmentRequestBySMS_caseSvcResponseCaseWithSurveyTypeCCS()
-      throws CTPException {
-    CaseContainerDTO caseData = casesFromCaseService().get(1);
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_1), any())).thenReturn(caseData);
-    SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
-    CTPException e =
-        assertThrows(
-            CTPException.class, () -> target.fulfilmentRequestBySMS(requestBodyDTOFixture));
-    assertEquals(CTPException.Fault.BAD_REQUEST, e.getFault());
-    assertEquals("Operation not permissible for a CCS Case", e.getMessage());
-  }
-
-  @Test
-  public void testFulfilmentRequestByPost_caseSvcResponseCaseWithSurveyTypeCCS()
-      throws CTPException {
-    CaseContainerDTO caseData = casesFromCaseService().get(1);
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_1), any())).thenReturn(caseData);
-    PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_1, "Mr", "Mickey", "Mouse");
-    CTPException e =
-        assertThrows(
-            CTPException.class, () -> target.fulfilmentRequestByPost(requestBodyDTOFixture));
-    assertEquals(CTPException.Fault.BAD_REQUEST, e.getFault());
-    assertEquals("Operation not permissible for a CCS Case", e.getMessage());
-  }
-
-  @Test
   public void testFulfilmentRequestBySMSFailure_productNotFound() throws Exception {
 
     // Build results to be returned from search
-    CaseContainerDTO caseData = casesFromCaseService().get(0);
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseData);
+    Case caze = casesFromDb().get(0);
+    mockGetCaseById(UUID_0, caze);
 
-    SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
+    SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caze);
 
     Product expectedSearchCriteria =
         getExpectedSearchCriteria(
@@ -330,20 +287,16 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   @Test
   public void testFulfilmentRequestBySMS_caseSvcNotFoundResponse() throws Exception {
-    CaseContainerDTO caseData = casesFromCaseService().get(0);
-    Mockito.doThrow(new CTPException(Fault.RESOURCE_NOT_FOUND))
-        .when(caseDataClient)
-        .getCaseById(eq(UUID_0), any());
+    Case caseData = casesFromDb().get(0);
+    mockGetCaseById(UUID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
     assertThrows(CTPException.class, () -> target.fulfilmentRequestBySMS(requestBodyDTOFixture));
   }
 
   @Test
   public void testFulfilmentRequestBySMS_caseSvcRestClientException() throws Exception {
-    CaseContainerDTO caseData = casesFromCaseService().get(0);
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
-        .when(caseDataClient)
-        .getCaseById(eq(UUID_0), any());
+    Case caseData = casesFromDb().get(0);
+    mockGetCaseById(UUID_0, new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT));
 
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
 
@@ -363,9 +316,9 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
     return requestBodyDTOFixture;
   }
 
-  private SMSFulfilmentRequestDTO getSMSFulfilmentRequestDTO(CaseContainerDTO caseFromCaseService) {
+  private SMSFulfilmentRequestDTO getSMSFulfilmentRequestDTO(Case caze) {
     SMSFulfilmentRequestDTO requestBodyDTOFixture = new SMSFulfilmentRequestDTO();
-    requestBodyDTOFixture.setCaseId(caseFromCaseService.getId());
+    requestBodyDTOFixture.setCaseId(caze.getId());
     requestBodyDTOFixture.setTelNo("+447890000000");
     requestBodyDTOFixture.setFulfilmentCode("ABC123");
     requestBodyDTOFixture.setDateTime(DateTimeUtil.nowUTC());
@@ -402,9 +355,8 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
   private void doFulfilmentRequestBySMSSuccess(Product.CaseType caseType, boolean individual)
       throws Exception {
 
-    CaseContainerDTO caseFromCaseService = casesFromCaseService().get(0);
-
-    Mockito.when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
+    Case caseFromCaseService = casesFromDb().get(0);
+    mockGetCaseById(UUID_0, caseFromCaseService);
 
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseFromCaseService);
 
@@ -449,7 +401,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
     assertEquals(requestBodyDTOFixture.getTelNo(), actualContact.getTelNo());
   }
 
-  private List<CaseContainerDTO> casesFromCaseService() {
-    return FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class);
+  private List<Case> casesFromDb() {
+    return FixtureHelper.loadPackageFixtures(Case[].class);
   }
 }

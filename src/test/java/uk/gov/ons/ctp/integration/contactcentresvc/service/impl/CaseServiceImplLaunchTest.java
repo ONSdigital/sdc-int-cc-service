@@ -15,7 +15,6 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_Q
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_REGION;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
@@ -34,6 +33,7 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.domain.Language;
+import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
@@ -41,7 +41,6 @@ import uk.gov.ons.ctp.common.event.model.SurveyLaunchResponse;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.EqConfig;
-import uk.gov.ons.ctp.integration.contactcentresvc.config.TelephoneCapture;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
@@ -69,115 +68,21 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
 
     Mockito.lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
     Mockito.lenient().when(appConfig.getEq()).thenReturn(eqConfig);
-
-    TelephoneCapture telephoneCapture = new TelephoneCapture();
-    telephoneCapture.setDisabled(new HashSet<String>());
-    Mockito.lenient().when(appConfig.getTelephoneCapture()).thenReturn(telephoneCapture);
-  }
-
-  @Test
-  public void testLaunchCECase() throws Exception {
-    CaseContainerDTO caseFromCaseService = mockGetCaseById("CE", "E", A_REGION.name());
-    doLaunchTest(false, caseFromCaseService, FormType.H);
-  }
-
-  @Test
-  public void shouldLaunchCECaseForNonIndividualInNorthernIrelandWithFormTypeNotC()
-      throws Exception {
-    CaseContainerDTO caseFromCaseService = mockGetCaseById("CE", "E", "N");
-    doLaunchTest(false, caseFromCaseService, FormType.H);
-  }
-
-  // a unit test to increase code-coverage. Not defined what we do with unknown address-level.
-  @Test
-  public void shouldLaunchCECaseForNonIndividualUnknownLevelAddressInNorthernIreland()
-      throws Exception {
-    CaseContainerDTO caseFromCaseService = mockGetCaseById("CE", "X", "N");
-    doLaunchTest(false, caseFromCaseService, FormType.C);
-  }
-
-  // a unit test to increase code-coverage. Not defined what we do with unknown address-level.
-  @Test
-  public void testLaunchCECaseWithUnknownAddressLevel() throws Exception {
-    CaseContainerDTO caseFromCaseService = mockGetCaseById("CE", "X", A_REGION.name());
-    doLaunchTest(false, caseFromCaseService, FormType.H);
-  }
-
-  @Test
-  public void testLaunchCECaseForIndividual() throws Exception {
-    doLaunchTest("CE", true);
   }
 
   @Test
   public void testLaunchHHCase() throws Exception {
-    doLaunchTest("HH", false);
-  }
-
-  @Test
-  public void testLaunchSPGCase() throws Exception {
-    doLaunchTest("SPG", false);
-  }
-
-  @Test
-  public void testLaunchSPGCaseForIndividual() throws Exception {
-    doLaunchTest("SPG", true);
+    doLaunchTest(false);
   }
 
   @Test
   public void testLaunchHHCaseForIndividual() throws Exception {
-    doLaunchTest("HH", true);
-  }
-
-  // Even though this should never happen, we will let an invalid region through (the EQ launch
-  // token will default the region to english).
-  // This may be useful at the Scottish border, where things might get a little fuzzy.
-  @Test
-  public void shouldLaunchCaseFromNonValidRegion() throws Exception {
-    CaseContainerDTO caseDetails = mockGetCaseById("HH", "E", "S");
-    doLaunchTest(false, caseDetails, FormType.H);
-  }
-
-  @Test
-  public void shouldLaunchCcsCase() throws Exception {
-    CaseContainerDTO caseDetails = mockGetCaseById("HH", "E", A_REGION.name());
-    caseDetails.setSurveyType("CCS");
-    doLaunchTest(false, caseDetails, FormType.H);
-  }
-
-  @Test
-  public void shouldLaunchIndividualUnitLevelCaseForCE() throws Exception {
-    CaseContainerDTO caseDetails = mockGetCaseById("CE", "U", A_REGION.name());
-    doLaunchTest(true, caseDetails, FormType.C);
-  }
-
-  @Test
-  public void shouldRejectCcsCaseForCE() throws Exception {
-    CaseContainerDTO caseDetails = mockGetCaseById("CE", "E", A_REGION.name());
-    caseDetails.setSurveyType("CCS");
-    assertThatInvalidLaunchComboIsRejected(
-        caseDetails,
-        "Telephone capture feature is not available for CCS Communal establishment's. CCS CE's must submit their survey via CCS Paper Questionnaire",
-        Fault.BAD_REQUEST);
-    verifyCallToGetQuestionnaireIdNotCalled();
-  }
-
-  @Test
-  public void shouldLaunchWelshCaseWithAddressLevel_E_forCE() throws Exception {
-    CaseContainerDTO caseDetails = mockGetCaseById("CE", "E", "W");
-    doLaunchTest(false, caseDetails, FormType.C);
-  }
-
-  @Test
-  public void testLaunchHICase() {
-    Exception e = assertThrows(Exception.class, () -> doLaunchTest("HI", false));
-    assertTrue(e.getMessage().contains("must be SPG, CE or HH"), e.getMessage());
+    doLaunchTest(true);
   }
 
   @Test
   public void testLaunch_caseServiceNotFoundException() throws Exception {
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-        .when(caseDataClient)
-        .getCaseById(UUID_0, false);
+    mockGetCaseById(UUID_0, new ResponseStatusException(HttpStatus.NOT_FOUND));
     assertThrows(
         ResponseStatusException.class,
         () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));
@@ -185,9 +90,7 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
 
   @Test
   public void testLaunch_caseServiceResponseStatusException() throws Exception {
-    Mockito.doThrow(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT))
-        .when(caseDataClient)
-        .getCaseById(UUID_0, false);
+    mockGetCaseById(UUID_0, new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT));
     assertThrows(
         ResponseStatusException.class,
         () -> target.getLaunchURLForCaseId(UUID_0, new LaunchRequestDTO()));
@@ -196,7 +99,7 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   @SneakyThrows
   private void assertThatInvalidLaunchComboIsRejected(
       CaseContainerDTO dto, String expectedMsg, Fault expectedFault) {
-    CTPException e = assertThrows(CTPException.class, () -> doLaunchTest(false, dto, FormType.C));
+    CTPException e = assertThrows(CTPException.class, () -> doLaunchTest(false, FormType.C));
     assertEquals(expectedFault, e.getFault());
     assertTrue(e.getMessage().contains(expectedMsg), e.getMessage());
   }
@@ -238,68 +141,20 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
         false);
   }
 
-  @Test
-  public void shouldRejectCeManagerFormFromUnitRegionE() throws Exception {
-    CaseContainerDTO dto = mockGetCaseById("CE", "U", "E");
-    assertThatCeManagerFormFromUnitRegionIsRejected(dto);
-  }
-
-  @Test
-  public void shouldRejectCeManagerFormFromUnitRegionW() throws Exception {
-    CaseContainerDTO dto = mockGetCaseById("CE", "U", "W");
-    assertThatCeManagerFormFromUnitRegionIsRejected(dto);
-  }
-
-  @Test
-  public void shouldRejectCeManagerFormFromUnitRegionN() throws Exception {
-    CaseContainerDTO dto = mockGetCaseById("CE", "U", "N");
-    assertThatCeManagerFormFromUnitRegionIsRejected(dto);
-  }
-
-  @Test
-  public void shouldRejectCeManagerFormFromUnitRegionS() throws Exception {
-    CaseContainerDTO dto = mockGetCaseById("CE", "U", "S");
-    assertThatCeManagerFormFromUnitRegionIsRejected(dto);
-  }
-
-  private void assertRejectCeManagerFormFromEstabRegionN(String region) throws Exception {
-    CaseContainerDTO dto = mockGetCaseById("CE", "E", region);
-    assertThatInvalidLaunchComboIsRejected(
-        dto,
-        "All Northern Ireland calls from CE Managers are to be escalated to the NI management team.",
-        Fault.BAD_REQUEST);
-  }
-
-  @Test
-  public void shouldRejectCeManagerFormFromEstabRegionN() throws Exception {
-    assertRejectCeManagerFormFromEstabRegionN("N");
-  }
-
-  @Test
-  public void shouldRejectCeManagerFormFromEstab_lowercaseRegionN() throws Exception {
-    assertRejectCeManagerFormFromEstabRegionN("n");
-  }
-
-  @Test
-  public void shouldRejectCeManagerFormFromEstab_regionNWithTrailingChars() throws Exception {
-    assertRejectCeManagerFormFromEstabRegionN("N0123");
-  }
-
-  private void verifyEqLaunchJwe(
-      String questionnaireId, boolean individual, String caseType, FormType formType)
+  private void verifyEqLaunchJwe(String questionnaireId, boolean individual, FormType formType)
       throws Exception {
     Mockito.verify(eqLaunchService).getEqLaunchJwe(eqLaunchDataCaptor.capture());
     EqLaunchData eqLaunchData = eqLaunchDataCaptor.getValue();
 
     assertEquals(Language.ENGLISH, eqLaunchData.getLanguage());
-    assertEquals(uk.gov.ons.ctp.common.domain.Source.CONTACT_CENTRE_API, eqLaunchData.getSource());
-    assertEquals(uk.gov.ons.ctp.common.domain.Channel.CC, eqLaunchData.getChannel());
+    assertEquals(Source.CONTACT_CENTRE_API, eqLaunchData.getSource());
+    assertEquals(Channel.CC, eqLaunchData.getChannel());
     assertEquals(AN_AGENT_ID, eqLaunchData.getUserId());
     assertEquals(questionnaireId, eqLaunchData.getQuestionnaireId());
     assertEquals(formType.name(), eqLaunchData.getFormType());
     assertNull(eqLaunchData.getAccountServiceLogoutUrl());
     assertNull(eqLaunchData.getAccountServiceUrl());
-    if (caseType.equals("HH") && individual) {
+    if (individual) {
       // Should have used a new caseId, ie, not the uuid that we started with
       assertNotEquals(UUID_0, eqLaunchData.getCaseContainer().getId());
     } else {
@@ -308,10 +163,10 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
   }
 
   private void verifySurveyLaunchedEventPublished(
-      String caseType, boolean individual, UUID caseId, String questionnaireId) {
+      boolean individual, UUID caseId, String questionnaireId) {
     SurveyLaunchResponse payloadSent =
         verifyEventSent(TopicType.SURVEY_LAUNCH, SurveyLaunchResponse.class);
-    if (caseType.equals("HH") && individual) {
+    if (individual) {
       // Should have used a new caseId, ie, not the uuid that we started with
       assertNotEquals(UUID_0, payloadSent.getCaseId());
     } else {
@@ -321,11 +176,11 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
     assertEquals(AN_AGENT_ID, payloadSent.getAgentId());
   }
 
-  private void verifyCorrectIndividualCaseId(String caseType, boolean individual) {
+  private void verifyCorrectIndividualCaseId(boolean individual) {
     // Verify call to RM to get qid is using the correct individual case id
     Mockito.verify(caseServiceClient)
         .getSingleUseQuestionnaireId(any(), eq(individual), individualCaseIdCaptor.capture());
-    if (caseType.equals("HH") && individual) {
+    if (individual) {
       assertNotEquals(UUID_0, individualCaseIdCaptor.getValue()); // expecting newly allocated uuid
     } else {
       assertNull(individualCaseIdCaptor.getValue());
@@ -336,15 +191,12 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
     verify(caseServiceClient, never()).getSingleUseQuestionnaireId(any(), anyBoolean(), any());
   }
 
-  private void doLaunchTest(String caseType, boolean individual) throws Exception {
-    CaseContainerDTO caseFromCaseService = mockGetCaseById(caseType, "U", A_REGION.name());
-    doLaunchTest(individual, caseFromCaseService, FormType.H);
+  private void doLaunchTest(boolean individual) throws Exception {
+    mockGetCaseById(A_REGION.name());
+    doLaunchTest(individual, FormType.H);
   }
 
-  private void doLaunchTest(
-      boolean individual, CaseContainerDTO caseFromCaseService, FormType formType)
-      throws Exception {
-    String caseType = caseFromCaseService.getCaseType();
+  private void doLaunchTest(boolean individual, FormType formType) throws Exception {
 
     // Fake RM response for creating questionnaire ID
     SingleUseQuestionnaireIdDTO newQuestionnaireIdDto = new SingleUseQuestionnaireIdDTO();
@@ -374,8 +226,8 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
             + "simulated-encrypted-payload",
         launchUrl);
 
-    verifyCorrectIndividualCaseId(caseType, individual);
-    verifyEqLaunchJwe(A_QUESTIONNAIRE_ID, individual, caseType, formType);
-    verifySurveyLaunchedEventPublished(caseType, individual, UUID_0, A_QUESTIONNAIRE_ID);
+    verifyCorrectIndividualCaseId(individual);
+    verifyEqLaunchJwe(A_QUESTIONNAIRE_ID, individual, formType);
+    verifySurveyLaunchedEventPublished(individual, UUID_0, A_QUESTIONNAIRE_ID);
   }
 }

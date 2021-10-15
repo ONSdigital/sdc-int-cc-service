@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import ma.glasnost.orika.MapperFacade;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -29,7 +31,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.EstabType;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -45,6 +47,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
@@ -102,51 +107,61 @@ public abstract class CaseServiceImplTestBase {
     verify(eventTransfer, never()).send(eq(type), any());
   }
 
-  void verifyCase(CaseDTO results, CaseDTO expectedCaseResult, boolean caseEventsExpected)
-      throws Exception {
+  void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
-    assertEquals(expectedCaseResult.getCaseType(), results.getCaseType());
-    assertEquals(expectedCaseResult.getCeOrgName(), results.getCeOrgName());
     assertEquals(
         expectedCaseResult.getAllowedDeliveryChannels(), results.getAllowedDeliveryChannels());
-
-    if (!caseEventsExpected) {
-      assertTrue(results.getCaseEvents().isEmpty());
-    }
-
     assertEquals(expectedCaseResult, results);
     verifyEventNotSent();
   }
 
-  CaseDTO createExpectedCaseDTO(CaseContainerDTO caseFromCaseService, boolean caseEvents) {
+  CaseDTO createExpectedCaseDTO(CaseContainerDTO caseFromCaseService) {
+
+    CaseAddressDTO addrDto =
+        CaseAddressDTO.builder()
+            .addressLine1(caseFromCaseService.getAddressLine1())
+            .addressLine2(caseFromCaseService.getAddressLine2())
+            .addressLine3(caseFromCaseService.getAddressLine3())
+            .townName(caseFromCaseService.getTownName())
+            .region(Region.valueOf(caseFromCaseService.getRegion().substring(0, 1)))
+            .postcode(caseFromCaseService.getPostcode())
+            .uprn(createUprn(caseFromCaseService.getUprn()))
+            .build();
 
     CaseDTO expectedCaseResult =
         CaseDTO.builder()
             .id(caseFromCaseService.getId())
             .caseRef(caseFromCaseService.getCaseRef())
-            .caseType(caseFromCaseService.getCaseType())
-            .estabType(EstabType.forCode(caseFromCaseService.getEstabType()))
-            .estabDescription(caseFromCaseService.getEstabType())
             .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
-            .createdDateTime(caseFromCaseService.getCreatedDateTime())
-            .lastUpdated(caseFromCaseService.getLastUpdated())
-            .addressLine1(caseFromCaseService.getAddressLine1())
-            .addressLine2(caseFromCaseService.getAddressLine2())
-            .addressLine3(caseFromCaseService.getAddressLine3())
-            .addressType(caseFromCaseService.getAddressType())
-            .townName(caseFromCaseService.getTownName())
-            .region(caseFromCaseService.getRegion().substring(0, 1))
-            .postcode(caseFromCaseService.getPostcode())
-            .ceOrgName(caseFromCaseService.getOrganisationName())
-            .uprn(createUprn(caseFromCaseService.getUprn()))
-            .estabUprn(createUprn(caseFromCaseService.getEstabUprn()))
-            .secureEstablishment(caseFromCaseService.isSecureEstablishment())
+            .address(addrDto)
             .caseEvents(Collections.emptyList())
             .build();
-    if (caseEvents) {
-      expectedCaseResult.setCaseEvents(filterEvents(caseFromCaseService));
-    }
+    return expectedCaseResult;
+  }
+
+  CaseDTO createExpectedCaseDTO(Case caseFromDb) {
+    CaseAddress addr = caseFromDb.getAddress();
+
+    CaseAddressDTO addrDto =
+        CaseAddressDTO.builder()
+            .addressLine1(addr.getAddressLine1())
+            .addressLine2(addr.getAddressLine2())
+            .addressLine3(addr.getAddressLine3())
+            .townName(addr.getTownName())
+            .region(addr.getRegion())
+            .postcode(addr.getPostcode())
+            .uprn(createUprn(addr.getUprn()))
+            .build();
+
+    CaseDTO expectedCaseResult =
+        CaseDTO.builder()
+            .id(caseFromDb.getId())
+            .caseRef(caseFromDb.getCaseRef())
+            .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
+            .address(addrDto)
+            .caseEvents(Collections.emptyList())
+            .build();
     return expectedCaseResult;
   }
 
@@ -167,15 +182,19 @@ public abstract class CaseServiceImplTestBase {
     return uprn == null ? null : new UniquePropertyReferenceNumber(uprn);
   }
 
-  CaseContainerDTO mockGetCaseById(String caseType, String addressLevel, String region)
-      throws CTPException {
-    CaseContainerDTO caseFromCaseService =
-        FixtureHelper.loadPackageFixtures(CaseContainerDTO[].class).get(0);
-    caseFromCaseService.setCaseType(caseType);
-    caseFromCaseService.setAddressLevel(addressLevel);
-    caseFromCaseService.setRegion(region);
-    when(caseDataClient.getCaseById(eq(UUID_0), any())).thenReturn(caseFromCaseService);
-    return caseFromCaseService;
+  Case mockGetCaseById(String region) throws Exception {
+    Case caze = FixtureHelper.loadPackageFixtures(Case[].class).get(0);
+    caze.getAddress().setRegion(Region.valueOf(region));
+    mockGetCaseById(UUID_0, caze);
+    return caze;
+  }
+
+  void mockGetCaseById(UUID id, Case result) throws Exception {
+    when(caseDataClient.getCaseById(eq(id))).thenReturn(result);
+  }
+
+  void mockGetCaseById(UUID id, Exception ex) throws Exception {
+    doThrow(ex).when(caseDataClient).getCaseById(eq(id));
   }
 
   void mockCaseEventWhiteList() {
@@ -185,8 +204,8 @@ public abstract class CaseServiceImplTestBase {
     lenient().when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
   }
 
-  void assertCaseQIDRestClientFailureCaught(Exception ex, boolean caught) throws CTPException {
-    mockGetCaseById("CE", "U", "W");
+  void assertCaseQIDRestClientFailureCaught(Exception ex, boolean caught) throws Exception {
+    mockGetCaseById("W");
     Mockito.doThrow(ex)
         .when(caseServiceClient)
         .getSingleUseQuestionnaireId(eq(UUID_0), anyBoolean(), any());
