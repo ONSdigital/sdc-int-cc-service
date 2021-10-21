@@ -59,7 +59,11 @@ public class CaseEventReceiver {
         kv("messageId", caseMessageId),
         kv("caseId", caseUpdate.getCaseId()));
 
-    if (isSocialSurvey(caseEvent) && isKnownCollectionExercise(caseEvent)) {
+    Survey survey = findSurvey(caseUpdate);
+    boolean social = isSocial(survey);
+    boolean valid = social && isKnownCollectionExercise(caseUpdate);
+
+    if (valid) {
       try {
         Case caze = map(caseUpdate);
         caseRepo.save(caze);
@@ -72,49 +76,43 @@ public class CaseEventReceiver {
         log.error("Case Event processing failed", kv("messageId", caseMessageId), e);
         throw e;
       }
-    }
-  }
-
-  private boolean isSocialSurvey(CaseEvent caseEvent) {
-    CaseUpdate caseUpdate = caseEvent.getPayload().getCaseUpdate();
-    UUID caseMessageId = caseEvent.getHeader().getMessageId();
-
-    Survey survey = surveyRepo.getById(UUID.fromString(caseUpdate.getSurveyId()));
-    if (survey == null) {
-      // TODO - should we NAK the event/throw exception if we do not recognise
-      // the survey and allow the exception manager quarantine the event or
-      // allow to go to DLQ?
-      log.warn(
-          "Case Survey unknown - discarding case",
-          kv("messageId", caseMessageId),
-          kv("caseId", caseUpdate.getCaseId()));
-    } else if (survey.getSampleDefinitionUrl().endsWith("social.json")) {
-      return true;
     } else {
-      log.warn(
-          "Survey is not a social survey - discarding case",
-          kv("messageId", caseMessageId),
-          kv("caseId", caseUpdate.getCaseId()));
+      logDiscardMessage(survey, social, caseEvent);
     }
-    return false;
   }
 
-  private boolean isKnownCollectionExercise(CaseEvent caseEvent) {
-    CaseUpdate caseUpdate = caseEvent.getPayload().getCaseUpdate();
-    UUID caseMessageId = caseEvent.getHeader().getMessageId();
+  private Survey findSurvey(CaseUpdate caseUpdate) {
+    return surveyRepo.getById(UUID.fromString(caseUpdate.getSurveyId()));
+  }
 
+  private boolean isSocial(Survey survey) {
+    return survey != null && survey.getSampleDefinitionUrl().endsWith("social.json");
+  }
+
+  private boolean isKnownCollectionExercise(CaseUpdate caseUpdate) {
     CollectionExercise collEx =
         collExRepo.getById(UUID.fromString(caseUpdate.getCollectionExerciseId()));
-    if (collEx == null) {
-      // TODO - should we NAK the event/throw exception if we do not recognise
-      // the collex and allow the exception manager quarantine the event or
-      // allow to go to DLQ?
-      log.warn(
-          "Case CollectionExercise unknown - discarding case",
-          kv("messageId", caseMessageId),
-          kv("caseId", caseUpdate.getCaseId()));
-    }
     return collEx != null;
+  }
+
+  /*
+   * TODO - should we NAK the event/throw exception if we do not recognise
+   * the survey and allow the exception manager quarantine the event or
+   * allow to go to DLQ?
+   */
+  private void logDiscardMessage(Survey survey, boolean social, CaseEvent event) {
+    CaseUpdate caseUpdate = event.getPayload().getCaseUpdate();
+    UUID caseMessageId = event.getHeader().getMessageId();
+
+    String msg = null;
+    if (survey == null) {
+      msg = "Case Survey unknown - discarding case";
+    } else if (!social) {
+      msg = "Survey is not a social survey - discarding case";
+    } else {
+      msg = "Case CollectionExercise unknown - discarding case";
+    }
+    log.warn(msg, kv("messageId", caseMessageId), kv("caseId", caseUpdate.getCaseId()));
   }
 
   private Case map(CaseUpdate caseUpdate) {
