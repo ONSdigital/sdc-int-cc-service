@@ -14,7 +14,11 @@ import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerciseRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
 /**
  * Service implementation responsible for receipt of Case Events. See Spring Integration flow for
@@ -24,10 +28,18 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 @MessageEndpoint
 public class CaseEventReceiver {
   private CaseRepository caseRepo;
+  private SurveyRepository surveyRepo;
+  private CollectionExerciseRepository collExRepo;
   private MapperFacade mapper;
 
-  public CaseEventReceiver(CaseRepository caseRepo, MapperFacade mapper) {
+  public CaseEventReceiver(
+      CaseRepository caseRepo,
+      SurveyRepository surveyRepo,
+      CollectionExerciseRepository collExRepo,
+      MapperFacade mapper) {
     this.caseRepo = caseRepo;
+    this.surveyRepo = surveyRepo;
+    this.collExRepo = collExRepo;
     this.mapper = mapper;
   }
 
@@ -47,13 +59,62 @@ public class CaseEventReceiver {
         kv("messageId", caseMessageId),
         kv("caseId", caseUpdate.getCaseId()));
 
-    Case caze = map(caseUpdate);
-    caseRepo.save(caze);
+    if (isSocialSurvey(caseEvent) && isKnownCollectionExercise(caseEvent)) {
+      try {
+        Case caze = map(caseUpdate);
+        caseRepo.save(caze);
 
-    log.info(
-        "Successful saved Case to database {}, {}",
-        kv("messageId", caseMessageId),
-        kv("caseId", caseUpdate.getCaseId()));
+        log.info(
+            "Successful saved Case to database {}, {}",
+            kv("messageId", caseMessageId),
+            kv("caseId", caseUpdate.getCaseId()));
+      } catch (Exception e) {
+        log.error("Case Event processing failed", kv("messageId", caseMessageId), e);
+        throw e;
+      }
+    }
+  }
+
+  private boolean isSocialSurvey(CaseEvent caseEvent) {
+    CaseUpdate caseUpdate = caseEvent.getPayload().getCaseUpdate();
+    UUID caseMessageId = caseEvent.getHeader().getMessageId();
+
+    Survey survey = surveyRepo.getById(UUID.fromString(caseUpdate.getSurveyId()));
+    if (survey == null) {
+      // TODO - should we NAK the event/throw exception if we do not recognise
+      // the survey and allow the exception manager quarantine the event or
+      // allow to go to DLQ?
+      log.warn(
+          "Case Survey unknown - discarding case",
+          kv("messageId", caseMessageId),
+          kv("caseId", caseUpdate.getCaseId()));
+    } else if (survey.getSampleDefinitionUrl().endsWith("social.json")) {
+      return true;
+    } else {
+      log.warn(
+          "Survey is not a social survey - discarding case",
+          kv("messageId", caseMessageId),
+          kv("caseId", caseUpdate.getCaseId()));
+    }
+    return false;
+  }
+
+  private boolean isKnownCollectionExercise(CaseEvent caseEvent) {
+    CaseUpdate caseUpdate = caseEvent.getPayload().getCaseUpdate();
+    UUID caseMessageId = caseEvent.getHeader().getMessageId();
+
+    CollectionExercise collEx =
+        collExRepo.getById(UUID.fromString(caseUpdate.getCollectionExerciseId()));
+    if (collEx == null) {
+      // TODO - should we NAK the event/throw exception if we do not recognise
+      // the collex and allow the exception manager quarantine the event or
+      // allow to go to DLQ?
+      log.warn(
+          "Case CollectionExercise unknown - discarding case",
+          kv("messageId", caseMessageId),
+          kv("caseId", caseUpdate.getCaseId()));
+    }
+    return collEx != null;
   }
 
   private Case map(CaseUpdate caseUpdate) {
