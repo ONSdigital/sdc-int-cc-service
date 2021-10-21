@@ -179,10 +179,9 @@ public class CCSvcBeanMapperTest {
 
     assertAll(
         () -> assertEquals(UUID.fromString(source.getSurveyId()), destination.getId()),
-        () -> assertEquals(source.getName(), destination.getName()));
-    // WRITEME when available:
-    // sampleDefinition
-    // sampleDefinitionUrl
+        () -> assertEquals(source.getName(), destination.getName()),
+        () -> assertEquals(source.getSampleDefinitionUrl(), destination.getSampleDefinitionUrl()),
+        () -> assertEquals(source.getSampleDefinition(), destination.getSampleDefinition()));
   }
 
   @Test
