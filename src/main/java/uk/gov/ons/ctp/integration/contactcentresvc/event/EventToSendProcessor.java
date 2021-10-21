@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.TopicType;
@@ -48,7 +49,7 @@ public class EventToSendProcessor {
               TopicType type = TopicType.valueOf(event.getType());
               UUID messageId =
                   eventPublisher.sendEvent(
-                      type, Source.CONTACT_CENTRE_API, appConfig.getChannel(), event.getPayload());
+                      type, Source.CONTACT_CENTRE_API, Channel.CC, event.getPayload());
 
               eventsSent.add(event);
               log.info("Event published", kv("messageId", messageId));

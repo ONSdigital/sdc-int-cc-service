@@ -1,15 +1,11 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.hamcrest.Matchers.matchesRegex;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +23,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 /** Contact Centre Data endpoint Unit test. */
 @ExtendWith(MockitoExtension.class)
 public final class VersionEndpointTest {
-  private static final String SWAGGER_HEADER = "info:\n  version: \"5.10.7-oas3\"";
+  private static final String SWAGGER_HEADER = "info:\n  version: \"1.0.0\"";
 
   @Mock private ResourceLoader resourceLoader;
   @Mock private Resource resource;
@@ -46,15 +42,9 @@ public final class VersionEndpointTest {
 
   @Test
   public void validRequestRespondsWithVersionNumber() throws Exception {
-    InputStream is = new ByteArrayInputStream(SWAGGER_HEADER.getBytes());
-
-    when(resourceLoader.getResource(anyString())).thenReturn(resource);
-    when(resource.getInputStream()).thenReturn(is);
-    versionEndpoint.readSwaggerVersion();
-
     mockMvc
         .perform(get("/version"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.apiVersion", matchesRegex("^5\\.10\\.7$")));
+        .andExpect(jsonPath("$.apiVersion", matchesRegex("1.0.0")));
   }
 }

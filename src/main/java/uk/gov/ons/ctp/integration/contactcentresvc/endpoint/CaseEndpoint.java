@@ -6,8 +6,6 @@ import io.micrometer.core.annotation.Timed;
 import java.util.List;
 import java.util.UUID;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +20,6 @@ import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.integration.contactcentresvc.Constants;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
@@ -265,26 +262,6 @@ public class CaseEndpoint implements CTPEndpoint {
         "Entering GET getUACForCase", kv("pathParam", caseId), kv("requestBody", requestParamsDTO));
 
     UACResponseDTO response = caseService.getUACForCaseId(caseId, requestParamsDTO);
-    return ResponseEntity.ok(response);
-  }
-
-  /**
-   * the GET end point to request a CCS case by postcode
-   *
-   * @param postcode postcode
-   * @return response entity
-   * @throws CTPException something went wrong
-   */
-  @RequestMapping(value = "/ccs/postcode/{postcode}", method = RequestMethod.GET)
-  @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<List<CaseDTO>> getCCSCaseByPostcode(
-      @PathVariable(value = "postcode") @NotBlank @Pattern(regexp = Constants.POSTCODE_RE)
-          final String postcode)
-      throws CTPException {
-
-    log.info("Entering GET getCCSCaseByPostcode", kv("pathParam", postcode));
-
-    List<CaseDTO> response = caseService.getCCSCaseByPostcode(postcode);
     return ResponseEntity.ok(response);
   }
 

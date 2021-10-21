@@ -51,7 +51,6 @@ import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuest
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
-import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
@@ -92,8 +91,6 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private EqLaunchService eqLaunchService;
 
   @Autowired private EventTransfer eventTransfer;
-
-  @Autowired private CCSPostcodesBean ccsPostcodesBean;
 
   @Autowired private BlacklistedUPRNBean blacklistedUPRNBean;
 
@@ -197,40 +194,6 @@ public class CaseServiceImpl implements CaseService {
     }
 
     return callCaseSvcByUPRN(uprn.getValue(), requestParamsDTO.getCaseEvents());
-  }
-
-  @Override
-  public List<CaseDTO> getCCSCaseByPostcode(String postcode) throws CTPException {
-    if (log.isDebugEnabled()) {
-      log.debug("Fetching ccs case details by postcode", kv("postcode", postcode));
-    }
-    validatePostcode(postcode);
-
-    List<CaseContainerDTO> ccsCaseContainersList = getCcsCasesFromRm(postcode);
-
-    List<CaseDTO> ccsCases = new ArrayList<CaseDTO>();
-    for (CaseContainerDTO ccsCaseDetails : ccsCaseContainersList) {
-      // Decide if the case type indicates it's worth returning the case
-      boolean isSupportedCaseType = false;
-      String caseType = ccsCaseDetails.getCaseType();
-      if (caseType != null) {
-        isSupportedCaseType =
-            caseType.equals(CaseType.HH.name())
-                || caseType.equals(CaseType.CE.name())
-                || caseType.equals(CaseType.SPG.name());
-      }
-
-      if (isSupportedCaseType) {
-        ccsCases.add(mapper.map(ccsCaseDetails, CaseDTO.class));
-      } else {
-        log.info(
-            "Not returning CCS case with unsupported case type",
-            kv("caseId", ccsCaseDetails.getId()),
-            kv("caseType", caseType));
-      }
-    }
-
-    return ccsCases;
   }
 
   @Override
@@ -596,14 +559,6 @@ public class CaseServiceImpl implements CaseService {
           v("topicType", topicType),
           kv("caseId", caseId),
           kv("transferId", transferId));
-    }
-  }
-
-  private void validatePostcode(String postcode) throws CTPException {
-    if (!ccsPostcodesBean.isInCCSPostcodes(postcode)) {
-      log.info("Check failed for postcode", kv("postcode", postcode));
-      throw new CTPException(
-          Fault.BAD_REQUEST, "The requested postcode is not within the CCS sample");
     }
   }
 

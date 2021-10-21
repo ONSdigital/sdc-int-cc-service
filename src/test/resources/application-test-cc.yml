@@ -1,6 +1,3 @@
-channel: CC
-
-
 spring:
   flyway:
     enabled: false

@@ -17,31 +17,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Value("${spring.security.user.password}")
   String password;
 
-  @Value("${channel}")
-  String channel;
-
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     // THE ORDER OF THE MATCHERS BELOW IS IMPORTANT
     http.authorizeRequests()
         .antMatchers("/info")
         .permitAll()
-        .antMatchers("/version")
-        .permitAll()
-        .antMatchers("/cases/**/uac")
-        .hasRole("AD")
-        .antMatchers("/cases")
-        .hasRole("CC")
-        .antMatchers("/cases/uprn/**")
-        .access("hasRole('CC') or hasRole('AD')")
-        .antMatchers("/addresses")
-        .access("hasRole('CC') or hasRole('AD')")
-        .antMatchers("/addresses/postcode")
-        .access("hasRole('CC') or hasRole('AD')")
-        .antMatchers("/fulfilments/**")
-        .hasRole("CC")
-        .antMatchers("/cases/**") // AND LASTLY ANY remaining /cases paths
-        .hasRole("CC")
+        .anyRequest()
+        .authenticated()
         .and()
         .csrf()
         .disable()
@@ -50,6 +33,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    auth.inMemoryAuthentication().withUser(username).password("{noop}" + password).roles(channel);
+    auth.inMemoryAuthentication().withUser(username).password("{noop}" + password).roles("USER");
   }
 }

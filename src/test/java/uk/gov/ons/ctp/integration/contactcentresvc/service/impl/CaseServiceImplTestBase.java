@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import ma.glasnost.orika.MapperFacade;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -42,8 +41,6 @@ import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientSer
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
-import uk.gov.ons.ctp.integration.contactcentresvc.CCSPostcodesBean;
-import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
@@ -69,10 +66,6 @@ public abstract class CaseServiceImplTestBase {
   @Mock EqLaunchService eqLaunchService;
 
   @Mock EventTransfer eventTransfer;
-
-  @Spy MapperFacade mapperFacade = new CCSvcBeanMapper();
-
-  @Mock CCSPostcodesBean ccsPostcodesBean;
 
   @Mock BlacklistedUPRNBean blacklistedUPRNBean;
 
