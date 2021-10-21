@@ -29,7 +29,7 @@ public class CollectionExerciseEventReceiver {
    * @param event event from RM
    */
   @ServiceActivator(inputChannel = "acceptCollectionExerciseEvent")
-  public void acceptCollectionExerciseUpdateEvent(CollectionExerciseUpdateEvent event) {
+  public void acceptEvent(CollectionExerciseUpdateEvent event) {
 
     var payload = event.getPayload().getCollectionExerciseUpdate();
 
@@ -39,7 +39,15 @@ public class CollectionExerciseEventReceiver {
         kv("collectionExerciseId", payload.getCollectionExerciseId()),
         kv("surveyId", payload.getSurveyId()));
 
-    CollectionExercise entity = mapper.map(payload, CollectionExercise.class);
-    repo.save(entity);
+    try {
+      CollectionExercise entity = mapper.map(payload, CollectionExercise.class);
+      repo.save(entity);
+    } catch (Exception e) {
+      log.error(
+          "CollectionExercise Event processing failed",
+          kv("messageId", event.getHeader().getMessageId()),
+          e);
+      throw e;
+    }
   }
 }

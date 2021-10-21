@@ -49,7 +49,7 @@ public class CaseEventReceiver {
    * @param caseEvent CaseEvent message from Response Management
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
-  public void acceptCaseEvent(CaseEvent caseEvent) {
+  public void acceptEvent(CaseEvent caseEvent) {
 
     CaseUpdate caseUpdate = caseEvent.getPayload().getCaseUpdate();
     UUID caseMessageId = caseEvent.getHeader().getMessageId();

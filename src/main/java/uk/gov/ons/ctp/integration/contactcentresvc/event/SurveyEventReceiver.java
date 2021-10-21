@@ -28,7 +28,7 @@ public class SurveyEventReceiver {
    * @param event event from RM.
    */
   @ServiceActivator(inputChannel = "acceptSurveyUpdateEvent")
-  public void acceptSurveyUpdateEvent(SurveyUpdateEvent event) {
+  public void acceptEvent(SurveyUpdateEvent event) {
 
     SurveyUpdate payload = event.getPayload().getSurveyUpdate();
 
@@ -37,7 +37,13 @@ public class SurveyEventReceiver {
         kv("messageId", event.getHeader().getMessageId()),
         kv("surveyId", payload.getSurveyId()));
 
-    Survey survey = mapper.map(payload, Survey.class);
-    repo.save(survey);
+    try {
+      Survey survey = mapper.map(payload, Survey.class);
+      repo.save(survey);
+    } catch (Exception e) {
+      log.error(
+          "Survey Event processing failed", kv("messageId", event.getHeader().getMessageId()), e);
+      throw e;
+    }
   }
 }

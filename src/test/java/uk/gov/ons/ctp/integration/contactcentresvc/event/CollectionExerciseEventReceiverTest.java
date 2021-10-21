@@ -2,11 +2,16 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.ZoneOffset;
 import java.util.UUID;
+import javax.persistence.PersistenceException;
 import ma.glasnost.orika.MapperFacade;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -31,11 +36,16 @@ public class CollectionExerciseEventReceiverTest {
 
   @Captor private ArgumentCaptor<CollectionExercise> collExCaptor;
 
+  private CollectionExerciseUpdateEvent event;
+
+  @BeforeEach
+  public void setup() {
+    event = FixtureHelper.loadPackageFixtures(CollectionExerciseUpdateEvent[].class).get(0);
+  }
+
   @Test
   public void shouldReceiveSurveyUpdateEvent() {
-    CollectionExerciseUpdateEvent event =
-        FixtureHelper.loadPackageFixtures(CollectionExerciseUpdateEvent[].class).get(0);
-    target.acceptCollectionExerciseUpdateEvent(event);
+    target.acceptEvent(event);
 
     verify(repo).save(collExCaptor.capture());
 
@@ -43,6 +53,12 @@ public class CollectionExerciseEventReceiverTest {
         event.getPayload().getCollectionExerciseUpdate();
     CollectionExercise collEx = collExCaptor.getValue();
     verifyMapping(collEx, payload);
+  }
+
+  @Test
+  public void shouldRejectFailingSave() {
+    when(repo.save(any())).thenThrow(PersistenceException.class);
+    assertThrows(PersistenceException.class, () -> target.acceptEvent(event));
   }
 
   private void verifyMapping(

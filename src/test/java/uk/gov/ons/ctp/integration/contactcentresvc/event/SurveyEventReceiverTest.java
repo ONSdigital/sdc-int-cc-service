@@ -1,10 +1,15 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import javax.persistence.PersistenceException;
 import ma.glasnost.orika.MapperFacade;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,16 +35,28 @@ public class SurveyEventReceiverTest {
 
   @Captor private ArgumentCaptor<Survey> surveyCaptor;
 
+  private SurveyUpdateEvent event;
+
+  @BeforeEach
+  public void setup() {
+    event = FixtureHelper.loadPackageFixtures(SurveyUpdateEvent[].class).get(0);
+  }
+
   @Test
   public void shouldReceiveSurveyUpdateEvent() {
-    SurveyUpdateEvent event = FixtureHelper.loadPackageFixtures(SurveyUpdateEvent[].class).get(0);
-    target.acceptSurveyUpdateEvent(event);
+    target.acceptEvent(event);
 
     verify(repo).save(surveyCaptor.capture());
 
     SurveyUpdate payload = event.getPayload().getSurveyUpdate();
     Survey survey = surveyCaptor.getValue();
     verifyMappedSurvey(survey, payload);
+  }
+
+  @Test
+  public void shouldRejectFailingSave() {
+    when(repo.save(any())).thenThrow(PersistenceException.class);
+    assertThrows(PersistenceException.class, () -> target.acceptEvent(event));
   }
 
   private void verifyMappedSurvey(Survey survey, SurveyUpdate surveyUpdate) {

@@ -64,7 +64,7 @@ public class CaseEventReceiverTest {
   public void shouldReceiveEvent() {
     mockSocialSurvey();
     mockCollectionExercise();
-    target.acceptCaseEvent(caseEvent);
+    target.acceptEvent(caseEvent);
 
     verify(caseRepo).save(caseCaptor.capture());
 
@@ -76,7 +76,7 @@ public class CaseEventReceiverTest {
   @Test
   public void shouldDiscardEventWithUnknownSurvey() {
     when(surveyRepo.getById(any())).thenReturn(null);
-    target.acceptCaseEvent(caseEvent);
+    target.acceptEvent(caseEvent);
     verify(collExRepo, never()).getById(any());
     verify(caseRepo, never()).save(any());
   }
@@ -84,7 +84,7 @@ public class CaseEventReceiverTest {
   @Test
   public void shouldDiscardEventWithNonSocialSurvey() {
     mockSurvey("test/somethingelse.json");
-    target.acceptCaseEvent(caseEvent);
+    target.acceptEvent(caseEvent);
     verify(collExRepo, never()).getById(any());
     verify(caseRepo, never()).save(any());
   }
@@ -93,7 +93,7 @@ public class CaseEventReceiverTest {
   public void shouldDiscardEventWithUnknownCollectionExercise() {
     mockSocialSurvey();
     when(collExRepo.getById(any())).thenReturn(null);
-    target.acceptCaseEvent(caseEvent);
+    target.acceptEvent(caseEvent);
     verify(caseRepo, never()).save(any());
   }
 
@@ -102,7 +102,7 @@ public class CaseEventReceiverTest {
     mockSocialSurvey();
     mockCollectionExercise();
     when(caseRepo.save(any())).thenThrow(PersistenceException.class);
-    assertThrows(PersistenceException.class, () -> target.acceptCaseEvent(caseEvent));
+    assertThrows(PersistenceException.class, () -> target.acceptEvent(caseEvent));
   }
 
   private void mockSocialSurvey() {
