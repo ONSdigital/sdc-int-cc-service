@@ -145,8 +145,9 @@ fulfilments:
 
 queueconfig:
   case-subscription: event_case-update_cc
-  case-topic: event_case-update
-  
+  collection-exercise-subscription: event_collection-exercise-update_cc
+  survey-subscription: event_survey-update_cc
+    
 messaging:
   publish:
     timeout: 4

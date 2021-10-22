@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -16,12 +17,15 @@ import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
+import uk.gov.ons.ctp.common.event.model.CollectionExercise;
+import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 
@@ -41,6 +45,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter(new StringToUUIDConverter());
     converterFactory.registerConverter(new StringToUPRNConverter());
     converterFactory.registerConverter(new UtcOffsetDateTimeConverter());
+    converterFactory.registerConverter(new UtcLocalDateTimeConverter());
 
     factory
         .classMap(CaseContainerDTO.class, CaseDTO.class)
@@ -81,6 +86,25 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .field("sample.region", "address.region")
         .field("sample.uprn", "address.uprn")
         .field("sampleSensitive.phoneNumber", "contact.phoneNumber")
+        .byDefault()
+        .register();
+
+    factory
+        .classMap(SurveyUpdate.class, Survey.class)
+        .field("surveyId", "id")
+        .byDefault()
+        .register();
+
+    factory
+        .classMap(
+            CollectionExercise.class,
+            uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise.class)
+        .field("collectionExerciseId", "id")
+        .field("surveyId", "survey.id")
+        .field("metadata.numberOfWaves", "numberOfWaves")
+        .field("metadata.waveLength", "waveLength")
+        .field("metadata.cohorts", "cohorts")
+        .field("metadata.cohortSchedule", "cohortSchedule")
         .byDefault()
         .register();
 
@@ -134,6 +158,20 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     public Date convertFrom(
         OffsetDateTime source, Type<Date> destinationType, MappingContext mappingContext) {
       return new Date(source.toInstant().toEpochMilli());
+    }
+  }
+
+  static class UtcLocalDateTimeConverter extends BidirectionalConverter<Date, LocalDateTime> {
+    @Override
+    public LocalDateTime convertTo(
+        Date source, Type<LocalDateTime> destinationType, MappingContext mappingContext) {
+      return source.toInstant().atOffset(ZoneOffset.UTC).toLocalDateTime();
+    }
+
+    @Override
+    public Date convertFrom(
+        LocalDateTime source, Type<Date> destinationType, MappingContext mappingContext) {
+      return new Date(source.toInstant(ZoneOffset.UTC).toEpochMilli());
     }
   }
 }
