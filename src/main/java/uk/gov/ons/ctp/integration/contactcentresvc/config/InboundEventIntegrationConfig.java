@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
+import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdateEvent;
+import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
 
 /** Integration configuration for inbound events. */
 @Configuration
@@ -32,6 +34,27 @@ public class InboundEventIntegrationConfig {
         channel, pubSubTemplate, appConfig.getQueueConfig().getCaseSubscription(), CaseEvent.class);
   }
 
+  @Bean
+  public PubSubInboundChannelAdapter surveyEventInbound(
+      @Qualifier("acceptSurveyUpdateEvent") MessageChannel channel, PubSubTemplate pubSubTemplate) {
+    return makeAdapter(
+        channel,
+        pubSubTemplate,
+        appConfig.getQueueConfig().getSurveySubscription(),
+        SurveyUpdateEvent.class);
+  }
+
+  @Bean
+  public PubSubInboundChannelAdapter collectionExerciseEventInbound(
+      @Qualifier("acceptCollectionExerciseEvent") MessageChannel channel,
+      PubSubTemplate pubSubTemplate) {
+    return makeAdapter(
+        channel,
+        pubSubTemplate,
+        appConfig.getQueueConfig().getCollectionExerciseSubscription(),
+        CollectionExerciseUpdateEvent.class);
+  }
+
   private PubSubInboundChannelAdapter makeAdapter(
       MessageChannel channel,
       PubSubTemplate pubSubTemplate,
@@ -50,6 +73,22 @@ public class InboundEventIntegrationConfig {
   public MessageChannel acceptCaseEvent() {
     DirectChannel channel = new DirectChannel();
     channel.setDatatypes(CaseEvent.class);
+    return channel;
+  }
+
+  /** @return channel for accepting Survey Update events */
+  @Bean
+  public MessageChannel acceptSurveyUpdateEvent() {
+    DirectChannel channel = new DirectChannel();
+    channel.setDatatypes(SurveyUpdateEvent.class);
+    return channel;
+  }
+
+  /** @return channel for accepting CollectionExercise events */
+  @Bean
+  public MessageChannel acceptCollectionExerciseEvent() {
+    DirectChannel channel = new DirectChannel();
+    channel.setDatatypes(CollectionExerciseUpdateEvent.class);
     return channel;
   }
 }

@@ -1,6 +1,6 @@
 {
   "header": {
-    "version": "v0.3_RELEASE",
+    "version": "0.4.0",
     "topic": "event_case-update",
     "source": "CONTACT_CENTRE_API",
     "channel": "EQ",
@@ -14,6 +14,7 @@
       "caseId": "ad24e36c-2a61-11ec-aa00-4c3275913db5",
       "surveyId": "b66e57b4-2a61-11ec-b90f-4c3275913db5",
       "collectionExerciseId": "bdfc0ada-2a61-11ec-8c02-4c3275913db5",
+      "caseRef": "10000000017",
       "invalid": true,
       "refusalReceived": "HARD_REFUSAL",
       "sample": {
@@ -27,7 +28,9 @@
       },
       "sampleSensitive": {
         "phoneNumber": "REDACTED"
-      }
+      },
+      "createdAt": "2021-01-01T01:02:03.456Z",
+      "lastUpdatedAt": "2021-10-10T00:00:00.000Z"
     }
   }
 }
