@@ -3,7 +3,9 @@ package uk.gov.ons.ctp.integration.contactcentresvc;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import ma.glasnost.orika.MapperFacade;
@@ -114,6 +116,7 @@ public class CCSvcBeanMapperTest {
             assertEquals(
                 source.getCollectionExerciseId(),
                 destination.getCollectionExercise().getId().toString()),
+        () -> assertEquals(source.getCaseRef(), destination.getCaseRef()),
         () -> assertEquals(source.isInvalid(), destination.isInvalid()),
         () -> assertEquals(source.getRefusalReceived(), destination.getRefusalReceived().name()),
         () -> assertEquals(sample.getAddressLine1(), addr.getAddressLine1()),
@@ -123,6 +126,10 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(sample.getPostcode(), addr.getPostcode()),
         () -> assertEquals(sample.getRegion(), addr.getRegion().name()),
         () -> assertEquals(sample.getUprn(), addr.getUprn()),
+        () -> assertEquals(toLocalDateTime(source.getCreatedAt()), destination.getCreatedAt()),
+        () ->
+            assertEquals(
+                toLocalDateTime(source.getLastUpdatedAt()), destination.getLastUpdatedAt()),
         () -> assertEquals(sensitive.getPhoneNumber(), destination.getContact().getPhoneNumber()));
   }
 
@@ -216,5 +223,9 @@ public class CCSvcBeanMapperTest {
     CaseContainerDTO source = FixtureHelper.loadClassFixtures(CaseContainerDTO[].class).get(0);
     AddressCompact destination = mapperFacade.map(source, AddressCompact.class);
     verifyMapping(destination, source);
+  }
+
+  private LocalDateTime toLocalDateTime(Date date) {
+    return date.toInstant().atOffset(ZoneOffset.UTC).toLocalDateTime();
   }
 }

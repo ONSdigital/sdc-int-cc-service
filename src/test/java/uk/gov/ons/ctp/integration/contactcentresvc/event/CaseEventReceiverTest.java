@@ -8,6 +8,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.UUID;
 import javax.persistence.PersistenceException;
 import ma.glasnost.orika.MapperFacade;
@@ -132,6 +135,13 @@ public class CaseEventReceiverTest {
     CaseAddress address = caze.getAddress();
     assertEquals(expectedContact(ccase.getSampleSensitive()), contact);
     assertEquals(expectedAddress(ccase.getSample()), address);
+    assertEquals(ccase.getCaseRef(), caze.getCaseRef());
+    assertEquals(toLocalDateTime(ccase.getCreatedAt()), caze.getCreatedAt());
+    assertEquals(toLocalDateTime(ccase.getLastUpdatedAt()), caze.getLastUpdatedAt());
+  }
+
+  private LocalDateTime toLocalDateTime(Date date) {
+    return date.toInstant().atOffset(ZoneOffset.UTC).toLocalDateTime();
   }
 
   private CaseContact expectedContact(CaseUpdateSampleSensitive sensitive) {
