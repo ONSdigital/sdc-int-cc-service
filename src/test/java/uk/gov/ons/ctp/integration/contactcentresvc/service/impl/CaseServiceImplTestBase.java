@@ -1,6 +1,5 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import ma.glasnost.orika.MapperFacade;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -38,9 +38,9 @@ import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
+import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
@@ -48,7 +48,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -66,6 +65,8 @@ public abstract class CaseServiceImplTestBase {
   @Mock EqLaunchService eqLaunchService;
 
   @Mock EventTransfer eventTransfer;
+
+  @Spy MapperFacade mapperFacade = new CCSvcBeanMapper();
 
   @Mock BlacklistedUPRNBean blacklistedUPRNBean;
 
@@ -96,10 +97,6 @@ public abstract class CaseServiceImplTestBase {
     verify(eventTransfer, never()).send(any(), any());
   }
 
-  void verifyEventNotSent(TopicType type) {
-    verify(eventTransfer, never()).send(eq(type), any());
-  }
-
   void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
@@ -107,30 +104,6 @@ public abstract class CaseServiceImplTestBase {
         expectedCaseResult.getAllowedDeliveryChannels(), results.getAllowedDeliveryChannels());
     assertEquals(expectedCaseResult, results);
     verifyEventNotSent();
-  }
-
-  CaseDTO createExpectedCaseDTO(CaseContainerDTO caseFromCaseService) {
-
-    CaseAddressDTO addrDto =
-        CaseAddressDTO.builder()
-            .addressLine1(caseFromCaseService.getAddressLine1())
-            .addressLine2(caseFromCaseService.getAddressLine2())
-            .addressLine3(caseFromCaseService.getAddressLine3())
-            .townName(caseFromCaseService.getTownName())
-            .region(Region.valueOf(caseFromCaseService.getRegion().substring(0, 1)))
-            .postcode(caseFromCaseService.getPostcode())
-            .uprn(createUprn(caseFromCaseService.getUprn()))
-            .build();
-
-    CaseDTO expectedCaseResult =
-        CaseDTO.builder()
-            .id(caseFromCaseService.getId())
-            .caseRef(caseFromCaseService.getCaseRef())
-            .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
-            .address(addrDto)
-            .caseEvents(Collections.emptyList())
-            .build();
-    return expectedCaseResult;
   }
 
   CaseDTO createExpectedCaseDTO(Case caseFromDb) {
@@ -156,19 +129,6 @@ public abstract class CaseServiceImplTestBase {
             .caseEvents(Collections.emptyList())
             .build();
     return expectedCaseResult;
-  }
-
-  List<CaseEventDTO> filterEvents(CaseContainerDTO caseFromCaseService) {
-    return caseFromCaseService.getCaseEvents().stream()
-        .filter(e -> !e.getDescription().contains("Should be filtered out"))
-        .map(
-            e ->
-                CaseEventDTO.builder()
-                    .description(e.getDescription())
-                    .category(e.getEventType())
-                    .createdDateTime(e.getCreatedDateTime())
-                    .build())
-        .collect(toList());
   }
 
   UniquePropertyReferenceNumber createUprn(String uprn) {
