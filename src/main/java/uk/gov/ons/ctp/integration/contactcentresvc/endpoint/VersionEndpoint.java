@@ -23,13 +23,14 @@ public final class VersionEndpoint implements CTPEndpoint {
     this.resourceLoader = resourceLoader;
   }
 
+  // The /version endpoint has been hardcoded as part of SOCINT-141 so that a value is returned. I'd
+  // imagine
+  // that additional functionality will be added later.
   /**
    * the GET endpoint to get contact centre Details
    *
    * @return the contact centre details found
    */
-  // The version has been hardcoded as part of SOCINT-141 so that a value is returned. I'd imagine
-  // that additional funcctionality will be added later.
   @RequestMapping(value = "/version", method = RequestMethod.GET)
   public VersionResponseDTO getVersion() {
     log.info("Entering GET getVersion");
