@@ -29,12 +29,6 @@ spec:
             items:
               - key: uprns
                 path: blacklist
-        - name: etc-config-ccs-vol
-          configMap:
-            name: ccs-config
-            items:
-              - key: postcodes
-                path: ccs-postcodes
         - name: etc-config-keys-1
           secret:
             secretName: env-secrets

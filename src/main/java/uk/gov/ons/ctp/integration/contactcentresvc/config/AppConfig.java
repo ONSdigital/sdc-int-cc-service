@@ -30,4 +30,12 @@ public class AppConfig {
   private CustomCircuitBreakerConfig circuitBreaker;
   private QueueConfig queueConfig;
   private MessagingConfig messaging;
+
+  public void setChannel(Channel channel) {
+    if (channel.equals(Channel.CC) || channel.equals(Channel.AD)) {
+      this.channel = channel;
+    } else {
+      throw new IllegalArgumentException("Channel can only be one of CC or AD");
+    }
+  }
 }
