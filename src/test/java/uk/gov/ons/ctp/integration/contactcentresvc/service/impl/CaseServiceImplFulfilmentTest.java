@@ -27,7 +27,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
@@ -54,7 +53,6 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   @BeforeEach
   public void setup() {
-    Mockito.lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
     Mockito.lenient().when(appConfig.getSurveyName()).thenReturn("CENSUS");
 
     Fulfilments fulfilments = new Fulfilments();

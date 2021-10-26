@@ -444,11 +444,6 @@ public class CaseServiceImpl implements CaseService {
     return caseDataClient.getCaseByUprn(uprn);
   }
 
-  private List<CaseContainerDTO> getCcsCasesFromRm(String postcode) {
-    List<CaseContainerDTO> caseList = caseServiceClient.getCcsCaseByPostcode(postcode);
-    return caseList;
-  }
-
   /**
    * Create a case refusal event.
    *

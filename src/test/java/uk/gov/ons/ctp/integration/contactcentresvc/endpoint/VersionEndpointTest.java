@@ -9,11 +9,7 @@ import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAd
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,11 +19,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 /** Contact Centre Data endpoint Unit test. */
 @ExtendWith(MockitoExtension.class)
 public final class VersionEndpointTest {
-  private static final String SWAGGER_HEADER = "info:\n  version: \"1.0.0\"";
-
-  @Mock private ResourceLoader resourceLoader;
-  @Mock private Resource resource;
-  @InjectMocks private VersionEndpoint versionEndpoint;
+  private VersionEndpoint versionEndpoint = new VersionEndpoint();
 
   private MockMvc mockMvc;
 

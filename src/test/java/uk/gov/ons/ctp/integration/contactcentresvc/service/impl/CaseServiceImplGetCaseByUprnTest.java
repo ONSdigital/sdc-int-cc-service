@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -42,7 +41,6 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
   public void setup() {
     mockCaseEventWhiteList();
 
-    lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
     lenient().when(appConfig.getSurveyName()).thenReturn(SURVEY_NAME);
 
     casesFromDb = FixtureHelper.loadPackageFixtures(Case[].class);

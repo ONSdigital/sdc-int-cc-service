@@ -66,7 +66,6 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
     eqConfig.setResponseIdSalt("CENSUS");
     appConfig.setEq(eqConfig);
 
-    Mockito.lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
     Mockito.lenient().when(appConfig.getEq()).thenReturn(eqConfig);
   }
 

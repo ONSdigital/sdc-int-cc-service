@@ -91,7 +91,7 @@ spring:
 #    baseline-version: 1
 
 
-channel: CC
+#channel: CC
 
 address-index-settings:
   address-query-path: /addresses/partial
