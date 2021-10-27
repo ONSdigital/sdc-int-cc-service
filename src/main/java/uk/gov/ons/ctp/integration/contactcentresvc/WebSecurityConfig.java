@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import uk.gov.ons.ctp.common.domain.Channel;
 
 @Configuration
 @EnableWebSecurity
@@ -17,9 +18,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Value("${spring.security.user.password}")
   String password;
 
-  @Value("${channel}")
-  String channel;
-
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     // THE ORDER OF THE MATCHERS BELOW IS IMPORTANT
@@ -29,15 +27,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers("/version")
         .permitAll()
         .antMatchers("/cases/**/uac")
-        .hasRole("AD")
+        .hasRole("CC")
         .antMatchers("/cases")
         .hasRole("CC")
         .antMatchers("/cases/uprn/**")
-        .access("hasRole('CC') or hasRole('AD')")
+        .hasRole("CC")
         .antMatchers("/addresses")
-        .access("hasRole('CC') or hasRole('AD')")
+        .hasRole("CC")
         .antMatchers("/addresses/postcode")
-        .access("hasRole('CC') or hasRole('AD')")
+        .hasRole("CC")
         .antMatchers("/fulfilments/**")
         .hasRole("CC")
         .antMatchers("/cases/**") // AND LASTLY ANY remaining /cases paths
@@ -50,6 +48,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    auth.inMemoryAuthentication().withUser(username).password("{noop}" + password).roles(channel);
+    auth.inMemoryAuthentication()
+        .withUser(username)
+        .password("{noop}" + password)
+        .roles(String.valueOf(Channel.CC));
   }
 }

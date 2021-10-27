@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.retry.annotation.EnableRetry;
 import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
-import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
 
 /** Application Config bean */
@@ -23,20 +22,10 @@ public class AppConfig {
   private KeyStore keystore;
   private EqConfig eq;
   private Logging logging;
-  private Channel channel;
   private Resource publicPgpKey1;
   private Resource publicPgpKey2;
-  private CCSPostcodes ccsPostcodes;
   private UPRNBlacklist uprnBlacklist;
   private CustomCircuitBreakerConfig circuitBreaker;
   private QueueConfig queueConfig;
   private MessagingConfig messaging;
-
-  public void setChannel(Channel channel) {
-    if (channel.equals(Channel.CC) || channel.equals(Channel.AD)) {
-      this.channel = channel;
-    } else {
-      throw new IllegalArgumentException("Channel can only be one of CC or AD");
-    }
-  }
 }

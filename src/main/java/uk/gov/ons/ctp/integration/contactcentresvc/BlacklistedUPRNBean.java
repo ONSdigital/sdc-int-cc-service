@@ -12,7 +12,6 @@ import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 
@@ -42,35 +41,30 @@ public class BlacklistedUPRNBean {
   private void init() {
     this.blacklistedUprns = new HashSet<>();
 
-    boolean isRunningCC = appConfig.getChannel() == Channel.CC;
+    String strUprnBlacklistPath = appConfig.getUprnBlacklist().getUprnBlacklistPath();
 
-    if (isRunningCC) {
-      String strUprnBlacklistPath = appConfig.getUprnBlacklist().getUprnBlacklistPath();
-
-      String uprnAsString;
-      try (BufferedReader br = new BufferedReader(new FileReader(strUprnBlacklistPath))) {
-        while ((uprnAsString = br.readLine()) != null) {
-          log.debug("Reading blacklisted entry", kv("uprn", uprnAsString));
-          UniquePropertyReferenceNumber uprn =
-              new UniquePropertyReferenceNumber(uprnAsString.trim());
-          blacklistedUprns.add(uprn.getValue());
-        }
-        log.info("Read blacklisted UPRNs from file", kv("size", blacklistedUprns.size()));
-      } catch (IOException e) {
-        if (new File(strUprnBlacklistPath).exists()) {
-          log.error(
-              "APPLICATION IS MISCONFIGURED - Unable to read blacklisted UPRNs from file."
-                  + " Using default blacklisted UPRNs from application.yml instead.",
-              kv("strUprnBlacklistPath", strUprnBlacklistPath),
-              e);
-        } else {
-          log.error(
-              "APPLICATION IS MISCONFIGURED - Blacklisted UPRN file doesn't exist."
-                  + " Using default blacklisted UPRNs from application.yml instead.",
-              kv("strUprnBlacklistPath", strUprnBlacklistPath));
-        }
-        blacklistedUprns = appConfig.getUprnBlacklist().getDefaultUprnBlacklist();
+    String uprnAsString;
+    try (BufferedReader br = new BufferedReader(new FileReader(strUprnBlacklistPath))) {
+      while ((uprnAsString = br.readLine()) != null) {
+        log.debug("Reading blacklisted entry", kv("uprn", uprnAsString));
+        UniquePropertyReferenceNumber uprn = new UniquePropertyReferenceNumber(uprnAsString.trim());
+        blacklistedUprns.add(uprn.getValue());
       }
+      log.info("Read blacklisted UPRNs from file", kv("size", blacklistedUprns.size()));
+    } catch (IOException e) {
+      if (new File(strUprnBlacklistPath).exists()) {
+        log.error(
+            "APPLICATION IS MISCONFIGURED - Unable to read blacklisted UPRNs from file."
+                + " Using default blacklisted UPRNs from application.yml instead.",
+            kv("strUprnBlacklistPath", strUprnBlacklistPath),
+            e);
+      } else {
+        log.error(
+            "APPLICATION IS MISCONFIGURED - Blacklisted UPRN file doesn't exist."
+                + " Using default blacklisted UPRNs from application.yml instead.",
+            kv("strUprnBlacklistPath", strUprnBlacklistPath));
+      }
+      blacklistedUprns = appConfig.getUprnBlacklist().getDefaultUprnBlacklist();
     }
   }
 }

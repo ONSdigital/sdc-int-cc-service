@@ -3,7 +3,6 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +25,6 @@ import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.TopicType;
-import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.EventToSend;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.EventToSendRepository;
 
@@ -38,7 +36,6 @@ public class EventToSendProcessorTest {
 
   @Mock private EventToSendRepository eventToSendRepository;
   @Mock private EventPublisher eventPublisher;
-  @Mock private AppConfig appConfig;
   @InjectMocks private EventToSendProcessor processor;
 
   @Captor private ArgumentCaptor<Integer> chunkSizeCaptor;
@@ -51,7 +48,6 @@ public class EventToSendProcessorTest {
   @BeforeEach
   public void setup() {
     ReflectionTestUtils.setField(processor, "chunkSize", 3);
-    lenient().when(appConfig.getChannel()).thenReturn(Channel.CC);
   }
 
   private EventToSend createEvent(String id) {

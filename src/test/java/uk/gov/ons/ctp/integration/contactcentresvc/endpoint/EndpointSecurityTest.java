@@ -21,8 +21,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.ResourceLock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
@@ -30,8 +32,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -39,12 +41,17 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
-@ExtendWith(SpringExtension.class)
+@ActiveProfiles("test-cc")
+@ExtendWith(MockitoExtension.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"GOOGLE_CLOUD_PROJECT=census-cc-test"})
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
-public abstract class EndpointSecurityTest {
+public class EndpointSecurityTest {
+  @MockBean CaseService caseService;
+  @MockBean AddressService addressService;
 
   TestRestTemplate restTemplate;
   URL base;
@@ -83,7 +90,6 @@ public abstract class EndpointSecurityTest {
         restTemplate.getForEntity(base.toString() + "/ccsvc/version", String.class);
 
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    assertTrue(response.getBody().contains("Unauthorized"));
   }
 
   @Test
@@ -96,37 +102,32 @@ public abstract class EndpointSecurityTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testGetUACForCase(HttpStatus expectedStatus) {
-    UUID caseId = UUID.randomUUID();
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(
-            base.toString() + "/ccsvc/cases/" + caseId + "/uac?adLocationId=12345&individual=false",
-            String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
-  }
-
-  void testAccessCasesByUPRN(HttpStatus expectedStatus) {
+  @Test
+  public void testOkAccessCasesByUPRN() {
     ResponseEntity<String> response =
         restTemplate.getForEntity(base.toString() + "/ccsvc/cases/uprn/123456789012", String.class);
 
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testGetAddresses(HttpStatus expectedStatus) {
+  @Test
+  public void testOkGetAddresses() {
     ResponseEntity<String> response =
         restTemplate.getForEntity(
             base.toString() + "/ccsvc/addresses?input=2A%20Priors%20Way", String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testGetAddressesPostcode(HttpStatus expectedStatus) {
+  @Test
+  public void testOkGetCaseByUPRN() {
     ResponseEntity<String> response =
         restTemplate.getForEntity(
             base.toString() + "/ccsvc/addresses/postcode?postcode=EX10 1BD", String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testPostRefusal(HttpStatus expectedStatus) {
+  @Test
+  public void testOkPostRefusal() {
     UUID caseId = UUID.randomUUID();
     RefusalRequestDTO requestBody = new RefusalRequestDTO();
     requestBody.setCaseId(caseId);
@@ -139,10 +140,11 @@ public abstract class EndpointSecurityTest {
     ResponseEntity<String> response =
         restTemplate.postForEntity(
             base.toString() + "/ccsvc/cases/" + caseId + "/refusal", requestBody, String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testPutCase(HttpStatus expectedStatus) {
+  @Test
+  public void testOkPutCase() {
     ModifyCaseRequestDTO requestBody = ModifyCaseRequestDTO.builder().caseId(UUID_0).build();
 
     requestBody.setAddressLine1(AN_ADDRESS_LINE_1);
@@ -164,45 +166,43 @@ public abstract class EndpointSecurityTest {
             ResponseDTO.class,
             param);
 
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testGetCCSCaseByPostcode(HttpStatus expectedStatus) {
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(
-            base.toString() + "/ccsvc/cases/ccs/postcode/SO22 4HJ", String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
-  }
-
-  void testGetCaseByCaseId(HttpStatus expectedStatus) {
+  @Test
+  public void testOkGetCaseByCaseId() {
     UUID caseId = UUID.randomUUID();
     ResponseEntity<String> response =
         restTemplate.getForEntity(base.toString() + "/ccsvc/cases/" + caseId, String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testGetCaseByCaseRef(HttpStatus expectedStatus) {
+  @Test
+  public void testOkGetCaseByCaseRef() {
     ResponseEntity<String> response =
         restTemplate.getForEntity(base.toString() + "/ccsvc/cases/ref/123456789", String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testGetCaseLaunch(HttpStatus expectedStatus) {
+  @Test
+  public void testOkGetCaseLaunch() {
     UUID caseId = UUID.randomUUID();
     ResponseEntity<String> response =
         restTemplate.getForEntity(
             base.toString() + "/ccsvc/cases/" + caseId + "/launch?individual=false&agentId=12345",
             String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testGetFulfilfments(HttpStatus expectedStatus) {
+  @Test
+  public void testOkGetFulfilfments() {
     ResponseEntity<String> response =
         restTemplate.getForEntity(base.toString() + "/ccsvc/fulfilments", String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testPostFulfilmentPost(HttpStatus expectedStatus) {
+  @Test
+  public void testOkPostFulfilmentPost() {
     UUID caseId = UUID.randomUUID();
     PostalFulfilmentRequestDTO requestBody = new PostalFulfilmentRequestDTO();
     requestBody.setDateTime(new Date());
@@ -214,10 +214,11 @@ public abstract class EndpointSecurityTest {
             base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/post",
             requestBody,
             String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  void testPostFulfilmentSMS(HttpStatus expectedStatus) {
+  @Test
+  public void testOkPostFulfilmentSMS() {
     UUID caseId = UUID.randomUUID();
     SMSFulfilmentRequestDTO requestBody = new SMSFulfilmentRequestDTO();
     requestBody.setDateTime(new Date());
@@ -230,6 +231,6 @@ public abstract class EndpointSecurityTest {
             base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/sms",
             requestBody,
             String.class);
-    assertEquals(expectedStatus, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 }
