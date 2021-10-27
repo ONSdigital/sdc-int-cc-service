@@ -90,9 +90,6 @@ spring:
 #    baseline-on-migrate: true
 #    baseline-version: 1
 
-
-#channel: CC
-
 address-index-settings:
   address-query-path: /addresses/partial
   postcode-lookup-path: /addresses/postcode/{postcode}
