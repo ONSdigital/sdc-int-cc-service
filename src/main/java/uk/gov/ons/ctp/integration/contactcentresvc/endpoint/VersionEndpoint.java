@@ -15,8 +15,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.VersionRespons
 @RequestMapping(value = "/", produces = "application/json")
 public final class VersionEndpoint implements CTPEndpoint {
   // The /version endpoint has been hardcoded as part of SOCINT-141 so that a value is returned. I'd
-  // imagine
-  // that additional functionality will be added later.
+  // imagine that additional functionality will be added later.
   /**
    * the GET endpoint to get contact centre Details
    *
