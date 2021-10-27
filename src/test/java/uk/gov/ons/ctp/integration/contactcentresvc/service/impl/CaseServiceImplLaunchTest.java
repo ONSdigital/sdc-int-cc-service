@@ -27,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -110,34 +109,6 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
         "A CE Manager form can only be launched against an establishment address not a UNIT.",
         Fault.BAD_REQUEST);
     verifyCallToGetQuestionnaireIdNotCalled();
-  }
-
-  @Test
-  public void testLaunch_caseServiceQidRequestResponseStatusExceptionBadRequestCause()
-      throws Exception {
-    assertCaseQIDRestClientFailureCaught(
-        new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            "Bad Request",
-            new HttpClientErrorException(HttpStatus.BAD_REQUEST)),
-        true);
-  }
-
-  @Test
-  public void testLaunch_caseServiceQidRequestResponseStatusExceptionOtherCause() throws Exception {
-    assertCaseQIDRestClientFailureCaught(
-        new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            "Other",
-            new HttpClientErrorException(HttpStatus.I_AM_A_TEAPOT)),
-        false);
-  }
-
-  @Test
-  public void testLaunch_caseServiceQidRequestResponseStatusExceptionNoCause() throws Exception {
-    assertCaseQIDRestClientFailureCaught(
-        new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal processing error"),
-        false);
   }
 
   private void verifyEqLaunchJwe(String questionnaireId, boolean individual, FormType formType)

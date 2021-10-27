@@ -28,8 +28,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /** The REST controller for ContactCentreSvc find cases end points */
@@ -242,27 +240,6 @@ public class CaseEndpoint implements CTPEndpoint {
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
     CaseDTO result = caseService.modifyCase(requestBodyDTO);
     return ResponseEntity.ok(result);
-  }
-
-  /**
-   * the GET end point to request a UAC a given caseid
-   *
-   * @param caseId the id of the case
-   * @param requestParamsDTO the request params
-   * @return response entity
-   * @throws CTPException something went wrong
-   */
-  @RequestMapping(value = "/{caseId}/uac", method = RequestMethod.GET)
-  @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<UACResponseDTO> getUACForCase(
-      @PathVariable(value = "caseId") final UUID caseId, @Valid UACRequestDTO requestParamsDTO)
-      throws CTPException {
-
-    log.info(
-        "Entering GET getUACForCase", kv("pathParam", caseId), kv("requestBody", requestParamsDTO));
-
-    UACResponseDTO response = caseService.getUACForCaseId(caseId, requestParamsDTO);
-    return ResponseEntity.ok(response);
   }
 
   // ---------------------------------------------------------------

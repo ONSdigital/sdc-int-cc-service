@@ -13,8 +13,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACResponseDTO;
 
 /** Service responsible for dealing with Cases */
 public interface CaseService {
@@ -40,8 +38,6 @@ public interface CaseService {
 
   String getLaunchURLForCaseId(final UUID caseId, LaunchRequestDTO requestParamsDTO)
       throws CTPException;
-
-  UACResponseDTO getUACForCaseId(UUID caseId, UACRequestDTO requestParamsDTO) throws CTPException;
 
   ResponseDTO fulfilmentRequestByPost(PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException;

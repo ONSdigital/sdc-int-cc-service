@@ -65,8 +65,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.UACResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
@@ -302,28 +300,6 @@ public class CaseServiceImpl implements CaseService {
     String eqUrl = createLaunchUrl(formType, caseDetails, requestParamsDTO, questionnaireId);
     publishSurveyLaunchedEvent(caseDetails.getId(), questionnaireId, requestParamsDTO.getAgentId());
     return eqUrl;
-  }
-
-  @Override
-  public UACResponseDTO getUACForCaseId(UUID caseId, UACRequestDTO requestParamsDTO)
-      throws CTPException {
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Processing request to get UAC for Case",
-          kv("caseId", caseId),
-          kv("request", requestParamsDTO));
-    }
-
-    Case caseDetails = getLaunchCase(caseId);
-
-    SingleUseQuestionnaireIdDTO newQuestionnaireIdDto =
-        getNewQidForCase(caseDetails, requestParamsDTO.getIndividual());
-
-    return UACResponseDTO.builder()
-        .id(newQuestionnaireIdDto.getQuestionnaireId())
-        .uac(newQuestionnaireIdDto.getUac())
-        .dateTime(DateTimeUtil.nowUTC())
-        .build();
   }
 
   private void publishSurveyLaunchedEvent(UUID caseId, String questionnaireId, Integer agentId) {
