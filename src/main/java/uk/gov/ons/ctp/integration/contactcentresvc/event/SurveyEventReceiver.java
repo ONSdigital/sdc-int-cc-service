@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
@@ -28,6 +29,7 @@ public class SurveyEventReceiver {
    * @param event event from RM.
    */
   @ServiceActivator(inputChannel = "acceptSurveyUpdateEvent")
+  @Transactional
   public void acceptEvent(SurveyUpdateEvent event) {
 
     SurveyUpdate payload = event.getPayload().getSurveyUpdate();

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerciseRepository;
@@ -29,6 +30,7 @@ public class CollectionExerciseEventReceiver {
    * @param event event from RM
    */
   @ServiceActivator(inputChannel = "acceptCollectionExerciseEvent")
+  @Transactional
   public void acceptEvent(CollectionExerciseUpdateEvent event) {
 
     var payload = event.getPayload().getCollectionExerciseUpdate();
