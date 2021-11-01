@@ -44,6 +44,10 @@ public class Case {
   @Enumerated(EnumType.STRING)
   private RefusalType refusalReceived;
 
+  private String questionnaire;
+  private String sampleUnitRef;
+  private Integer cohort;
+
   @Embedded private CaseAddress address;
   @Embedded private CaseContact contact;
 
