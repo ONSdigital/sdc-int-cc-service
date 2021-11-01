@@ -10,3 +10,10 @@ management:
     export:
       stackdriver:
         enabled: true
+
+cloud:
+  gcp:
+    pubsub:
+      subscriber:
+        flow-control:
+          max-outstanding-element-count: 100
