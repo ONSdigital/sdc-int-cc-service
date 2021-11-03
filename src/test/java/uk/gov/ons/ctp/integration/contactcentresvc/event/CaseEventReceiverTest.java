@@ -126,15 +126,19 @@ public class CaseEventReceiverTest {
   }
 
   private void verifyMappedCase(Case caze, CaseUpdate ccase) {
+    var sample = ccase.getSample();
     assertEquals(UUID.fromString(CASE_ID), caze.getId());
     assertEquals(UUID.fromString(COLLECTION_EX_ID), caze.getCollectionExercise().getId());
     assertTrue(caze.isInvalid());
     assertEquals(RefusalType.HARD_REFUSAL, caze.getRefusalReceived());
+    assertEquals(sample.getQuestionnaire(), caze.getQuestionnaire());
+    assertEquals(sample.getSampleUnitRef(), caze.getSampleUnitRef());
+    assertEquals(sample.getCohort(), caze.getCohort());
 
     CaseContact contact = caze.getContact();
     CaseAddress address = caze.getAddress();
     assertEquals(expectedContact(ccase.getSampleSensitive()), contact);
-    assertEquals(expectedAddress(ccase.getSample()), address);
+    assertEquals(expectedAddress(sample), address);
     assertEquals(ccase.getCaseRef(), caze.getCaseRef());
     assertEquals(toLocalDateTime(ccase.getCreatedAt()), caze.getCreatedAt());
     assertEquals(toLocalDateTime(ccase.getLastUpdatedAt()), caze.getLastUpdatedAt());
@@ -157,6 +161,10 @@ public class CaseEventReceiverTest {
         .townName(addr.getTownName())
         .postcode(addr.getPostcode())
         .region(Region.valueOf(addr.getRegion()))
+        .gor9d(addr.getGor9d())
+        .laCode(addr.getLaCode())
+        .uprnLatitude(addr.getUprnLatitude())
+        .uprnLongitude(addr.getUprnLongitude())
         .build();
   }
 }

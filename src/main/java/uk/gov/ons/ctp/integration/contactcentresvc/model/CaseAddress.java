@@ -25,4 +25,9 @@ public class CaseAddress {
 
   @Enumerated(EnumType.STRING)
   private Region region;
+
+  private String gor9d;
+  private String laCode;
+  private String uprnLatitude;
+  private String uprnLongitude;
 }
