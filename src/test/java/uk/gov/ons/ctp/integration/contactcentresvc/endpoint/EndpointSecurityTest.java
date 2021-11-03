@@ -133,7 +133,6 @@ public class EndpointSecurityTest {
     requestBody.setCaseId(caseId);
     requestBody.setReason(Reason.HARD_REFUSAL);
     requestBody.setAgentId(12345);
-    requestBody.setCallId("8989-NOW");
     requestBody.setIsHouseholder(false);
     requestBody.setDateTime(new Date());
 
