@@ -50,39 +50,39 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
   @Test
   public void testRespondentRefusal_withExtraordinaryReason() throws Exception {
     Date dateTime = new Date();
-    doRespondentRefusalTest(dateTime, Reason.EXTRAORDINARY, createContact());
+    doRespondentRefusalTest(dateTime, Reason.EXTRAORDINARY_REFUSAL, createContact());
   }
 
   @Test
   public void testRespondentRefusal_withHardReason() throws Exception {
     Date dateTime = new Date();
-    doRespondentRefusalTest(dateTime, Reason.HARD, createContact());
+    doRespondentRefusalTest(dateTime, Reason.HARD_REFUSAL, createContact());
   }
 
   @Test
   public void testRespondentRefusal_withEmptyContactFields() throws Exception {
     Date dateTime = new Date();
     ContactCompact c = new ContactCompact("", "", "");
-    doRespondentRefusalTest(dateTime, Reason.HARD, c);
+    doRespondentRefusalTest(dateTime, Reason.HARD_REFUSAL, c);
   }
 
   @Test
   public void testRespondentRefusal_withNullContactFields() throws Exception {
     Date dateTime = new Date();
     ContactCompact c = new ContactCompact();
-    doRespondentRefusalTest(dateTime, Reason.HARD, c);
+    doRespondentRefusalTest(dateTime, Reason.HARD_REFUSAL, c);
   }
 
   @Test
   public void testRespondentRefusal_withUUID() throws Exception {
     Date dateTime = new Date();
-    doRespondentRefusalTest(dateTime, Reason.EXTRAORDINARY, createContact());
+    doRespondentRefusalTest(dateTime, Reason.EXTRAORDINARY_REFUSAL, createContact());
   }
 
   @Test
   public void testRespondentRefusal_withoutDateTime() throws Exception {
     Date dateTime = null;
-    doRespondentRefusalTest(dateTime, Reason.EXTRAORDINARY, createContact());
+    doRespondentRefusalTest(dateTime, Reason.EXTRAORDINARY_REFUSAL, createContact());
   }
 
   @Test
@@ -93,7 +93,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
         RefusalRequestDTO.builder()
             .caseId(caseId)
             .agentId(123)
-            .reason(Reason.HARD)
+            .reason(Reason.HARD_REFUSAL)
             .isHouseholder(true)
             .dateTime(new Date())
             .build();
@@ -163,8 +163,8 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
     assertEquals(expectedEventCaseId, refusal.getCollectionCase().getId());
 
     verifyRefusalAddress(refusal);
-    assertEquals(reason.name() + "_REFUSAL", refusal.getType());
-    if (Reason.EXTRAORDINARY.equals(reason)) {
+    assertEquals(reason.name(), refusal.getType());
+    if (Reason.EXTRAORDINARY_REFUSAL.equals(reason)) {
       assertNull(refusal.getContact());
     } else {
       ContactCompact c = refusal.getContact();

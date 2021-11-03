@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
 public enum Reason {
-  EXTRAORDINARY,
-  HARD
+  HARD_REFUSAL,
+  EXTRAORDINARY_REFUSAL,
+  SOFT_REFUSAL
 }

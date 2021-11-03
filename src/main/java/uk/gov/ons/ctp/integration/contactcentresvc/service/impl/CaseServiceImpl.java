@@ -434,7 +434,7 @@ public class CaseServiceImpl implements CaseService {
 
     // Create message payload
     RefusalDetails refusal = new RefusalDetails();
-    refusal.setType(mapToType(refusalRequest.getReason()));
+    refusal.setType(refusalRequest.getReason().name());
     CollectionCaseCompact collectionCase = new CollectionCaseCompact(caseId);
     refusal.setCollectionCase(collectionCase);
     refusal.setAgentId(Integer.toString(refusalRequest.getAgentId()));
@@ -468,7 +468,7 @@ public class CaseServiceImpl implements CaseService {
   private ContactCompact createRefusalContact(RefusalRequestDTO refusalRequest) {
     ContactCompact contact = null;
 
-    if (refusalRequest.getReason() == Reason.HARD) {
+    if (refusalRequest.getReason() == Reason.HARD_REFUSAL) {
       contact = new ContactCompact();
       contact.setTitle(encrypt(refusalRequest.getTitle()));
       contact.setForename(encrypt(refusalRequest.getForename()));
@@ -484,17 +484,6 @@ public class CaseServiceImpl implements CaseService {
     List<Resource> keys = List.of(appConfig.getPublicPgpKey1(), appConfig.getPublicPgpKey2());
     String encStr = PgpEncrypt.encrypt(clearValue, keys);
     return Base64.getEncoder().encodeToString(encStr.getBytes(StandardCharsets.UTF_8));
-  }
-
-  private String mapToType(Reason reason) throws CTPException {
-    switch (reason) {
-      case HARD:
-        return "HARD_REFUSAL";
-      case EXTRAORDINARY:
-        return "EXTRAORDINARY_REFUSAL";
-      default:
-        throw new CTPException(Fault.SYSTEM_ERROR, "Unexpected refusal reason: %s", reason);
-    }
   }
 
   /**

@@ -254,7 +254,7 @@ public final class CaseEndpointRefusalTest {
 
   @Test
   public void refusalExtraordinaryReasonOk() throws Exception {
-    assertOk(REASON, Reason.EXTRAORDINARY.name());
+    assertOk(REASON, Reason.EXTRAORDINARY_REFUSAL.name());
   }
 
   @Test
@@ -289,7 +289,7 @@ public final class CaseEndpointRefusalTest {
 
   @Test
   public void refusalHardReasonOkl() throws Exception {
-    assertOk(REASON, Reason.HARD.name());
+    assertOk(REASON, Reason.HARD_REFUSAL.name());
   }
 
   @Test

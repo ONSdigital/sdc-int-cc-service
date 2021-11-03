@@ -131,7 +131,7 @@ public class EndpointSecurityTest {
     UUID caseId = UUID.randomUUID();
     RefusalRequestDTO requestBody = new RefusalRequestDTO();
     requestBody.setCaseId(caseId);
-    requestBody.setReason(Reason.HARD);
+    requestBody.setReason(Reason.HARD_REFUSAL);
     requestBody.setAgentId(12345);
     requestBody.setCallId("8989-NOW");
     requestBody.setIsHouseholder(false);
