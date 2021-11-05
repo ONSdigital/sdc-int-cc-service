@@ -132,8 +132,6 @@ public class EndpointSecurityTest {
     RefusalRequestDTO requestBody = new RefusalRequestDTO();
     requestBody.setCaseId(caseId);
     requestBody.setReason(Reason.HARD_REFUSAL);
-    requestBody.setAgentId(12345);
-    requestBody.setIsHouseholder(false);
     requestBody.setDateTime(new Date());
 
     ResponseEntity<String> response =

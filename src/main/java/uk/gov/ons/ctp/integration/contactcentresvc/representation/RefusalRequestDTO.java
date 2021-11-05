@@ -19,23 +19,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RefusalRequestDTO {
 
-  /*
-  refusal_json = {
-      'caseId': case_id,
-      'dateTime': datetime.now(utc).isoformat(),
-      'agentId': '13',
-      'reason': reason,
-      'isHouseholder': 'false'
-  }
-     */
-
   @NotNull private UUID caseId;
 
-  @NotNull private Integer agentId;
-
   @NotNull private Reason reason;
-
-  @NotNull private Boolean isHouseholder;
 
   @NotNull private Date dateTime;
 }

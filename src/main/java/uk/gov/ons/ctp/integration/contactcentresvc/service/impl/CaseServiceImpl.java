@@ -247,12 +247,10 @@ public class CaseServiceImpl implements CaseService {
     if (requestBodyDTO.getDateTime() != null) {
       reportedDateTime = DateTimeUtil.formatDate(requestBodyDTO.getDateTime());
     }
-    if (log.isDebugEnabled()) {
-      log.debug(
+    log.debug(
           "Processing refusal for case with reported dateTime",
           kv("caseId", caseId),
           kv("reportedDateTime", reportedDateTime));
-    }
 
     // Create and publish a respondent refusal event
     RefusalDetails refusalPayload = createRespondentRefusalPayload(caseId, requestBodyDTO);
@@ -263,9 +261,7 @@ public class CaseServiceImpl implements CaseService {
     ResponseDTO response =
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
 
-    if (log.isDebugEnabled()) {
-      log.debug("Returning refusal response for case", kv("caseId", caseId));
-    }
+    log.debug("Returning refusal response for case", kv("caseId", caseId));
 
     return response;
   }

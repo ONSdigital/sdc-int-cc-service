@@ -43,9 +43,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
     RefusalRequestDTO refusalPayload =
         RefusalRequestDTO.builder()
             .caseId(caseId)
-            .agentId(123)
             .reason(Reason.HARD_REFUSAL)
-            .isHouseholder(true)
             .dateTime(new Date())
             .build();
 
@@ -61,9 +59,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
   private RefusalRequestDTO createRefusalDto(UUID caseId, Date dateTime, Reason reason) {
     return RefusalRequestDTO.builder()
         .caseId(caseId)
-        .agentId(123)
         .reason(reason)
-        .isHouseholder(true)
         .dateTime(dateTime)
         .build();
   }
