@@ -33,7 +33,6 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.PubSubEventSender;
-import uk.gov.ons.ctp.common.event.persistence.FirestoreEventPersistence;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.rest.RestClientConfig;
@@ -134,12 +133,11 @@ public class ContactCentreSvcApplication {
   @Bean
   public EventPublisher eventPublisher(
       @Qualifier("pubSubTemplate") PubSubTemplate pubSubTemplate,
-      final FirestoreEventPersistence eventPersistence,
       final Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
     EventSender sender =
         new PubSubEventSender(pubSubTemplate, appConfig.getMessaging().getPublish().getTimeout());
     CircuitBreaker circuitBreaker = circuitBreakerFactory.create("eventSendCircuitBreaker");
-    return EventPublisher.createWithEventPersistence(sender, eventPersistence, circuitBreaker);
+    return EventPublisher.create(sender, null, circuitBreaker);
   }
 
   @Bean

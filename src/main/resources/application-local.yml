@@ -4,3 +4,7 @@ spring:
       pubsub:
         project-id: local
         emulator-host: localhost:9808
+
+case-service-settings:
+  rest-client-config:
+    port: 8162        
