@@ -248,9 +248,9 @@ public class CaseServiceImpl implements CaseService {
       reportedDateTime = DateTimeUtil.formatDate(requestBodyDTO.getDateTime());
     }
     log.debug(
-          "Processing refusal for case with reported dateTime",
-          kv("caseId", caseId),
-          kv("reportedDateTime", reportedDateTime));
+        "Processing refusal for case with reported dateTime",
+        kv("caseId", caseId),
+        kv("reportedDateTime", reportedDateTime));
 
     // Create and publish a respondent refusal event
     RefusalDetails refusalPayload = createRespondentRefusalPayload(caseId, requestBodyDTO);

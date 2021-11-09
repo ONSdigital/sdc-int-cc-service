@@ -25,7 +25,7 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
@@ -113,17 +113,17 @@ public final class CaseEndpointRefusalTest {
 
   @Test
   public void refusalHardReasonOk() throws Exception {
-    assertOk(REASON, Reason.HARD_REFUSAL.name());
+    assertOk(REASON, RefusalType.HARD_REFUSAL.name());
   }
 
   @Test
   public void refusalExtraordinaryReasonOk() throws Exception {
-    assertOk(REASON, Reason.EXTRAORDINARY_REFUSAL.name());
+    assertOk(REASON, RefusalType.EXTRAORDINARY_REFUSAL.name());
   }
 
   @Test
   public void refusalSoftReasonOk() throws Exception {
-    assertOk(REASON, Reason.SOFT_REFUSAL.name());
+    assertOk(REASON, RefusalType.SOFT_REFUSAL.name());
   }
 
   @Test

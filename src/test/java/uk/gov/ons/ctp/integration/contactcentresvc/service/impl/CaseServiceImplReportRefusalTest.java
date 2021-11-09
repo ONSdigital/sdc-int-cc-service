@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -21,19 +21,19 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
   @Test
   public void testRespondentRefusal_withHardReason() throws Exception {
     Date dateTime = new Date();
-    doRespondentRefusalTest(dateTime, Reason.HARD_REFUSAL);
+    doRespondentRefusalTest(dateTime, RefusalType.HARD_REFUSAL);
   }
 
   @Test
   public void testRespondentRefusal_withExtraordinaryReason() throws Exception {
     Date dateTime = new Date();
-    doRespondentRefusalTest(dateTime, Reason.EXTRAORDINARY_REFUSAL);
+    doRespondentRefusalTest(dateTime, RefusalType.EXTRAORDINARY_REFUSAL);
   }
 
   @Test
   public void testRespondentRefusal_withSoftReason() throws Exception {
     Date dateTime = new Date();
-    doRespondentRefusalTest(dateTime, Reason.SOFT_REFUSAL);
+    doRespondentRefusalTest(dateTime, RefusalType.SOFT_REFUSAL);
   }
 
   @Test
@@ -43,7 +43,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
     RefusalRequestDTO refusalPayload =
         RefusalRequestDTO.builder()
             .caseId(caseId)
-            .reason(Reason.HARD_REFUSAL)
+            .reason(RefusalType.HARD_REFUSAL)
             .dateTime(new Date())
             .build();
 
@@ -56,15 +56,11 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
     assertEquals("HARD_REFUSAL", refusal.getType());
   }
 
-  private RefusalRequestDTO createRefusalDto(UUID caseId, Date dateTime, Reason reason) {
-    return RefusalRequestDTO.builder()
-        .caseId(caseId)
-        .reason(reason)
-        .dateTime(dateTime)
-        .build();
+  private RefusalRequestDTO createRefusalDto(UUID caseId, Date dateTime, RefusalType reason) {
+    return RefusalRequestDTO.builder().caseId(caseId).reason(reason).dateTime(dateTime).build();
   }
 
-  private void doRespondentRefusalTest(Date dateTime, Reason reason) throws Exception {
+  private void doRespondentRefusalTest(Date dateTime, RefusalType reason) throws Exception {
     UUID caseId = UUID.randomUUID();
     UUID expectedEventCaseId = caseId;
     String expectedResponseCaseId = caseId.toString();

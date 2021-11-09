@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 
 /**
  * The request object when contact centre registers a refusal
@@ -21,7 +22,7 @@ public class RefusalRequestDTO {
 
   @NotNull private UUID caseId;
 
-  @NotNull private Reason reason;
+  @NotNull private RefusalType reason;
 
   @NotNull private Date dateTime;
 }
