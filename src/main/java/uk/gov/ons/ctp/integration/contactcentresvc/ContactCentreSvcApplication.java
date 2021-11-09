@@ -33,7 +33,6 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.PubSubEventSender;
-import uk.gov.ons.ctp.common.event.persistence.FirestoreEventPersistence;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.rest.RestClientConfig;
@@ -46,7 +45,7 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.impl.EqLaunchServiceImpl;
 @Slf4j
 @SpringBootApplication
 @IntegrationComponentScan("uk.gov.ons.ctp.integration")
-@ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common"})
+@ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common.error"})
 @EnableCaching
 @EnableScheduling
 public class ContactCentreSvcApplication {
@@ -134,12 +133,11 @@ public class ContactCentreSvcApplication {
   @Bean
   public EventPublisher eventPublisher(
       @Qualifier("pubSubTemplate") PubSubTemplate pubSubTemplate,
-      final FirestoreEventPersistence eventPersistence,
       final Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
     EventSender sender =
         new PubSubEventSender(pubSubTemplate, appConfig.getMessaging().getPublish().getTimeout());
     CircuitBreaker circuitBreaker = circuitBreakerFactory.create("eventSendCircuitBreaker");
-    return EventPublisher.createWithEventPersistence(sender, eventPersistence, circuitBreaker);
+    return EventPublisher.create(sender, null, circuitBreaker);
   }
 
   @Bean

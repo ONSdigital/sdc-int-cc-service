@@ -47,7 +47,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 @ActiveProfiles("test-cc")
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@TestPropertySource(properties = {"GOOGLE_CLOUD_PROJECT=census-cc-test"})
+@TestPropertySource(properties = {"GOOGLE_CLOUD_PROJECT=sdc-cc-test"})
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
 public class EndpointSecurityTest {
   @MockBean CaseService caseService;

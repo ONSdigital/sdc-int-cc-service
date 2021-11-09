@@ -595,6 +595,8 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
     String encryptedPayload = "";
     CaseContainerDTO caseDetails = mapper.map(caze, CaseContainerDTO.class);
+    caseDetails.setCaseType("HH"); // compatibility
+    caseDetails.setSurveyType("SOCIAL"); // compatibility
     try {
       EqLaunchData eqLuanchCoreDate =
           EqLaunchData.builder()
