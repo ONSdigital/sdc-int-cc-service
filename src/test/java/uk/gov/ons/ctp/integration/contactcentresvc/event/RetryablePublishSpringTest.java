@@ -11,6 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,7 +67,8 @@ public class RetryablePublishSpringTest {
 
   private EventToSend createEvent(String id) {
     String payload = FixtureHelper.loadPackageObjectNode("SurveyLaunchResponse").toString();
-    return new EventToSend(UUID.fromString(id), TopicType.SURVEY_LAUNCH.name(), payload);
+    return new EventToSend(
+        UUID.fromString(id), TopicType.SURVEY_LAUNCH.name(), payload, LocalDateTime.now());
   }
 
   private void verifySent(int numTimes) {
