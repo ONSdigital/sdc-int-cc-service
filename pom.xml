@@ -30,13 +30,6 @@
   </scm>
 
   <dependencies>
-    <!-- GCP Dependencies -->
-
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-firestore</artifactId>
-    </dependency>
-
     <!-- Spring dependencies -->
 
     <dependency>

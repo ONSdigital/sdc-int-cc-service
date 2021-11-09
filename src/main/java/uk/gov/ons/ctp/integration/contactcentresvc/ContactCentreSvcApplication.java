@@ -45,7 +45,7 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.impl.EqLaunchServiceImpl;
 @Slf4j
 @SpringBootApplication
 @IntegrationComponentScan("uk.gov.ons.ctp.integration")
-@ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common"})
+@ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common.error"})
 @EnableCaching
 @EnableScheduling
 public class ContactCentreSvcApplication {
