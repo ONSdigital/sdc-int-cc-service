@@ -6,6 +6,7 @@ import lombok.Data;
 public class MessagingConfig {
 
   private PublishConfig publish;
+  private PublisherRetryConfig retry;
 
   @Data
   public static class PublishConfig {

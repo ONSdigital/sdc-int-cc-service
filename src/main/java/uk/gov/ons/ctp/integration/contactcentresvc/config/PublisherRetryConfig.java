@@ -3,8 +3,9 @@ package uk.gov.ons.ctp.integration.contactcentresvc.config;
 import lombok.Data;
 
 @Data
-public class BackoffConfig {
+public class PublisherRetryConfig {
   private int initial;
-  private int multiplier;
+  private String multiplier;
   private int max;
+  private int maxAttempts;
 }

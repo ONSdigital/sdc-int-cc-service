@@ -26,6 +26,9 @@ import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.TopicType;
+import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
+import uk.gov.ons.ctp.integration.contactcentresvc.config.MessagingConfig;
+import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendProcessor.PublishRetrier;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.EventToSend;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.EventToSendRepository;
 
@@ -37,6 +40,8 @@ public class EventToSendProcessorTest {
 
   @Mock private EventToSendRepository eventToSendRepository;
   @Mock private EventPublisher eventPublisher;
+  @Mock private AppConfig appConfig;
+  private PublishRetrier retrier;
   @InjectMocks private EventToSendProcessor processor;
 
   @Captor private ArgumentCaptor<Integer> chunkSizeCaptor;
@@ -48,7 +53,10 @@ public class EventToSendProcessorTest {
 
   @BeforeEach
   public void setup() {
+    when(appConfig.getMessaging()).thenReturn(new MessagingConfig());
+    retrier = new PublishRetrier(eventPublisher, appConfig);
     ReflectionTestUtils.setField(processor, "chunkSize", 3);
+    ReflectionTestUtils.setField(processor, "retrier", retrier);
   }
 
   private EventToSend createEvent(String id) {

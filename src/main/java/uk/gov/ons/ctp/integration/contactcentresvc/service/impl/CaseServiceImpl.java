@@ -3,10 +3,8 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.v;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -29,16 +26,12 @@ import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.Language;
-import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
-import uk.gov.ons.ctp.common.event.model.AddressCompact;
-import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
 import uk.gov.ons.ctp.common.event.model.Contact;
-import uk.gov.ons.ctp.common.event.model.ContactCompact;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
@@ -61,12 +54,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChanne
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
-import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
@@ -256,12 +247,10 @@ public class CaseServiceImpl implements CaseService {
     if (requestBodyDTO.getDateTime() != null) {
       reportedDateTime = DateTimeUtil.formatDate(requestBodyDTO.getDateTime());
     }
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Processing refusal for case with reported dateTime",
-          kv("caseId", caseId),
-          kv("reportedDateTime", reportedDateTime));
-    }
+    log.debug(
+        "Processing refusal for case with reported dateTime",
+        kv("caseId", caseId),
+        kv("reportedDateTime", reportedDateTime));
 
     // Create and publish a respondent refusal event
     RefusalDetails refusalPayload = createRespondentRefusalPayload(caseId, requestBodyDTO);
@@ -272,9 +261,7 @@ public class CaseServiceImpl implements CaseService {
     ResponseDTO response =
         ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
 
-    if (log.isDebugEnabled()) {
-      log.debug("Returning refusal response for case", kv("caseId", caseId));
-    }
+    log.debug("Returning refusal response for case", kv("caseId", caseId));
 
     return response;
   }
@@ -432,69 +419,11 @@ public class CaseServiceImpl implements CaseService {
   private RefusalDetails createRespondentRefusalPayload(
       UUID caseId, RefusalRequestDTO refusalRequest) throws CTPException {
 
-    // Create message payload
     RefusalDetails refusal = new RefusalDetails();
-    refusal.setType(mapToType(refusalRequest.getReason()));
-    CollectionCaseCompact collectionCase = new CollectionCaseCompact(caseId);
-    refusal.setCollectionCase(collectionCase);
-    refusal.setAgentId(Integer.toString(refusalRequest.getAgentId()));
-    refusal.setCallId(refusalRequest.getCallId());
-    refusal.setHouseholder(refusalRequest.getIsHouseholder());
-
-    // Populate contact
-    ContactCompact contact = createRefusalContact(refusalRequest);
-    refusal.setContact(contact);
-
-    // Populate address
-    AddressCompact address = new AddressCompact();
-    address.setAddressLine1(refusalRequest.getAddressLine1());
-    address.setAddressLine2(refusalRequest.getAddressLine2());
-    address.setAddressLine3(refusalRequest.getAddressLine3());
-    address.setTownName(refusalRequest.getTownName());
-    address.setPostcode(refusalRequest.getPostcode());
-    Region region = refusalRequest.getRegion();
-    if (region != null) {
-      address.setRegion(region.name());
-    }
-    UniquePropertyReferenceNumber uprn = refusalRequest.getUprn();
-    if (uprn != null) {
-      address.setUprn(Long.toString(uprn.getValue()));
-    }
-    refusal.setAddress(address);
+    refusal.setCaseId(caseId);
+    refusal.setType(refusalRequest.getReason().name());
 
     return refusal;
-  }
-
-  private ContactCompact createRefusalContact(RefusalRequestDTO refusalRequest) {
-    ContactCompact contact = null;
-
-    if (refusalRequest.getReason() == Reason.HARD) {
-      contact = new ContactCompact();
-      contact.setTitle(encrypt(refusalRequest.getTitle()));
-      contact.setForename(encrypt(refusalRequest.getForename()));
-      contact.setSurname(encrypt(refusalRequest.getSurname()));
-    }
-    return contact;
-  }
-
-  private String encrypt(String clearValue) {
-    if (clearValue == null) {
-      return null;
-    }
-    List<Resource> keys = List.of(appConfig.getPublicPgpKey1(), appConfig.getPublicPgpKey2());
-    String encStr = PgpEncrypt.encrypt(clearValue, keys);
-    return Base64.getEncoder().encodeToString(encStr.getBytes(StandardCharsets.UTF_8));
-  }
-
-  private String mapToType(Reason reason) throws CTPException {
-    switch (reason) {
-      case HARD:
-        return "HARD_REFUSAL";
-      case EXTRAORDINARY:
-        return "EXTRAORDINARY_REFUSAL";
-      default:
-        throw new CTPException(Fault.SYSTEM_ERROR, "Unexpected refusal reason: %s", reason);
-    }
   }
 
   /**
@@ -666,6 +595,8 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
     String encryptedPayload = "";
     CaseContainerDTO caseDetails = mapper.map(caze, CaseContainerDTO.class);
+    caseDetails.setCaseType("HH"); // compatibility
+    caseDetails.setSurveyType("SOCIAL"); // compatibility
     try {
       EqLaunchData eqLuanchCoreDate =
           EqLaunchData.builder()

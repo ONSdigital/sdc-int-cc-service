@@ -35,9 +35,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
@@ -47,7 +47,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 @ActiveProfiles("test-cc")
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@TestPropertySource(properties = {"GOOGLE_CLOUD_PROJECT=census-cc-test"})
+@TestPropertySource(properties = {"GOOGLE_CLOUD_PROJECT=sdc-cc-test"})
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
 public class EndpointSecurityTest {
   @MockBean CaseService caseService;
@@ -131,10 +131,7 @@ public class EndpointSecurityTest {
     UUID caseId = UUID.randomUUID();
     RefusalRequestDTO requestBody = new RefusalRequestDTO();
     requestBody.setCaseId(caseId);
-    requestBody.setReason(Reason.HARD);
-    requestBody.setAgentId(12345);
-    requestBody.setCallId("8989-NOW");
-    requestBody.setIsHouseholder(false);
+    requestBody.setReason(RefusalType.HARD_REFUSAL);
     requestBody.setDateTime(new Date());
 
     ResponseEntity<String> response =
