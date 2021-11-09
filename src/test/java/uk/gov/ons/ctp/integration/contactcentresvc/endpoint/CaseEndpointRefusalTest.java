@@ -25,7 +25,7 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.Reason;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
@@ -34,20 +34,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 public final class CaseEndpointRefusalTest {
 
   private static final String CASE_ID = "caseId";
-  private static final String AGENT_ID = "agentId";
-  private static final String CALL_ID = "callId";
-  private static final String TITLE = "title";
-  private static final String FORENAME = "forename";
-  private static final String SURNAME = "surname";
-  private static final String ADDRESS_LINE_1 = "addressLine1";
-  private static final String ADDRESS_LINE_2 = "addressLine2";
-  private static final String ADDRESS_LINE_3 = "addressLine3";
-  private static final String TOWN_NAME = "townName";
-  private static final String REGION = "region";
   private static final String REASON = "reason";
-  private static final String POSTCODE = "postcode";
-  private static final String UPRN = "uprn";
-  private static final String IS_HOUSEHOLDER = "isHouseholder";
   private static final String DATE_TIME = "dateTime";
 
   private static final String RESPONSE_DATE_TIME = "2019-03-28T11:56:40.705Z";
@@ -107,139 +94,11 @@ public final class CaseEndpointRefusalTest {
   }
 
   @Test
-  public void refusalGoodBodyCaseIdBothFred() throws Exception {
+  public void refusalGoodBodyCaseIdNotUuid() throws Exception {
     ObjectNode json = FixtureHelper.loadClassObjectNode();
     json.put(CASE_ID, "fred");
     ResultActions actions = mockMvc.perform(postJson("/cases/fred/refusal", json.toString()));
     actions.andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void refusalTitleNull() throws Exception {
-    assertOk(TITLE, (String) null);
-  }
-
-  @Test
-  public void refusalTitleBlank() throws Exception {
-    assertOk(TITLE, "");
-  }
-
-  @Test
-  public void refusalTitleTooLong() throws Exception {
-    assertBadRequest(TITLE, "Mrrrrrrrrrrrr");
-  }
-
-  @Test
-  public void refusalUPRNNull() throws Exception {
-    assertOk(UPRN, (String) null);
-  }
-
-  @Test
-  public void refusalUPRNBlank() throws Exception {
-    assertOk(UPRN, "");
-  }
-
-  @Test
-  public void refusalUPRNTooLong() throws Exception {
-    assertBadRequest(UPRN, "12345678901234");
-  }
-
-  @Test
-  public void refusalUPRNNotTooLong() throws Exception {
-    assertOk(UPRN, "1234567890123");
-  }
-
-  @Test
-  public void refusalForenameNull() throws Exception {
-    assertOk(FORENAME, (String) null);
-  }
-
-  @Test
-  public void refusalForenameBlank() throws Exception {
-    assertOk(FORENAME, "");
-  }
-
-  @Test
-  public void refusalForenameTooLong() throws Exception {
-    assertBadRequest(FORENAME, "Phillllllllllllllllllllllllllllllllllllllllllllllllllllllllll");
-  }
-
-  @Test
-  public void refusalSurnameNull() throws Exception {
-    assertOk(SURNAME, (String) null);
-  }
-
-  @Test
-  public void refusalSurnameBlank() throws Exception {
-    assertOk(SURNAME, "");
-  }
-
-  @Test
-  public void refusalSurnameTooLong() throws Exception {
-    assertBadRequest(SURNAME, "Whilessssssssssssssssssssssssssssssssssssssssssssssssssssssss");
-  }
-
-  @Test
-  public void refusalAddressLine1Null() throws Exception {
-    assertOk(ADDRESS_LINE_1, (String) null);
-  }
-
-  @Test
-  public void refusalAddressLine1Blank() throws Exception {
-    assertOk(ADDRESS_LINE_1, "");
-  }
-
-  @Test
-  public void refusalAddressLine1TooLong() throws Exception {
-    assertBadRequest(
-        ADDRESS_LINE_1, "Addressssssssssssssssssssssssssssssssssssssssssssssssssssssss");
-  }
-
-  @Test
-  public void refusalAddressLine2Null() throws Exception {
-    assertOk(ADDRESS_LINE_2, (String) null);
-  }
-
-  @Test
-  public void refusalAddressLine2Blank() throws Exception {
-    assertOk(ADDRESS_LINE_2, "");
-  }
-
-  @Test
-  public void refusalAddressLine2TooLong() throws Exception {
-    assertBadRequest(
-        ADDRESS_LINE_2, "Addressssssssssssssssssssssssssssssssssssssssssssssssssssssss");
-  }
-
-  @Test
-  public void refusalAddressLine3Null() throws Exception {
-    assertOk(ADDRESS_LINE_3, (String) null);
-  }
-
-  @Test
-  public void refusalAddressLine3Blank() throws Exception {
-    assertOk(ADDRESS_LINE_3, "");
-  }
-
-  @Test
-  public void refusalAddressLine3TooLong() throws Exception {
-    assertBadRequest(
-        ADDRESS_LINE_3, "Addressssssssssssssssssssssssssssssssssssssssssssssssssssssss");
-  }
-
-  @Test
-  public void refusalTownNameNull() throws Exception {
-    assertOk(TOWN_NAME, (String) null);
-  }
-
-  @Test
-  public void refusalTownNameBlank() throws Exception {
-    assertOk(TOWN_NAME, "");
-  }
-
-  @Test
-  public void refusalTownNameTooLong() throws Exception {
-    assertBadRequest(TOWN_NAME, "Addressssssssssssssssssssssssssssssssssssssssssssssssssssssss");
   }
 
   @Test
@@ -253,83 +112,18 @@ public final class CaseEndpointRefusalTest {
   }
 
   @Test
+  public void refusalHardReasonOk() throws Exception {
+    assertOk(REASON, RefusalType.HARD_REFUSAL.name());
+  }
+
+  @Test
   public void refusalExtraordinaryReasonOk() throws Exception {
-    assertOk(REASON, Reason.EXTRAORDINARY.name());
+    assertOk(REASON, RefusalType.EXTRAORDINARY_REFUSAL.name());
   }
 
   @Test
-  public void refusalAgentIdRequired() throws Exception {
-    assertBadRequest(AGENT_ID, (String) null);
-  }
-
-  @Test
-  public void refusalAgentIdBad() throws Exception {
-    assertBadRequest(AGENT_ID, "NOT_A_REASON");
-  }
-
-  @Test
-  public void refusalAgentIdTooLong() throws Exception {
-    assertBadRequest(AGENT_ID, "9" + Integer.MAX_VALUE);
-  }
-
-  @Test
-  public void refusalAgentIdOk() throws Exception {
-    assertOk(AGENT_ID, "12345");
-  }
-
-  @Test
-  public void refusalCallIdOptional() throws Exception {
-    assertOk(CALL_ID, (String) null);
-  }
-
-  @Test
-  public void refusalCallIdOk() throws Exception {
-    assertOk(CALL_ID, "8989-NOW");
-  }
-
-  @Test
-  public void refusalHardReasonOkl() throws Exception {
-    assertOk(REASON, Reason.HARD.name());
-  }
-
-  @Test
-  public void refusalRegionNull() throws Exception {
-    assertOk(REGION, (String) null);
-  }
-
-  @Test
-  public void refusalRegionBad() throws Exception {
-    assertBadRequest(REGION, "X");
-  }
-
-  @Test
-  public void refusalPostcodeNull() throws Exception {
-    assertOk(POSTCODE, (String) null);
-  }
-
-  @Test
-  public void refusalPostcodeBlank() throws Exception {
-    assertOk(POSTCODE, "");
-  }
-
-  @Test
-  public void refusalPostcodeBad() throws Exception {
-    assertBadRequest(POSTCODE, "SO100 100HJ");
-  }
-
-  @Test
-  public void isHouseholderOk() throws Exception {
-    assertOk(IS_HOUSEHOLDER, "True");
-  }
-
-  @Test
-  public void isHouseholderNull() throws Exception {
-    assertBadRequest(IS_HOUSEHOLDER, (String) null);
-  }
-
-  @Test
-  public void isHouseholderBlank() throws Exception {
-    assertBadRequest(IS_HOUSEHOLDER, "");
+  public void refusalSoftReasonOk() throws Exception {
+    assertOk(REASON, RefusalType.SOFT_REFUSAL.name());
   }
 
   @Test

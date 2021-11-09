@@ -211,9 +211,7 @@ public class CaseEndpoint implements CTPEndpoint {
 
     ResponseDTO response = caseService.reportRefusal(caseId, requestBodyDTO);
 
-    if (log.isDebugEnabled()) {
-      log.debug("Exiting reportRefusal", kv("caseId", caseId));
-    }
+    log.debug("Exiting reportRefusal", kv("caseId", caseId));
 
     return ResponseEntity.ok(response);
   }
