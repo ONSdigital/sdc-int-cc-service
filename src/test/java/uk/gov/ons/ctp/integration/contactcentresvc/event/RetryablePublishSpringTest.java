@@ -124,7 +124,7 @@ public class RetryablePublishSpringTest {
   }
 
   @Test
-  public void shouldRetryWithTillExhaustion() throws Exception {
+  public void shouldRetryPublishTillExhaustion() throws Exception {
     doThrow(new EventPublishException("argh"))
         .when(eventPublisher)
         .sendEvent(any(), any(), any(), anyString());

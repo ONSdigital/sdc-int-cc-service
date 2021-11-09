@@ -8,3 +8,4 @@ spring:
 case-service-settings:
   rest-client-config:
     port: 8162        
+
