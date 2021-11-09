@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.event.TopicType;
@@ -24,6 +25,7 @@ public class EventTransfer {
     event.setId(UUID.randomUUID());
     event.setType(type.name());
     event.setPayload(convertObjectToJson(payload));
+    event.setInsertionTime(LocalDateTime.now());
 
     eventToSendRepository.save(event);
     return event.getId();

@@ -18,10 +18,13 @@ public interface EventToSendRepository extends JpaRepository<EventToSend, UUID> 
    *
    * @param limit the maximum number of items to return
    * @return a stream of <code>EventToSend</code> items that had previously not been claimed for
-   *     processing, but now they are claimed and locked for this transaction context
+   *     processing, but now they are claimed and locked for this transaction context, ordered by
+   *     insertion time
    */
   @Query(
-      value = "SELECT * FROM cc_schema.event_to_send LIMIT :limit FOR UPDATE SKIP LOCKED",
+      value =
+          "SELECT * FROM cc_schema.event_to_send ORDER BY cc_schema.event_to_send.insertion_time "
+              + "LIMIT :limit FOR UPDATE SKIP LOCKED",
       nativeQuery = true)
   Stream<EventToSend> findEventsToSend(@Param("limit") int limit);
 }

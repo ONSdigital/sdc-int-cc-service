@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,4 +20,6 @@ public class EventToSend {
   private String type;
 
   private String payload;
+
+  private LocalDateTime insertionTime;
 }
