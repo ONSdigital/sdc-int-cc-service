@@ -3,24 +3,30 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.v;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
+
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -58,6 +64,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequest
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
@@ -422,10 +429,22 @@ public class CaseServiceImpl implements CaseService {
     RefusalDetails refusal = new RefusalDetails();
     refusal.setCaseId(caseId);
     refusal.setType(refusalRequest.getReason().name());
+    
+    // PMB
+    refusal.setName(encrypt("Jimmy McTavish"));
 
     return refusal;
   }
-
+  
+  private String encrypt(String clearValue) {
+    if (clearValue == null) {
+      return null;
+    }
+    List<Resource> keys = List.of(appConfig.getPublicPgpKey1(), appConfig.getPublicPgpKey2());
+    String encStr = PgpEncrypt.encrypt(clearValue, keys);
+    return Base64.getEncoder().encodeToString(encStr.getBytes(StandardCharsets.UTF_8));
+  }
+  
   /**
    * Make Case Service request to return cases by UPRN
    *
