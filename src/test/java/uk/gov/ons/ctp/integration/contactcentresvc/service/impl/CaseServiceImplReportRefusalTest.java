@@ -104,7 +104,8 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
     assertEquals(expectedEventCaseId, refusal.getCaseId());
     assertEquals(reason.name(), refusal.getType());
 
-    // This code is intentionally commented out. Reinstate if ccsvc uses encryption in outgoing events.
+    // This code is intentionally commented out. Reinstate if ccsvc uses encryption in outgoing
+    // events.
     // verifyEncryptedField("Jimmy McTavish", refusal.getName());
 
     // The following code exists to prevent complaints about unused code. It's never called.

@@ -1,11 +1,10 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.retry.annotation.EnableRetry;
-
-import lombok.Data;
 import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
 

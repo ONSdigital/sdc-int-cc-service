@@ -438,7 +438,7 @@ public class CaseServiceImpl implements CaseService {
 
     return refusal;
   }
-  
+
   private String encrypt(String clearValue) {
     if (clearValue == null) {
       return null;
@@ -447,7 +447,7 @@ public class CaseServiceImpl implements CaseService {
     String encStr = PgpEncrypt.encrypt(clearValue, keys);
     return Base64.getEncoder().encodeToString(encStr.getBytes(StandardCharsets.UTF_8));
   }
-  
+
   /**
    * Make Case Service request to return cases by UPRN
    *
