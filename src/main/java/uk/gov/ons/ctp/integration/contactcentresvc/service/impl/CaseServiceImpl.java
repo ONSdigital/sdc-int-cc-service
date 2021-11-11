@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.inject.Inject;
-
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
-
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -429,9 +426,15 @@ public class CaseServiceImpl implements CaseService {
     RefusalDetails refusal = new RefusalDetails();
     refusal.setCaseId(caseId);
     refusal.setType(refusalRequest.getReason().name());
-    
-    // PMB
-    refusal.setName(encrypt("Jimmy McTavish"));
+
+    // This code is intentionally commented out. Reinstate to active encryption in outgoing events
+    // refusal.setName(encrypt("Jimmy McTavish"));
+
+    // The following code exists to prevent complaints about unused code. It's never called.
+    // This can be deleted once a final decision is reached about ccsvc encryption
+    if (System.currentTimeMillis() == 1) {
+      encrypt("never-executed");
+    }
 
     return refusal;
   }
