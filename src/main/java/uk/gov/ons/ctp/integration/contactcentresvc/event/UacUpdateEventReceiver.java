@@ -1,5 +1,9 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
+
+import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -12,14 +16,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseResponse;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseResponseRepository;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
-
-/**
- * Service implementation responsible for receipt of UacUpdate Events.
- */
+/** Service implementation responsible for receipt of UacUpdate Events. */
 @Slf4j
 @MessageEndpoint
 public class UacUpdateEventReceiver {
@@ -28,7 +25,8 @@ public class UacUpdateEventReceiver {
   private CaseRepository caseRepository;
   private MapperFacade mapper;
 
-  public UacUpdateEventReceiver(CaseResponseRepository repo, CaseRepository caseRepo, MapperFacade mapper) {
+  public UacUpdateEventReceiver(
+      CaseResponseRepository repo, CaseRepository caseRepo, MapperFacade mapper) {
     this.caseResponseRepository = repo;
     this.caseRepository = caseRepo;
     this.mapper = mapper;
@@ -51,8 +49,10 @@ public class UacUpdateEventReceiver {
 
     Optional<Case> caseOptional = caseRepository.findById(UUID.fromString(uac.getCaseId()));
 
-    if(caseOptional.isPresent()) {
+    if (caseOptional.isPresent()) {
       CaseResponse response = mapper.map(uac, CaseResponse.class);
+
+      System.out.println(response.getCaseId());
       try {
         caseResponseRepository.save(response);
       } catch (Exception e) {
@@ -61,7 +61,9 @@ public class UacUpdateEventReceiver {
       }
     } else {
       log.info(
-          "Case not found, discarding message", kv("messageId", uacMessageId), kv("caseId", uac.getCaseId()));
+          "Case not found, discarding message",
+          kv("messageId", uacMessageId),
+          kv("caseId", uac.getCaseId()));
     }
   }
 }
