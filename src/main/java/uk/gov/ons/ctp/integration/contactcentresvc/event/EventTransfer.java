@@ -25,7 +25,7 @@ public class EventTransfer {
     event.setId(UUID.randomUUID());
     event.setType(type.name());
     event.setPayload(convertObjectToJson(payload));
-    event.setInsertionTime(LocalDateTime.now());
+    event.setCreatedDateTime(LocalDateTime.now());
 
     eventToSendRepository.save(event);
     return event.getId();
