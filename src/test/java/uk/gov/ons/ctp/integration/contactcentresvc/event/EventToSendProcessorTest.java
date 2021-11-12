@@ -7,6 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -60,7 +61,8 @@ public class EventToSendProcessorTest {
 
   private EventToSend createEvent(String id) {
     String payload = FixtureHelper.loadPackageObjectNode("SurveyLaunchResponse").toString();
-    return new EventToSend(UUID.fromString(id), TopicType.SURVEY_LAUNCH.name(), payload);
+    return new EventToSend(
+        UUID.fromString(id), TopicType.SURVEY_LAUNCH.name(), payload, LocalDateTime.now());
   }
 
   @Test
