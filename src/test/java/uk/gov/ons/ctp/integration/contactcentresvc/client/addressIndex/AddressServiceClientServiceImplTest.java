@@ -188,7 +188,7 @@ public class AddressServiceClientServiceImplTest {
   public void testUPRNQueryProcessing() throws Exception {
     // Build results to be returned from search
     AddressIndexSearchResultsCompositeDTO resultsFromAddressIndex =
-        FixtureHelper.loadMethodFixtures(AddressIndexSearchResultsCompositeDTO[].class).get(0);
+        FixtureHelper.loadClassFixtures(AddressIndexSearchResultsCompositeDTO[].class).get(0);
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     queryParams.add("addresstype", ADDRESS_TYPE);
     queryParams.add("epoch", EPOCH);
