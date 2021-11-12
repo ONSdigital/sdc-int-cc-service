@@ -21,5 +21,5 @@ public class EventToSend {
 
   private String payload;
 
-  private LocalDateTime insertionTime;
+  private LocalDateTime createdDateTime;
 }
