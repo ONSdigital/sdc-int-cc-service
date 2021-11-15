@@ -129,7 +129,7 @@ public class AddressServiceImplTest {
   public void testUPRNQueryProcessing() throws Exception {
     // Build results to be returned from search
     AddressIndexSearchResultsCompositeDTO addressIndexResults =
-        FixtureHelper.loadMethodFixtures(AddressIndexSearchResultsCompositeDTO[].class).get(0);
+        FixtureHelper.loadClassFixtures(AddressIndexSearchResultsCompositeDTO[].class).get(0);
     when(addressClientService.searchByUPRN(any())).thenReturn(addressIndexResults);
 
     // Run the request and verify results
@@ -149,7 +149,7 @@ public class AddressServiceImplTest {
     final String message = "Server too busy";
     final int status = 429;
     AddressIndexSearchResultsCompositeDTO addressIndexResults =
-        FixtureHelper.loadMethodFixtures(AddressIndexSearchResultsCompositeDTO[].class).get(0);
+        FixtureHelper.loadClassFixtures(AddressIndexSearchResultsCompositeDTO[].class).get(0);
     addressIndexResults.getStatus().setCode(status);
     addressIndexResults.getStatus().setMessage(message);
     when(addressClientService.searchByUPRN(any())).thenReturn(addressIndexResults);
