@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 import java.util.UUID;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -40,7 +39,6 @@ public class Permission {
 
   @ToString.Include
   @Enumerated(EnumType.STRING)
-  @Column(name = "authorised_activity")
   private PermissionType permissionType;
 
   @ManyToOne(optional = false)

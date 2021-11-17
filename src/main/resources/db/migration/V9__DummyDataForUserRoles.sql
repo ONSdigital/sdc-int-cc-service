@@ -1,3 +1,5 @@
+ALTER TABLE permission RENAME COLUMN authorised_activity TO permission_type;
+
 -- dummy data population to assist testing --
 
 -- create users
@@ -12,7 +14,7 @@ VALUES ('ecf19b84-4799-11ec-9858-4c3275913db5', 'superuser'),
        ('632b71e4-479a-11ec-a941-4c3275913db5', 'teloperator');
 
 -- add permissions to roles
-INSERT INTO permission (id, role_id, authorised_activity)
+INSERT INTO permission (id, role_id, permission_type)
 VALUES ('8f50c0b2-479a-11ec-94c1-4c3275913db5', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'SUPER_USER'),
        ('bd95eabe-479b-11ec-8bb2-4c3275913db5', '632b71e4-479a-11ec-a941-4c3275913db5', 'SEARCH_CASES'),
        ('f0a8d736-479b-11ec-9e7f-4c3275913db5', '632b71e4-479a-11ec-a941-4c3275913db5', 'VIEW_CASE_DETAILS');
