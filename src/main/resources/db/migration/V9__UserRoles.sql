@@ -1,4 +1,9 @@
+-- refine existing tables
+
+ALTER TABLE operator ADD UNIQUE (name);
+ALTER TABLE role ADD UNIQUE (name);
 ALTER TABLE permission RENAME COLUMN authorised_activity TO permission_type;
+ALTER TABLE permission ADD UNIQUE (permission_type);
 
 -- dummy data population to assist testing --
 
