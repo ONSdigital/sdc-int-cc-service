@@ -9,17 +9,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.AdminRole;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Operator;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.OperatorRole;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.AdminRoleRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.OperatorRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.OperatorRoleRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.PermissionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
 
@@ -30,8 +26,6 @@ public class DataEndpoint {
   @Autowired CaseRepository caseRepo;
   @Autowired OperatorRepository operatorRepo;
   @Autowired RoleRepository roleRepo;
-  @Autowired OperatorRoleRepository operatorRoleRepo;
-  @Autowired AdminRoleRepository adminRoleRepo;
   @Autowired PermissionRepository permRepo;
 
   @RequestMapping(value = "/case", method = RequestMethod.GET)
@@ -49,18 +43,6 @@ public class DataEndpoint {
   @RequestMapping(value = "/role", method = RequestMethod.GET)
   public ResponseEntity<List<Role>> findRoles() {
     List<Role> result = roleRepo.findAll();
-    return ResponseEntity.ok(result);
-  }
-
-  @RequestMapping(value = "/role/operator", method = RequestMethod.GET)
-  public ResponseEntity<List<OperatorRole>> findOperatorRoles() {
-    List<OperatorRole> result = operatorRoleRepo.findAll();
-    return ResponseEntity.ok(result);
-  }
-
-  @RequestMapping(value = "/role/admin", method = RequestMethod.GET)
-  public ResponseEntity<List<AdminRole>> findAdminRoles() {
-    List<AdminRole> result = adminRoleRepo.findAll();
     return ResponseEntity.ok(result);
   }
 

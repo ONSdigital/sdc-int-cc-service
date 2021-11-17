@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +18,12 @@ import lombok.ToString;
 
 /**
  * Representation of Operator (user) entity from database table.
+ *
+ * <ul>
+ *   <li>An operator has a unique name
+ *   <li>An operator has many member (non-admin) roles
+ *   <li>An operator has many admin roles
+ * </ul>
  *
  * <p>Implementation note: avoid Lombok Data annotation, since generated toString, equals and
  * hashcode are considered dangerous in combination with Entity annotation.
@@ -34,10 +42,18 @@ public class Operator {
   @ToString.Include private boolean active;
 
   @JsonIgnore
-  @OneToMany(mappedBy = "operator")
-  private List<OperatorRole> memberRoles;
+  @ManyToMany
+  @JoinTable(
+      name = "operator_role",
+      joinColumns = @JoinColumn(name = "operator_id"),
+      inverseJoinColumns = @JoinColumn(name = "role_id"))
+  private List<Role> memberRoles;
 
   @JsonIgnore
-  @OneToMany(mappedBy = "operator")
-  private List<AdminRole> adminRoles;
+  @ManyToMany
+  @JoinTable(
+      name = "admin_role",
+      joinColumns = @JoinColumn(name = "operator_id"),
+      inverseJoinColumns = @JoinColumn(name = "role_id"))
+  private List<Role> adminRoles;
 }

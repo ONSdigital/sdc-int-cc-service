@@ -1,9 +1,11 @@
 -- refine existing tables
 
+ALTER TABLE operator_role DROP COLUMN id;
+ALTER TABLE admin_role DROP COLUMN id;
+
 ALTER TABLE operator ADD UNIQUE (name);
 ALTER TABLE role ADD UNIQUE (name);
 ALTER TABLE permission RENAME COLUMN authorised_activity TO permission_type;
-ALTER TABLE permission ADD UNIQUE (permission_type);
 
 -- dummy data population to assist testing --
 
@@ -25,14 +27,12 @@ VALUES ('8f50c0b2-479a-11ec-94c1-4c3275913db5', 'ecf19b84-4799-11ec-9858-4c32759
        ('f0a8d736-479b-11ec-9e7f-4c3275913db5', '632b71e4-479a-11ec-a941-4c3275913db5', 'VIEW_CASE_DETAILS');
 
 -- give an admin role to a user
-INSERT INTO admin_role (id, role_id, operator_id)
-VALUES ('7d82f89e-479c-11ec-bb8f-4c3275913db5',
-        'ecf19b84-4799-11ec-9858-4c3275913db5',   -- superuser
+INSERT INTO admin_role (role_id, operator_id)
+VALUES ('ecf19b84-4799-11ec-9858-4c3275913db5',   -- superuser
         '46e62d6a-479c-11ec-aab4-4c3275913db5');  -- jane
 
 -- give a non-admin role to a user
-INSERT INTO operator_role (id, role_id, operator_id)
-VALUES ('c1985d26-479c-11ec-b947-4c3275913db5',
-        '632b71e4-479a-11ec-a941-4c3275913db5',   -- teloperator
+INSERT INTO operator_role (role_id, operator_id)
+VALUES ('632b71e4-479a-11ec-a941-4c3275913db5',   -- teloperator
         '382a8474-479c-11ec-a052-4c3275913db5');  -- fred
 

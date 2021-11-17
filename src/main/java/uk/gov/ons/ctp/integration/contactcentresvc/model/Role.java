@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ import lombok.ToString;
  * Representation of Role entity from database table.
  *
  * <ul>
- *   <li>A role has a name
+ *   <li>A role has a unique name
  *   <li>A role has many permissions
  *   <li>A role has many operator (non-admin) roles
  *   <li>A role has many admin roles
@@ -40,12 +41,12 @@ public class Role {
   @ToString.Include private String name;
 
   @JsonIgnore
-  @OneToMany(mappedBy = "role")
-  private List<OperatorRole> operatorRoles;
+  @ManyToMany(mappedBy = "memberRoles", targetEntity = Operator.class)
+  private List<Role> operatorRoles;
 
   @JsonIgnore
-  @OneToMany(mappedBy = "role")
-  private List<AdminRole> adminRoles;
+  @ManyToMany(mappedBy = "adminRoles", targetEntity = Operator.class)
+  private List<Role> adminRoles;
 
   @JsonIgnore
   @OneToMany(mappedBy = "role")
