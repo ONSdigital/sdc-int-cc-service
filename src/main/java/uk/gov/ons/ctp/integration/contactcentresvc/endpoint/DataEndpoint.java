@@ -57,7 +57,7 @@ public class DataEndpoint {
   @GetMapping("/user/{user}/role")
   public ResponseEntity<List<String>> findUserRole(@PathVariable("user") String user) {
     Operator op = operatorRepo.findByName(user);
-    List<String> roles = op.getMemberRoles().stream().map(r -> r.getName()).collect(toList());
+    List<String> roles = op.getOperatorRoles().stream().map(r -> r.getName()).collect(toList());
     return ResponseEntity.ok(roles);
   }
 
@@ -104,16 +104,16 @@ public class DataEndpoint {
   // add a role to a user
   @Transactional
   @PutMapping("/role/{role}/{user}")
-  public ResponseEntity<String> makeMemberRole(
+  public ResponseEntity<String> makeOperatorRole(
       @PathVariable("role") String roleName, @PathVariable("user") String userName) {
     Role role = roleRepo.findByName(roleName);
     Operator user = operatorRepo.findByName(userName);
-    List<Role> memberRoles = user.getMemberRoles();
-    if (memberRoles.contains(role)) {
+    List<Role> operatorRoles = user.getOperatorRoles();
+    if (operatorRoles.contains(role)) {
       return ResponseEntity.badRequest()
           .body("Role " + roleName + " already exists for user " + userName);
     }
-    memberRoles.add(role);
+    operatorRoles.add(role);
     return ResponseEntity.ok("Role " + roleName + " added to user " + userName);
   }
 
@@ -136,16 +136,16 @@ public class DataEndpoint {
   // remove a role from a user
   @Transactional
   @DeleteMapping("/role/{role}/{user}")
-  public ResponseEntity<String> removeMemberRole(
+  public ResponseEntity<String> removeOperatorRole(
       @PathVariable("role") String roleName, @PathVariable("user") String userName) {
     Role role = roleRepo.findByName(roleName);
     Operator user = operatorRepo.findByName(userName);
-    List<Role> memberRoles = user.getMemberRoles();
-    if (!memberRoles.contains(role)) {
+    List<Role> operatorRoles = user.getOperatorRoles();
+    if (!operatorRoles.contains(role)) {
       return ResponseEntity.badRequest()
           .body("Role " + roleName + " does not exist for user " + userName);
     }
-    memberRoles.remove(role);
+    operatorRoles.remove(role);
     return ResponseEntity.ok("Role " + roleName + " removed from user " + userName);
   }
 

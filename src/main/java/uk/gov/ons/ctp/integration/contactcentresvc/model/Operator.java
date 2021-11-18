@@ -21,7 +21,7 @@ import lombok.ToString;
  *
  * <ul>
  *   <li>An operator has a unique name
- *   <li>An operator has many member (non-admin) roles
+ *   <li>An operator has many operator (non-admin) roles
  *   <li>An operator has many admin roles
  * </ul>
  *
@@ -47,7 +47,7 @@ public class Operator {
       name = "operator_role",
       joinColumns = @JoinColumn(name = "operator_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))
-  private List<Role> memberRoles;
+  private List<Role> operatorRoles;
 
   @JsonIgnore
   @ManyToMany

@@ -41,7 +41,7 @@ public class Role {
   @ToString.Include private String name;
 
   @JsonIgnore
-  @ManyToMany(mappedBy = "memberRoles", targetEntity = Operator.class)
+  @ManyToMany(mappedBy = "operatorRoles", targetEntity = Operator.class)
   private List<Role> operatorRoles;
 
   @JsonIgnore
