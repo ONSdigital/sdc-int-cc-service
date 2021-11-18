@@ -6,9 +6,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Operator;
@@ -39,40 +41,40 @@ public class DataEndpoint {
   @Autowired RoleRepository roleRepo;
   @Autowired PermissionRepository permRepo;
 
-  @RequestMapping(value = "/case", method = RequestMethod.GET)
+  @GetMapping("/case")
   public ResponseEntity<List<Case>> findCases() {
     List<Case> result = caseRepo.findAll();
     return ResponseEntity.ok(result);
   }
 
-  @RequestMapping(value = "/user", method = RequestMethod.GET)
+  @GetMapping("/user")
   public ResponseEntity<List<Operator>> findUsers() {
     List<Operator> result = operatorRepo.findAll();
     return ResponseEntity.ok(result);
   }
 
   @Transactional
-  @RequestMapping(value = "/user/{user}/role", method = RequestMethod.GET)
+  @GetMapping("/user/{user}/role")
   public ResponseEntity<List<String>> findUserRole(@PathVariable("user") String user) {
     Operator op = operatorRepo.findByName(user);
     List<String> roles = op.getMemberRoles().stream().map(r -> r.getName()).collect(toList());
     return ResponseEntity.ok(roles);
   }
 
-  @RequestMapping(value = "/role", method = RequestMethod.GET)
+  @GetMapping("/role")
   public ResponseEntity<List<Role>> findRoles() {
     List<Role> result = roleRepo.findAll();
     return ResponseEntity.ok(result);
   }
 
-  @RequestMapping(value = "/permission", method = RequestMethod.GET)
+  @GetMapping("/permission")
   public ResponseEntity<List<Permission>> findPermissions() {
     List<Permission> result = permRepo.findAll();
     return ResponseEntity.ok(result);
   }
 
   @Transactional
-  @RequestMapping(value = "/role/{role}/perms", method = RequestMethod.GET)
+  @GetMapping("/role/{role}/perm")
   public ResponseEntity<List<PermissionType>> findPermissionsForNamedRole(
       @PathVariable("role") String role) {
     Role result = roleRepo.findByName(role);
@@ -81,9 +83,27 @@ public class DataEndpoint {
     return ResponseEntity.ok(response);
   }
 
+  // list users who are an admin for a given role
+  @Transactional
+  @GetMapping("/role/{role}/admin")
+  public ResponseEntity<List<String>> findAdminsForNamedRole(
+      @PathVariable("role") String roleName) {
+    Role role = roleRepo.findByName(roleName);
+
+    List<Operator> allusers = operatorRepo.findAll();
+
+    List<String> result =
+        allusers.stream()
+            .filter(u -> u.getAdminRoles().contains(role))
+            .map(u -> u.getName())
+            .collect(toList());
+
+    return ResponseEntity.ok(result);
+  }
+
   // add a role to a user
   @Transactional
-  @RequestMapping(value = "/role/{role}/{user}", method = RequestMethod.PUT)
+  @PutMapping("/role/{role}/{user}")
   public ResponseEntity<String> makeMemberRole(
       @PathVariable("role") String roleName, @PathVariable("user") String userName) {
     Role role = roleRepo.findByName(roleName);
@@ -99,7 +119,7 @@ public class DataEndpoint {
 
   // add an admin role to a user
   @Transactional
-  @RequestMapping(value = "/role/admin/{role}/{user}", method = RequestMethod.PUT)
+  @PutMapping("/role/admin/{role}/{user}")
   public ResponseEntity<String> makeAdminRole(
       @PathVariable("role") String roleName, @PathVariable("user") String userName) {
     Role role = roleRepo.findByName(roleName);
@@ -115,7 +135,7 @@ public class DataEndpoint {
 
   // remove a role from a user
   @Transactional
-  @RequestMapping(value = "/role/{role}/{user}", method = RequestMethod.DELETE)
+  @DeleteMapping("/role/{role}/{user}")
   public ResponseEntity<String> removeMemberRole(
       @PathVariable("role") String roleName, @PathVariable("user") String userName) {
     Role role = roleRepo.findByName(roleName);
@@ -127,5 +147,21 @@ public class DataEndpoint {
     }
     memberRoles.remove(role);
     return ResponseEntity.ok("Role " + roleName + " removed from user " + userName);
+  }
+
+  // remove an admin role from a user
+  @Transactional
+  @DeleteMapping("/role/admin/{role}/{user}")
+  public ResponseEntity<String> removeAdminRole(
+      @PathVariable("role") String roleName, @PathVariable("user") String userName) {
+    Role role = roleRepo.findByName(roleName);
+    Operator user = operatorRepo.findByName(userName);
+    List<Role> adminRoles = user.getAdminRoles();
+    if (!adminRoles.contains(role)) {
+      return ResponseEntity.badRequest()
+          .body("Admin Role " + roleName + " does not exist for user " + userName);
+    }
+    adminRoles.remove(role);
+    return ResponseEntity.ok("Admin Role " + roleName + " removed from user " + userName);
   }
 }
