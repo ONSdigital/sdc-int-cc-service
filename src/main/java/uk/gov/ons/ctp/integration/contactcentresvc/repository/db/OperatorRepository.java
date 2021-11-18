@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Operator;
 
 @Repository
-public interface OperatorRepository extends JpaRepository<Operator, UUID> {}
+public interface OperatorRepository extends JpaRepository<Operator, UUID> {
+  Operator findByName(String name);
+}
