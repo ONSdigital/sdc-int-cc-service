@@ -21,8 +21,8 @@ import lombok.ToString;
  * <ul>
  *   <li>A role has a unique name
  *   <li>A role has many permissions
- *   <li>A role has many operator (non-admin) roles
- *   <li>A role has many admin roles
+ *   <li>A role has many (non-admin) user-roles
+ *   <li>A role has many admin-roles
  * </ul>
  *
  * <p>Implementation note: avoid Lombok Data annotation, since generated toString, equals and
@@ -41,11 +41,11 @@ public class Role {
   @ToString.Include private String name;
 
   @JsonIgnore
-  @ManyToMany(mappedBy = "operatorRoles", targetEntity = Operator.class)
-  private List<Role> operatorRoles;
+  @ManyToMany(mappedBy = "userRoles", targetEntity = User.class)
+  private List<Role> userRoles;
 
   @JsonIgnore
-  @ManyToMany(mappedBy = "adminRoles", targetEntity = Operator.class)
+  @ManyToMany(mappedBy = "adminRoles", targetEntity = User.class)
   private List<Role> adminRoles;
 
   @JsonIgnore
