@@ -3,12 +3,14 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,11 +55,25 @@ public class DataEndpoint {
     return ResponseEntity.ok(result);
   }
 
+  @PostMapping("/user/{user}")
+  public ResponseEntity<String> addUser(@PathVariable("user") String userName) {
+    User user = User.builder().name(userName).id(UUID.randomUUID()).build();
+    userRepo.save(user);
+    return ResponseEntity.ok("Added user: " + userName);
+  }
+
+  @DeleteMapping("/user/{user}")
+  public ResponseEntity<String> deleteUser(@PathVariable("user") String userName) {
+    User user = userRepo.findByName(userName);
+    userRepo.delete(user);
+    return ResponseEntity.ok("Deleted user: " + userName);
+  }
+
   @Transactional
   @GetMapping("/user/{user}/role")
-  public ResponseEntity<List<String>> findUserRole(@PathVariable("user") String user) {
-    User op = userRepo.findByName(user);
-    List<String> roles = op.getUserRoles().stream().map(r -> r.getName()).collect(toList());
+  public ResponseEntity<List<String>> findUserRole(@PathVariable("user") String userName) {
+    User user = userRepo.findByName(userName);
+    List<String> roles = user.getUserRoles().stream().map(r -> r.getName()).collect(toList());
     return ResponseEntity.ok(roles);
   }
 
@@ -81,6 +97,23 @@ public class DataEndpoint {
     List<PermissionType> response =
         result.getPermissions().stream().map(p -> p.getPermissionType()).collect(toList());
     return ResponseEntity.ok(response);
+  }
+
+  // list users who have a given role
+  @Transactional
+  @GetMapping("/role/{role}/user")
+  public ResponseEntity<List<String>> findUsersForNamedRole(@PathVariable("role") String roleName) {
+    Role role = roleRepo.findByName(roleName);
+
+    List<User> allusers = userRepo.findAll();
+
+    List<String> result =
+        allusers.stream()
+            .filter(u -> u.getUserRoles().contains(role))
+            .map(u -> u.getName())
+            .collect(toList());
+
+    return ResponseEntity.ok(result);
   }
 
   // list users who are an admin for a given role

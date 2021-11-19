@@ -39,7 +39,8 @@ import lombok.ToString;
 public class User {
   @ToString.Include @Id private UUID id;
   @ToString.Include private String name;
-  @ToString.Include private boolean active;
+
+  @Builder.Default @ToString.Include private boolean active = true;
 
   @JsonIgnore
   @ManyToMany
