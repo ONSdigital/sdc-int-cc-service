@@ -17,7 +17,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Representation of User (operator) entity from database table.
+ * Representation of User entity from database table.
  *
  * <ul>
  *   <li>A user has a unique name
@@ -35,7 +35,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "operator")
+@Table(name = "ccuser")
 public class User {
   @ToString.Include @Id private UUID id;
   @ToString.Include private String name;
@@ -45,8 +45,8 @@ public class User {
   @JsonIgnore
   @ManyToMany
   @JoinTable(
-      name = "operator_role",
-      joinColumns = @JoinColumn(name = "operator_id"),
+      name = "ccuser_role",
+      joinColumns = @JoinColumn(name = "ccuser_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))
   private List<Role> userRoles;
 
@@ -54,7 +54,7 @@ public class User {
   @ManyToMany
   @JoinTable(
       name = "admin_role",
-      joinColumns = @JoinColumn(name = "operator_id"),
+      joinColumns = @JoinColumn(name = "ccuser_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))
   private List<Role> adminRoles;
 }
