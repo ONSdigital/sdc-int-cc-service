@@ -18,7 +18,7 @@ CREATE TABLE case_interaction (
   id UUID PRIMARY KEY,
   case_id UUID REFERENCES collection_case NOT NULL,
   ccuser_id UUID REFERENCES ccuser NOT NULL,
-  date_time TIMESTAMP NOT NULL,
+  created_date_time TIMESTAMP NOT NULL,
   type TEXT NOT NULL,
   outcome TEXT NOT NULL,
   note TEXT
