@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/ONSdigital/sdc-int-cc-service/branch/main/graph/badge.svg?token=K4QotTmiak)](https://codecov.io/gh/ONSdigital/sdc-int-cc-service)
+
 # Contact Centre Data Service
 This repository contains the Contact Centre Data service. This microservice is a RESTful web service implemented using [Spring Boot](http://projects.spring.io/spring-boot/).
 It manages contact centre data, where a Contact Centre Data object represents an expected response from the Contact Centre Data service, which provides all the data that
