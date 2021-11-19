@@ -17,12 +17,12 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Representation of Operator (user) entity from database table.
+ * Representation of User (operator) entity from database table.
  *
  * <ul>
- *   <li>An operator has a unique name
- *   <li>An operator has many operator (non-admin) roles
- *   <li>An operator has many admin roles
+ *   <li>A user has a unique name
+ *   <li>A user has many non-admin) user-roles
+ *   <li>A user has many admin-roles
  * </ul>
  *
  * <p>Implementation note: avoid Lombok Data annotation, since generated toString, equals and
@@ -36,7 +36,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Entity
 @Table(name = "operator")
-public class Operator {
+public class User {
   @ToString.Include @Id private UUID id;
   @ToString.Include private String name;
   @ToString.Include private boolean active;
@@ -47,7 +47,7 @@ public class Operator {
       name = "operator_role",
       joinColumns = @JoinColumn(name = "operator_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))
-  private List<Role> operatorRoles;
+  private List<Role> userRoles;
 
   @JsonIgnore
   @ManyToMany
