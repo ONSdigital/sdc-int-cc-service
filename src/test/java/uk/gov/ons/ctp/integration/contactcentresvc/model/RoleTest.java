@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 
 public class RoleTest {
   private Role role;
-  private Role r1;
-  private Role r2;
+  private User u1;
+  private User u2;
 
   @Test
   public void shouldHaveNoArgConstructor() {
@@ -27,13 +27,13 @@ public class RoleTest {
     role.setId(UUID.randomUUID());
     role.setName("coder");
     role.setPermissions(new ArrayList<>());
-    role.setUserRoles(new ArrayList<>());
-    role.setAdminRoles(new ArrayList<>());
+    role.setUsers(new ArrayList<>());
+    role.setAdmins(new ArrayList<>());
     assertNotNull(role.getId());
     assertNotNull(role.getName());
     assertNotNull(role.getPermissions());
-    assertNotNull(role.getUserRoles());
-    assertNotNull(role.getAdminRoles());
+    assertNotNull(role.getUsers());
+    assertNotNull(role.getAdmins());
   }
 
   @Test
@@ -42,8 +42,8 @@ public class RoleTest {
 
     assertEquals("coder", role.getName());
     assertEquals(2, role.getPermissions().size());
-    assertEquals(r1, role.getAdminRoles().get(0));
-    assertEquals(r2, role.getUserRoles().get(0));
+    assertEquals(u1, role.getAdmins().get(0));
+    assertEquals(u2, role.getUsers().get(0));
   }
 
   @Test
@@ -52,8 +52,8 @@ public class RoleTest {
     String s = role.toString();
     assertTrue(s.contains("coder"));
     assertTrue(s.contains(role.getId().toString()));
-    assertFalse(s.contains(r1.getName()));
-    assertFalse(s.contains(r2.getName()));
+    assertFalse(s.contains(u1.getName()));
+    assertFalse(s.contains(u2.getName()));
     assertFalse(s.contains(PermissionType.SEARCH_CASES.name()));
     assertFalse(s.contains(PermissionType.VIEW_CASE_DETAILS.name()));
   }
@@ -76,17 +76,29 @@ public class RoleTest {
             .id(UUID.randomUUID())
             .name("coder")
             .permissions(new ArrayList<>())
-            .adminRoles(new ArrayList<>())
-            .userRoles(new ArrayList<>())
+            .admins(new ArrayList<>())
+            .users(new ArrayList<>())
             .build();
 
     role.getPermissions().add(p1);
     role.getPermissions().add(p2);
 
-    r1 = Role.builder().id(UUID.randomUUID()).name("cleaner").build();
-    r2 = Role.builder().id(UUID.randomUUID()).name("cook").build();
+    u1 = createUser("Joe");
+    u2 = createUser("Jasmine");
 
-    role.getAdminRoles().add(r1);
-    role.getUserRoles().add(r2);
+    role.getAdmins().add(u1);
+    role.getUsers().add(u2);
+  }
+
+  private User createUser(String name) {
+    User user =
+        User.builder()
+            .id(UUID.randomUUID())
+            .name(name)
+            .active(true)
+            .adminRoles(new ArrayList<>())
+            .userRoles(new ArrayList<>())
+            .build();
+    return user;
   }
 }

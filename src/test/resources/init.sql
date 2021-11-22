@@ -1,0 +1,9 @@
+  CREATE USER ccadmin;
+  ALTER USER ccadmin WITH PASSWORD 'password';
+  CREATE USER ccuser;
+  ALTER USER ccuser WITH PASSWORD 'password';
+  GRANT ALL PRIVILEGES ON DATABASE test TO ccadmin;
+  CREATE SCHEMA cc_schema AUTHORIZATION ccadmin;
+  GRANT USAGE ON SCHEMA cc_schema TO ccuser;
+  GRANT SELECT, UPDATE, INSERT, DELETE ON ALL TABLES IN SCHEMA cc_schema TO ccuser;
+  GRANT SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA cc_schema TO ccuser;

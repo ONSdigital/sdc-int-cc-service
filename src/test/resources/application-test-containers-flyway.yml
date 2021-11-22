@@ -1,0 +1,8 @@
+# datasources
+ccdb:
+  datasource:
+    url: jdbc:tc:postgresql:13-alpine:///test?TC_INITSCRIPT=init.sql
+    
+ccdb-admin:
+  datasource:
+    url: ${ccdb.datasource.url}
