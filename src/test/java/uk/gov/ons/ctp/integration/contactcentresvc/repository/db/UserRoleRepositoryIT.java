@@ -22,7 +22,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 
 /** Database tests for users, roles and permissions. */
-public class UserRoleRepositoryTest extends PostgresTestBase {
+public class UserRoleRepositoryIT extends PostgresTestBase {
   private static final UUID FRED_UUID = UUID.fromString("5d788f49-a256-4ae3-9fcf-5d59e8ad4228");
   private static final UUID JOE_UUID = UUID.fromString("ff838710-4b6f-11ec-b4ab-4c3275913db5");
   private static final UUID SHOPKEEPER_UUID =
