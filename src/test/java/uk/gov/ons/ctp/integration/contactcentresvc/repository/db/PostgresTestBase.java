@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
 import static org.junit.jupiter.api.parallel.ResourceAccessMode.READ_WRITE;
 
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -26,4 +27,5 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 @MockBean(name = "collectionExerciseEventInbound", value = PubSubInboundChannelAdapter.class)
 @Transactional
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
+@Tag("db")
 public abstract class PostgresTestBase {}
