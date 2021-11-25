@@ -17,3 +17,10 @@ ccdb-admin:
     url: jdbc:h2:mem:testdb
     username: sa
     password:     
+
+management:
+  metrics:
+    export:
+      stackdriver:
+        project-id: sdc-cc-test
+        enabled: false

@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import uk.gov.ons.ctp.common.event.EventPublisher;
@@ -20,7 +19,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test-containers-flyway")
 @Testcontainers
-@TestPropertySource(properties = {"GOOGLE_CLOUD_PROJECT=sdc-cc-test"})
 @MockBean({EventToSendPoller.class, EventPublisher.class})
 @MockBean(name = "caseEventInbound", value = PubSubInboundChannelAdapter.class)
 @MockBean(name = "surveyEventInbound", value = PubSubInboundChannelAdapter.class)

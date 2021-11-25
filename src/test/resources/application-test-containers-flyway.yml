@@ -6,3 +6,10 @@ ccdb:
 ccdb-admin:
   datasource:
     url: ${ccdb.datasource.url}
+
+management:
+  metrics:
+    export:
+      stackdriver:
+        project-id: sdc-cc-test
+        enabled: false
