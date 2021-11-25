@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.EventToSend;
 
-public class EventToSendRepositoryTest extends PostgresTestBase {
+public class EventToSendRepositoryIT extends PostgresTestBase {
 
   @Autowired private EventToSendRepository repo;
   @Autowired private TransactionalOps txOps;

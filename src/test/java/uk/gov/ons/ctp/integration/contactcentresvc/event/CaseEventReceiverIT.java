@@ -24,7 +24,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerc
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.PostgresTestBase;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
-public class CaseEventReceiverDbTest extends PostgresTestBase {
+public class CaseEventReceiverIT extends PostgresTestBase {
   private static final String CASE_ID = "ad24e36c-2a61-11ec-aa00-4c3275913db5";
   private static final String SURVEY_ID = "3883af91-0052-4497-9805-3238544fcf8a";
   private static final String COLLECTION_EX_ID = "4883af91-0052-4497-9805-3238544fcf8a";

@@ -13,7 +13,7 @@
   <description>SDC : Integrations ContactCentre Service</description>
 
   <properties>
-    <skip.integration.tests>true</skip.integration.tests>
+    <skip.integration.tests>false</skip.integration.tests>
     <testcontainers.version>1.16.2</testcontainers.version>
   </properties>
 
@@ -21,7 +21,7 @@
     <groupId>ons.sdc.int.common</groupId>
     <artifactId>common</artifactId>
     <!-- change this to the version of ALL common libs to be used by this build -->
-    <version>1.0.50</version>
+    <version>1.0.62</version>
   </parent>
 
   <scm>
@@ -269,47 +269,6 @@
     </extensions>
 
     <plugins>
-      <plugin>
-        <groupId>com.dkanejs.maven.plugins</groupId>
-        <artifactId>docker-compose-maven-plugin</artifactId>
-        <version>1.0.3</version>
-        <executions>
-          <execution>
-            <id>pre-stop</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>down</goal>
-            </goals>
-            <configuration>
-              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-              <skip>${skip.integration.tests}</skip>
-            </configuration>
-          </execution>
-          <execution>
-            <id>up</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>up</goal>
-            </goals>
-            <configuration>
-              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-              <detachedMode>true</detachedMode>
-              <skip>${skip.integration.tests}</skip>
-            </configuration>
-          </execution>
-          <execution>
-            <id>down</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>down</goal>
-            </goals>
-            <configuration>
-              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-              <skip>${skip.integration.tests}</skip>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -346,7 +305,6 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.2</version>
         <configuration>
           <!-- exclude generated classes that cause javaco failures -->
           <excludes>
@@ -448,10 +406,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.0.0-M3</version>
         <configuration>
           <argLine>${failsafeArgLine}</argLine>
           <skip>${skip.integration.tests}</skip>
+          <classesDirectory>${project.build.outputDirectory}</classesDirectory>
         </configuration>
         <executions>
           <execution>
