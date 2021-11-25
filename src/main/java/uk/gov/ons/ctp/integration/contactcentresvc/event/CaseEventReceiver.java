@@ -64,7 +64,7 @@ public class CaseEventReceiver {
     if (valid) {
       try {
         Case caze = mapper.map(caseUpdate, Case.class);
-        caseRepo.save(caze);
+        caseRepo.saveAndFlush(caze);
 
         log.info(
             "Successful saved Case to database {}, {}",

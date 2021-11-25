@@ -46,7 +46,7 @@ public class SurveyEventReceiverTest {
   public void shouldReceiveSurveyUpdateEvent() {
     target.acceptEvent(event);
 
-    verify(repo).save(surveyCaptor.capture());
+    verify(repo).saveAndFlush(surveyCaptor.capture());
 
     SurveyUpdate payload = event.getPayload().getSurveyUpdate();
     Survey survey = surveyCaptor.getValue();
@@ -55,7 +55,7 @@ public class SurveyEventReceiverTest {
 
   @Test
   public void shouldRejectFailingSave() {
-    when(repo.save(any())).thenThrow(PersistenceException.class);
+    when(repo.saveAndFlush(any())).thenThrow(PersistenceException.class);
     assertThrows(PersistenceException.class, () -> target.acceptEvent(event));
   }
 

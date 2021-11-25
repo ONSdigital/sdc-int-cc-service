@@ -1,9 +1,13 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import java.util.List;
 import java.util.UUID;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,4 +38,8 @@ public class Survey {
 
   @Type(type = "jsonb")
   private Object sampleDefinition;
+
+  @JsonIgnore
+  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Product> allowedSmsFulfilments;
 }

@@ -69,7 +69,7 @@ public class CaseEventReceiverTest {
     mockCollectionExercise();
     target.acceptEvent(caseEvent);
 
-    verify(caseRepo).save(caseCaptor.capture());
+    verify(caseRepo).saveAndFlush(caseCaptor.capture());
 
     CaseUpdate ccase = caseEvent.getPayload().getCaseUpdate();
     Case caze = caseCaptor.getValue();
@@ -104,7 +104,7 @@ public class CaseEventReceiverTest {
   public void shouldRejectFailingSave() {
     mockSocialSurvey();
     mockCollectionExercise();
-    when(caseRepo.save(any())).thenThrow(PersistenceException.class);
+    when(caseRepo.saveAndFlush(any())).thenThrow(PersistenceException.class);
     assertThrows(PersistenceException.class, () -> target.acceptEvent(caseEvent));
   }
 
