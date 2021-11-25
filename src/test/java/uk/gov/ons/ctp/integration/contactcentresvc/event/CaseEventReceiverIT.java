@@ -59,7 +59,7 @@ public class CaseEventReceiverIT extends PostgresTestBase {
     assertNotNull(caze);
     assertEquals("10000000017", caze.getCaseRef());
     assertEquals("AB1 2ZX", caze.getAddress().getPostcode());
-    assertEquals(7, caze.getCohort());
+    assertEquals("CC3", caze.getCohort());
   }
 
   /**

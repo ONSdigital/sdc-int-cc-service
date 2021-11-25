@@ -46,7 +46,7 @@ public class Case {
 
   private String questionnaire;
   private String sampleUnitRef;
-  private Integer cohort;
+  private String cohort;
 
   @Embedded private CaseAddress address;
   @Embedded private CaseContact contact;
