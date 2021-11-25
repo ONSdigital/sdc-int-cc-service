@@ -30,6 +30,39 @@ There are two ways of running this service:
     ```
 This will create the JAR file in the Target directory. You can then right-click on the JAR file (in Intellij) and choose 'Run'.
 
+## Running the junit driven tests
+There are unit tests and integration tests that can be run from maven (or an IDE of your choice). Some of the integration tests
+make use of [TestContainers](https://www.testcontainers.org/) which can be used for testing against a postgreSQL database, for example.
+Since TestContainers relies on a docker environment, then docker should be available to the environment that the integration tests are
+run.
+Following normal maven conventions, the unit test classes are suffixed with **Test** and the integration test classes are suffixed with **IT**.
+
+### Running both unit and integration tests using maven
+Any of the following methods will run both sets of tests:
+```sh
+  mvn clean install
+  mvn clean install -Dskip.integration.tests=false
+  mvn clean verify
+```
+
+### Running just the unit tests using maven
+Any of the following methods will run the unit tests without running the integration tests:
+```sh
+  mvn clean install -Dskip.integration.tests=true
+  mvn clean install -DskipITs
+  mvn clean test
+```
+
+### Running just the integration tests using maven
+Any of the following methods will run the integration tests without running the unit tests:
+```sh
+  mvn clean verify -Dtest=SomePatternThatDoesntMatchAnything -DfailIfNoTests=false
+  mvn failsafe:integration-test
+```
+
+### Excluding the database integration tests when running from an IDE
+Configure your test run in your IDE, such that Junit5 excludes the following tag: "db".
+
 ## Deployment to kubernetes
 
 In order to connect to PostgreSQL provided by a GCP Cloud SQL instance, then we can deploy the service in a pod with a **Cloud SQL Auth Proxy** sidecar.
