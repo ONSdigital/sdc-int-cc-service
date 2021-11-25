@@ -1,4 +1,8 @@
 spring:
+  cloud:
+    gcp:
+      pubsub:
+        enabled: false
   flyway:
     enabled: false
   jpa:
@@ -19,6 +23,9 @@ ccdb-admin:
     password:     
 
 management:
+  health:
+    pubsub:
+      enabled: false
   metrics:
     export:
       stackdriver:

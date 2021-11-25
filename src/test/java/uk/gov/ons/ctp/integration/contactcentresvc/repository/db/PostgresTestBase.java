@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
 
 import static org.junit.jupiter.api.parallel.ResourceAccessMode.READ_WRITE;
 
+import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.parallel.ResourceLock;
@@ -19,7 +20,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test-containers-flyway")
 @Testcontainers
-@MockBean({EventToSendPoller.class, EventPublisher.class})
+@MockBean({EventToSendPoller.class, EventPublisher.class, PubSubTemplate.class})
 @MockBean(name = "caseEventInbound", value = PubSubInboundChannelAdapter.class)
 @MockBean(name = "surveyEventInbound", value = PubSubInboundChannelAdapter.class)
 @MockBean(name = "collectionExerciseEventInbound", value = PubSubInboundChannelAdapter.class)
