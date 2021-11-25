@@ -35,7 +35,7 @@ There are unit tests and integration tests that can be run from maven (or an IDE
 make use of [TestContainers](https://www.testcontainers.org/) which can be used for testing against a postgreSQL database, for example.
 Since TestContainers relies on a docker environment, then docker should be available to the environment that the integration tests are
 run.
-Following normal maven conventions, the unit tests classes are suffixed with **Test** and the integration test classes are suffixed with **IT**.
+Following normal maven conventions, the unit test classes are suffixed with **Test** and the integration test classes are suffixed with **IT**.
 
 ### Running both unit and integration tests using maven
 Any of the following methods will run both sets of tests:
