@@ -48,8 +48,8 @@ public class CaseEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldReceiveCase() {
-    survey = txOps.createSurvey();
-    txOps.createCollex(survey);
+    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+    txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
 
     assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
 
@@ -99,10 +99,10 @@ public class CaseEventReceiverIT extends PostgresTestBase {
               });
     }
 
-    public Survey createSurvey() {
+    public Survey createSurvey(UUID id) {
       Survey survey =
           Survey.builder()
-              .id(UUID.fromString(SURVEY_ID))
+              .id(id)
               .name("LMS")
               .sampleDefinitionUrl("https://some.domain/social.json")
               .sampleDefinition("{}")
@@ -111,10 +111,10 @@ public class CaseEventReceiverIT extends PostgresTestBase {
       return survey;
     }
 
-    public void createCollex(Survey survey) {
+    public void createCollex(Survey survey, UUID id) {
       CollectionExercise cx =
           CollectionExercise.builder()
-              .id(UUID.fromString(COLLECTION_EX_ID))
+              .id(id)
               .survey(survey)
               .name("gregory")
               .reference("MVP012021")
