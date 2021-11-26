@@ -60,9 +60,9 @@ public class EventToSendProcessorTest {
   }
 
   private EventToSend createEvent(String id) {
-    String payload = FixtureHelper.loadPackageObjectNode("SurveyLaunchResponse").toString();
+    String payload = FixtureHelper.loadPackageObjectNode("EqLaunchResponse").toString();
     return new EventToSend(
-        UUID.fromString(id), TopicType.SURVEY_LAUNCH.name(), payload, LocalDateTime.now());
+        UUID.fromString(id), TopicType.EQ_LAUNCH.name(), payload, LocalDateTime.now());
   }
 
   @Test
@@ -100,7 +100,7 @@ public class EventToSendProcessorTest {
             channelCaptor.capture(),
             payloadCaptor.capture());
 
-    assertEquals(TopicType.SURVEY_LAUNCH, typeCaptor.getValue());
+    assertEquals(TopicType.EQ_LAUNCH, typeCaptor.getValue());
     assertEquals(Source.CONTACT_CENTRE_API, sourceCaptor.getValue());
     assertEquals(Channel.CC, channelCaptor.getValue());
     validatePayload(0);
@@ -129,7 +129,7 @@ public class EventToSendProcessorTest {
             payloadCaptor.capture());
 
     for (int i = 0; i < 3; i++) {
-      assertEquals(TopicType.SURVEY_LAUNCH, typeCaptor.getAllValues().get(i));
+      assertEquals(TopicType.EQ_LAUNCH, typeCaptor.getAllValues().get(i));
       assertEquals(Source.CONTACT_CENTRE_API, sourceCaptor.getAllValues().get(i));
       assertEquals(Channel.CC, channelCaptor.getAllValues().get(i));
       validatePayload(i);
