@@ -107,7 +107,7 @@ public class EventToSendRepositoryIT extends PostgresTestBase {
           EventToSend.builder()
               .id(UUID.randomUUID())
               .payload("payload")
-              .type(TopicType.SURVEY_LAUNCH.name())
+              .type(TopicType.EQ_LAUNCH.name())
               .createdDateTime(created)
               .build();
 
