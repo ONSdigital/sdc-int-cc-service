@@ -13,7 +13,8 @@
   <description>SDC : Integrations ContactCentre Service</description>
 
   <properties>
-    <skip.integration.tests>true</skip.integration.tests>
+    <skip.integration.tests>false</skip.integration.tests>
+    <testcontainers.version>1.16.2</testcontainers.version>
   </properties>
 
   <parent>
@@ -169,7 +170,7 @@
       <artifactId>bcpg-jdk15on</artifactId>
       <version>1.66</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
@@ -205,6 +206,27 @@
       <groupId>com.vladmihalcea</groupId>
       <artifactId>hibernate-types-55</artifactId>
       <version>2.13.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <!-- Testing -->
@@ -247,47 +269,6 @@
     </extensions>
 
     <plugins>
-      <plugin>
-        <groupId>com.dkanejs.maven.plugins</groupId>
-        <artifactId>docker-compose-maven-plugin</artifactId>
-        <version>1.0.3</version>
-        <executions>
-          <execution>
-            <id>pre-stop</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>down</goal>
-            </goals>
-            <configuration>
-              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-              <skip>${skip.integration.tests}</skip>
-            </configuration>
-          </execution>
-          <execution>
-            <id>up</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>up</goal>
-            </goals>
-            <configuration>
-              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-              <detachedMode>true</detachedMode>
-              <skip>${skip.integration.tests}</skip>
-            </configuration>
-          </execution>
-          <execution>
-            <id>down</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>down</goal>
-            </goals>
-            <configuration>
-              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-              <skip>${skip.integration.tests}</skip>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -324,7 +305,6 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.2</version>
         <configuration>
           <!-- exclude generated classes that cause javaco failures -->
           <excludes>
@@ -345,7 +325,7 @@
               <goal>prepare-agent</goal>
             </goals>
             <configuration>
-              <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
+              <destFile>${project.build.directory}/coverage-reports/jacoco.exec</destFile>
               <propertyName>surefireArgLine</propertyName>
             </configuration>
           </execution>
@@ -356,8 +336,8 @@
               <goal>report</goal>
             </goals>
             <configuration>
-              <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
-              <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+              <dataFile>${project.build.directory}/coverage-reports/jacoco.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
             </configuration>
           </execution>
 
@@ -368,7 +348,7 @@
               <goal>prepare-agent</goal>
             </goals>
             <configuration>
-              <destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
+              <destFile>${project.build.directory}/coverage-reports/jacoco.exec</destFile>
               <propertyName>failsafeArgLine</propertyName>
             </configuration>
           </execution>
@@ -380,8 +360,8 @@
               <goal>report</goal>
             </goals>
             <configuration>
-              <dataFile>${project.build.directory}/coverage-reports/jacoco-it.exec</dataFile>
-              <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
+              <dataFile>${project.build.directory}/coverage-reports/jacoco.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
             </configuration>
           </execution>
         </executions>
@@ -426,10 +406,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.0.0-M3</version>
         <configuration>
           <argLine>${failsafeArgLine}</argLine>
           <skip>${skip.integration.tests}</skip>
+          <classesDirectory>${project.build.outputDirectory}</classesDirectory>
         </configuration>
         <executions>
           <execution>

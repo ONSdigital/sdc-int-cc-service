@@ -9,7 +9,10 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
@@ -24,6 +27,9 @@ import org.hibernate.annotations.TypeDefs;
  */
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 @Entity
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})

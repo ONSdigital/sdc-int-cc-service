@@ -1,7 +1,8 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -10,18 +11,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
-
-import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Representation of Product from database table.

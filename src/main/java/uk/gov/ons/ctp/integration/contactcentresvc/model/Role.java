@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.UUID;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
@@ -41,14 +42,14 @@ public class Role {
   @ToString.Include private String name;
 
   @JsonIgnore
-  @ManyToMany(mappedBy = "userRoles", targetEntity = User.class)
-  private List<Role> userRoles;
+  @ManyToMany(mappedBy = "userRoles")
+  private List<User> users;
 
   @JsonIgnore
-  @ManyToMany(mappedBy = "adminRoles", targetEntity = User.class)
-  private List<Role> adminRoles;
+  @ManyToMany(mappedBy = "adminRoles")
+  private List<User> admins;
 
   @JsonIgnore
-  @OneToMany(mappedBy = "role")
+  @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
   private List<Permission> permissions;
 }

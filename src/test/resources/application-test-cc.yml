@@ -1,4 +1,8 @@
 spring:
+  cloud:
+    gcp:
+      pubsub:
+        enabled: false
   flyway:
     enabled: false
   jpa:
@@ -17,3 +21,13 @@ ccdb-admin:
     url: jdbc:h2:mem:testdb
     username: sa
     password:     
+
+management:
+  health:
+    pubsub:
+      enabled: false
+  metrics:
+    export:
+      stackdriver:
+        project-id: sdc-cc-test
+        enabled: false

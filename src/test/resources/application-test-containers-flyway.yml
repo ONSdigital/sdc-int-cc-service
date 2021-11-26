@@ -1,0 +1,25 @@
+# datasources
+ccdb:
+  datasource:
+    url: jdbc:tc:postgresql:13-alpine:///test?TC_INITSCRIPT=init.sql
+    
+ccdb-admin:
+  datasource:
+    url: ${ccdb.datasource.url}
+
+management:
+  health:
+    pubsub:
+      enabled: false
+  metrics:
+    export:
+      stackdriver:
+        project-id: sdc-cc-test
+        enabled: false
+
+spring:
+  cloud:
+    gcp:
+      pubsub:
+        enabled: false
+
