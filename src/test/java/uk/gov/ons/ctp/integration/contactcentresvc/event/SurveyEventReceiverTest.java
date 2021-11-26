@@ -44,6 +44,9 @@ public class SurveyEventReceiverTest {
 
   @Test
   public void shouldReceiveSurveyUpdateEvent() {
+
+    System.out.println(event.getPayload().getSurveyUpdate().getSampleDefinition());
+
     target.acceptEvent(event);
 
     verify(repo).saveAndFlush(surveyCaptor.capture());

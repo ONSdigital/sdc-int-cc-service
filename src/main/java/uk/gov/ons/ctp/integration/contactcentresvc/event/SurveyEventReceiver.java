@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.ProductType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
@@ -43,7 +44,15 @@ public class SurveyEventReceiver {
 
     try {
       Survey survey = mapper.map(payload, Survey.class);
+
+      setSurveyIdForProducts(survey.getAllowedPrintFulfilments(), survey);
       setSurveyIdForProducts(survey.getAllowedSmsFulfilments(), survey);
+      setSurveyIdForProducts(survey.getAllowedEmailFulfilments(), survey);
+
+      setProductType(survey.getAllowedPrintFulfilments(), ProductType.POSTAL);
+      setProductType(survey.getAllowedSmsFulfilments(), ProductType.SMS);
+      setProductType(survey.getAllowedEmailFulfilments(), ProductType.EMAIL);
+
       repo.saveAndFlush(survey);
     } catch (Exception e) {
       log.error(
@@ -52,9 +61,19 @@ public class SurveyEventReceiver {
     }
   }
 
+  private void setProductType(List<Product> products, ProductType productType) {
+    if (products != null) {
+      for (Product product : products) {
+        product.setType(productType);
+      }
+    }
+  }
+
   private void setSurveyIdForProducts(List<Product> products, Survey survey) {
-    for (Product product : products) {
-      product.setSurvey(survey);
+    if (products != null) {
+      for (Product product : products) {
+        product.setSurvey(survey);
+      }
     }
   }
 }

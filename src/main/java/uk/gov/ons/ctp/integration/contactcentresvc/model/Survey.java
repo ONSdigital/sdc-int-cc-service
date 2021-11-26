@@ -41,5 +41,13 @@ public class Survey {
 
   @JsonIgnore
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Product> allowedPrintFulfilments;
+
+  @JsonIgnore
+  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Product> allowedSmsFulfilments;
+
+  @JsonIgnore
+  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Product> allowedEmailFulfilments;
 }
