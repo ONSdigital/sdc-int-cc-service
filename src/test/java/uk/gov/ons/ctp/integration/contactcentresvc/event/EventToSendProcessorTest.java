@@ -60,7 +60,7 @@ public class EventToSendProcessorTest {
   }
 
   private EventToSend createEvent(String id) {
-    String payload = FixtureHelper.loadPackageObjectNode("EqLaunchResponse").toString();
+    String payload = FixtureHelper.loadPackageObjectNode("EqLaunch").toString();
     return new EventToSend(
         UUID.fromString(id), TopicType.EQ_LAUNCH.name(), payload, LocalDateTime.now());
   }
