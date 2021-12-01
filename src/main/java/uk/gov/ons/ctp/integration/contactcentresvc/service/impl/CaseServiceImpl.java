@@ -35,7 +35,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.Contact;
-import uk.gov.ons.ctp.common.event.model.EqLaunchResponse;
+import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
@@ -289,25 +289,19 @@ public class CaseServiceImpl implements CaseService {
     String formType = newQuestionnaireIdDto.getFormType();
 
     String eqUrl = createLaunchUrl(formType, caseDetails, requestParamsDTO, questionnaireId);
-    publishEqLaunchedEvent(caseDetails.getId(), questionnaireId, requestParamsDTO.getAgentId());
+    publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;
   }
 
-  private void publishEqLaunchedEvent(UUID caseId, String questionnaireId, Integer agentId) {
+  private void publishEqLaunchedEvent(UUID caseId, String questionnaireId) {
     log.info(
         "Generating EqLaunched event",
         kv("questionnaireId", questionnaireId),
-        kv("caseId", caseId),
-        kv("agentId", agentId));
+        kv("caseId", caseId));
 
-    EqLaunchResponse response =
-        EqLaunchResponse.builder()
-            .questionnaireId(questionnaireId)
-            .caseId(caseId)
-            .agentId(Integer.toString(agentId))
-            .build();
+    EqLaunch eqLaunch = EqLaunch.builder().qid(questionnaireId).build();
 
-    sendEvent(TopicType.EQ_LAUNCH, response, response.getCaseId());
+    sendEvent(TopicType.EQ_LAUNCH, eqLaunch, caseId);
   }
 
   private Product.Region convertRegion(Case caze) {
