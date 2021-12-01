@@ -221,6 +221,10 @@
       </exclusions>
     </dependency>
 
+    <!-- Junit4 mocks allow us to remove the unwanted junit4 transitive dependency
+         introduced by testcontainers in a safe way. It is a minimal library of
+         about 4 or 5 dummy interfaces. This will no longer be needed when
+         testcontainers moves to version 2 -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit4-mock</artifactId>
