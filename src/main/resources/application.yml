@@ -213,3 +213,8 @@ ccdb-admin:
 scheduler:
   fixed-delay-millis: 1000
   chunk-size: 1000
+
+surveys:
+  - social
+  - asteroid
+  - boat
