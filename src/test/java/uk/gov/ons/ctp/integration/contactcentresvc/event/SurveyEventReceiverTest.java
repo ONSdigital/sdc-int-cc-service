@@ -9,9 +9,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
-
 import javax.persistence.PersistenceException;
-
+import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,8 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
@@ -51,7 +48,7 @@ public class SurveyEventReceiverTest {
   }
 
   @Test
-  public void shouldReceiveSurveyUpdateEvent() {
+  public void shouldReceiveSurveyUpdateEvent() throws Exception {
 
     System.out.println(event.getPayload().getSurveyUpdate().getSampleDefinition());
 
@@ -62,9 +59,21 @@ public class SurveyEventReceiverTest {
     SurveyUpdate payload = event.getPayload().getSurveyUpdate();
     Survey survey = surveyCaptor.getValue();
     verifyMappedSurvey(survey, payload);
-    verifyFulfilments(payload.getAllowedPrintFulfilments(), survey.getAllowedPrintFulfilments(), survey.getId(), ProductType.POSTAL);
-    verifyFulfilments(payload.getAllowedSmsFulfilments(), survey.getAllowedSmsFulfilments(), survey.getId(), ProductType.SMS);
-    verifyFulfilments(payload.getAllowedEmailFulfilments(), survey.getAllowedEmailFulfilments(), survey.getId(), ProductType.EMAIL);
+    verifyFulfilments(
+        payload.getAllowedPrintFulfilments(),
+        survey.getAllowedPrintFulfilments(),
+        survey.getId(),
+        ProductType.POSTAL);
+    verifyFulfilments(
+        payload.getAllowedSmsFulfilments(),
+        survey.getAllowedSmsFulfilments(),
+        survey.getId(),
+        ProductType.SMS);
+    verifyFulfilments(
+        payload.getAllowedEmailFulfilments(),
+        survey.getAllowedEmailFulfilments(),
+        survey.getId(),
+        ProductType.EMAIL);
   }
 
   @Test
@@ -72,7 +81,7 @@ public class SurveyEventReceiverTest {
     when(repo.saveAndFlush(any())).thenThrow(PersistenceException.class);
     assertThrows(PersistenceException.class, () -> target.acceptEvent(event));
   }
-  
+
   private void verifyMappedSurvey(Survey survey, SurveyUpdate surveyUpdate) {
     assertEquals(UUID.fromString(surveyUpdate.getSurveyId()), survey.getId());
     assertEquals(surveyUpdate.getName(), survey.getName());
@@ -80,23 +89,26 @@ public class SurveyEventReceiverTest {
     assertEquals(surveyUpdate.getSampleDefinition(), survey.getSampleDefinition());
   }
 
-  private void verifyFulfilments(List<SurveyFulfilment> expectedFulfilments,
-      List<Product> actualProducts, UUID expectedSurveyId, ProductType expectedProductType) {
-    
+  private void verifyFulfilments(
+      List<SurveyFulfilment> expectedFulfilments,
+      List<Product> actualProducts,
+      UUID expectedSurveyId,
+      ProductType expectedProductType) {
+
     if (actualProducts == null) {
       assertNull(expectedFulfilments);
     }
-    
+
     assertEquals(actualProducts.size(), expectedFulfilments.size());
-    
-    for (int i=0; i<expectedFulfilments.size(); i++) {
+
+    for (int i = 0; i < expectedFulfilments.size(); i++) {
       SurveyFulfilment expected = expectedFulfilments.get(i);
-      Product actual  = actualProducts.get(i);
-      
+      Product actual = actualProducts.get(i);
+
       assertEquals(expected.getPackCode(), actual.getPackCode());
       assertEquals(expected.getDescription(), actual.getDescription());
       assertEquals(expected.getMetadata(), actual.getMetadata());
-      
+
       assertEquals(expectedSurveyId, actual.getSurvey().getId());
       assertEquals(expectedProductType, actual.getType());
     }

@@ -1,23 +1,30 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.util.List;
 import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
 /**
  * Representation of Survey from database table.
@@ -27,8 +34,6 @@ import org.hibernate.annotations.TypeDefs;
  */
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 @Entity
@@ -43,8 +48,10 @@ public class Survey {
   private String sampleDefinitionUrl;
 
   @Type(type = "jsonb")
-  private Object sampleDefinition;
-
+  private JsonNode sampleDefinition;
+  
+  
+  
   @JsonIgnore
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Product> allowedPrintFulfilments;
@@ -56,4 +63,16 @@ public class Survey {
   @JsonIgnore
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Product> allowedEmailFulfilments;
+
+//  @JsonSetter("sampleDefinition")
+//  void setMetadataFromJson(String jsonString) throws JsonMappingException, JsonProcessingException {
+//    ObjectMapper mapper = new ObjectMapper();
+//    this.sampleDefinition = mapper.readTree(jsonString);
+//  }
+
+  public void setSampleDefinition(String jsonString) throws JsonMappingException, JsonProcessingException {
+    ObjectMapper mapper = new ObjectMapper();
+    this.sampleDefinition = mapper.readTree(jsonString);
+  }
+
 }
