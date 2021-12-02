@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -69,6 +70,15 @@ public class CaseEventReceiverTest {
     CaseUpdate ccase = caseEvent.getPayload().getCaseUpdate();
     Case caze = caseCaptor.getValue();
     verifyMappedCase(caze, ccase);
+  }
+
+  @Test
+  public void shouldRejectFilteredEvent() {
+    when(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
+        .thenReturn(false);
+    target.acceptEvent(caseEvent);
+
+    verify(caseRepo, times(0)).save(caseCaptor.capture());
   }
 
   @Test
