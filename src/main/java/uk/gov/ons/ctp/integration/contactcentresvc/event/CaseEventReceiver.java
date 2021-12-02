@@ -26,19 +26,19 @@ public class CaseEventReceiver {
   private SurveyRepository surveyRepo;
   private CollectionExerciseRepository collExRepo;
   private MapperFacade mapper;
-  private AcceptableEventFilter acceptableEventFilter;
+  private EventFilter eventFilter;
 
   public CaseEventReceiver(
       CaseRepository caseRepo,
       SurveyRepository surveyRepo,
       CollectionExerciseRepository collExRepo,
       MapperFacade mapper,
-      AcceptableEventFilter acceptableEventFilter) {
+      EventFilter eventFilter) {
     this.caseRepo = caseRepo;
     this.surveyRepo = surveyRepo;
     this.collExRepo = collExRepo;
     this.mapper = mapper;
-    this.acceptableEventFilter = acceptableEventFilter;
+    this.eventFilter = eventFilter;
   }
 
   /**
@@ -58,7 +58,7 @@ public class CaseEventReceiver {
         kv("messageId", caseMessageId),
         kv("caseId", caseUpdate.getCaseId()));
 
-    if (acceptableEventFilter.filterEvent(
+    if (eventFilter.isValidEvent(
         caseUpdate.getSurveyId(),
         caseUpdate.getCollectionExerciseId(),
         caseUpdate.getCaseId(),

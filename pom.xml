@@ -270,12 +270,6 @@
       <artifactId>h2</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>ons.sdc.int.common</groupId>
-      <artifactId>event-publisher</artifactId>
-      <version>1.0.65-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
 
   </dependencies>
 

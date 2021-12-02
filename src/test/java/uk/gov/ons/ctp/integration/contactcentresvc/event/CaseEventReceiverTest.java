@@ -43,7 +43,7 @@ public class CaseEventReceiverTest {
   private static final String MESSAGE_ID = "3883af91-0052-4497-9805-3238544fcf8a";
 
   @Mock private CaseRepository caseRepo;
-  @Mock private AcceptableEventFilter acceptableEventFilter;
+  @Mock private EventFilter eventFilter;
 
   @Spy private MapperFacade mapper = new CCSvcBeanMapper();
 
@@ -60,7 +60,7 @@ public class CaseEventReceiverTest {
 
   @Test
   public void shouldReceiveEvent() {
-    when(acceptableEventFilter.filterEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
+    when(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
         .thenReturn(true);
     target.acceptEvent(caseEvent);
 
@@ -74,7 +74,7 @@ public class CaseEventReceiverTest {
   @Test
   public void shouldRejectFailingSave() {
     when(caseRepo.save(any())).thenThrow(PersistenceException.class);
-    when(acceptableEventFilter.filterEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
+    when(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
         .thenReturn(true);
     assertThrows(PersistenceException.class, () -> target.acceptEvent(caseEvent));
   }

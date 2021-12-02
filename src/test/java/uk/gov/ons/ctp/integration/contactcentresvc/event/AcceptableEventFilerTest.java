@@ -32,21 +32,20 @@ public class AcceptableEventFilerTest {
   @Mock private CollectionExerciseRepository collExRepo;
   @Mock AppConfig appConfig;
 
-  @InjectMocks private AcceptableEventFilter acceptableEventFilter;
+  @InjectMocks private EventFilter eventFilter;
 
   @Test
   public void shouldAcceptEventWithAllPrerequisiteEvents() {
     when(appConfig.getSurveys()).thenReturn(ACCEPTED_SURVEYS);
     mockSocialSurvey();
     mockCollectionExercise();
-    assertTrue(acceptableEventFilter.filterEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
+    assertTrue(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
   }
 
   @Test
   public void shouldDiscardEventWithUnknownSurvey() {
     when(surveyRepo.getById(any())).thenReturn(null);
-    assertFalse(
-        acceptableEventFilter.filterEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
+    assertFalse(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
     verify(collExRepo, never()).getById(any());
   }
 
@@ -54,8 +53,7 @@ public class AcceptableEventFilerTest {
   public void shouldDiscardEventWithNonSocialSurvey() {
     when(appConfig.getSurveys()).thenReturn(ACCEPTED_SURVEYS);
     mockSurvey("test/somethingelse.json");
-    assertFalse(
-        acceptableEventFilter.filterEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
+    assertFalse(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
     verify(collExRepo, never()).getById(any());
   }
 
@@ -64,8 +62,7 @@ public class AcceptableEventFilerTest {
     when(appConfig.getSurveys()).thenReturn(ACCEPTED_SURVEYS);
     mockSocialSurvey();
     when(collExRepo.getById(any())).thenReturn(null);
-    assertFalse(
-        acceptableEventFilter.filterEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
+    assertFalse(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
   }
 
   private void mockSocialSurvey() {
