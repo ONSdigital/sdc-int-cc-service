@@ -4,6 +4,7 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.Set;
 import java.util.UUID;
+import javax.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
@@ -16,9 +17,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepositor
 @Component
 public class EventFilter {
 
-  private AppConfig appConfig;
-  private SurveyRepository surveyRepository;
-  private CollectionExerciseRepository collectionExerciseRepository;
+  private final AppConfig appConfig;
+  private final SurveyRepository surveyRepository;
+  private final CollectionExerciseRepository collectionExerciseRepository;
 
   public EventFilter(
       AppConfig appConfig,
@@ -46,7 +47,7 @@ public class EventFilter {
   }
 
   private Survey findSurvey(String surveyId) {
-    return surveyRepository.getById(UUID.fromString(surveyId));
+    return surveyRepository.findById(UUID.fromString(surveyId)).orElse(null);
   }
 
   private boolean isAcceptedSurveyType(Survey survey) {
@@ -62,7 +63,8 @@ public class EventFilter {
   }
 
   private boolean isKnownCollectionExercise(String collexId) {
-    CollectionExercise collEx = collectionExerciseRepository.getById(UUID.fromString(collexId));
+    CollectionExercise collEx =
+        collectionExerciseRepository.findById(UUID.fromString(collexId)).orElse(null);
     return collEx != null;
   }
 
