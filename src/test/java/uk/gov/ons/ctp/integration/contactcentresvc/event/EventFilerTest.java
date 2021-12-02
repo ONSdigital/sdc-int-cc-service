@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerc
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class AcceptableEventFilerTest {
+public class EventFilerTest {
   private static final Set<String> ACCEPTED_SURVEYS = Set.of("social", "asteroid");
   private static final String CASE_ID = "ad24e36c-2a61-11ec-aa00-4c3275913db5";
   private static final String SURVEY_ID = "b66e57b4-2a61-11ec-b90f-4c3275913db5";
@@ -44,7 +45,7 @@ public class AcceptableEventFilerTest {
 
   @Test
   public void shouldDiscardEventWithUnknownSurvey() {
-    when(surveyRepo.getById(any())).thenReturn(null);
+    when(surveyRepo.findById(any())).thenReturn(Optional.empty());
     assertFalse(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
     verify(collExRepo, never()).getById(any());
   }
@@ -61,7 +62,7 @@ public class AcceptableEventFilerTest {
   public void shouldDiscardEventWithUnknownCollectionExercise() {
     when(appConfig.getSurveys()).thenReturn(ACCEPTED_SURVEYS);
     mockSocialSurvey();
-    when(collExRepo.getById(any())).thenReturn(null);
+    when(collExRepo.findById(any())).thenReturn(Optional.empty());
     assertFalse(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
   }
 
@@ -73,12 +74,12 @@ public class AcceptableEventFilerTest {
     Survey survey = new Survey();
     survey.setId(UUID.fromString(SURVEY_ID));
     survey.setSampleDefinitionUrl(url);
-    when(surveyRepo.getById(any())).thenReturn(survey);
+    when(surveyRepo.findById(any())).thenReturn(Optional.of(survey));
   }
 
   private void mockCollectionExercise() {
     CollectionExercise collEx = new CollectionExercise();
     collEx.setId(UUID.fromString(COLLECTION_EX_ID));
-    when(collExRepo.getById(any())).thenReturn(collEx);
+    when(collExRepo.findById(any())).thenReturn(Optional.of(collEx));
   }
 }

@@ -4,7 +4,6 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.Set;
 import java.util.UUID;
-import javax.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
