@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
+import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
@@ -57,20 +58,46 @@ public class SurveyEventReceiver {
 //      ArrayList<String> foo = (ArrayList<String>) m.get("suitableRegions");
       
       survey.setSampleDefinition(payload.getSampleDefinition());
-      
-      setSurveyIdForProducts(survey.getAllowedPrintFulfilments(), survey);
-      setSurveyIdForProducts(survey.getAllowedSmsFulfilments(), survey);
-      setSurveyIdForProducts(survey.getAllowedEmailFulfilments(), survey);
 
-      setProductType(survey.getAllowedPrintFulfilments(), ProductType.POSTAL);
-      setProductType(survey.getAllowedSmsFulfilments(), ProductType.SMS);
-      setProductType(survey.getAllowedEmailFulfilments(), ProductType.EMAIL);
+      
+      
+      List<Product> allowedFulfilments = new ArrayList<Product>();
+      addProductsToList(allowedFulfilments, ProductType.POSTAL, payload.getAllowedPrintFulfilments(), survey);
+      addProductsToList(allowedFulfilments, ProductType.SMS, payload.getAllowedSmsFulfilments(), survey);
+      addProductsToList(allowedFulfilments, ProductType.EMAIL, payload.getAllowedEmailFulfilments(), survey);
+      
+      
+//      setSurveyIdForProducts(survey.getAllowedPrintFulfilments(), survey);
+//      setSurveyIdForProducts(survey.getAllowedSmsFulfilments(), survey);
+//      setSurveyIdForProducts(survey.getAllowedEmailFulfilments(), survey);
+//
+//      setProductType(survey.getAllowedPrintFulfilments(), ProductType.POSTAL);
+//      setProductType(survey.getAllowedSmsFulfilments(), ProductType.SMS);
+//      setProductType(survey.getAllowedEmailFulfilments(), ProductType.EMAIL);
+
+      survey.setAllowedFulfilments(allowedFulfilments);
       
       repo.saveAndFlush(survey);
     } catch (Exception e) {
       log.error(
           "Survey Event processing failed", kv("messageId", event.getHeader().getMessageId()), e);
       throw e;
+    }
+  }
+
+  private void addProductsToList(List<Product> allowedFulfilments, ProductType productType, List<SurveyFulfilment> fulfilments,
+      Survey survey) throws IOException {
+
+    if (fulfilments != null) {
+      for (SurveyFulfilment fulfilment : fulfilments) {
+        Product product = mapper.map(fulfilment, Product.class);
+        
+        product.setSurvey(survey);
+        product.setType(productType);
+        product.serializeMetadata();
+        
+        allowedFulfilments.add(product);
+      }
     }
   }
 

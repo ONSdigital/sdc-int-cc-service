@@ -50,19 +50,9 @@ public class Survey {
   @Type(type = "jsonb")
   private JsonNode sampleDefinition;
   
-  
-  
   @JsonIgnore
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Product> allowedPrintFulfilments;
-
-  @JsonIgnore
-  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Product> allowedSmsFulfilments;
-
-  @JsonIgnore
-  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Product> allowedEmailFulfilments;
+  private List<Product> allowedFulfilments;
 
 //  @JsonSetter("sampleDefinition")
 //  void setMetadataFromJson(String jsonString) throws JsonMappingException, JsonProcessingException {

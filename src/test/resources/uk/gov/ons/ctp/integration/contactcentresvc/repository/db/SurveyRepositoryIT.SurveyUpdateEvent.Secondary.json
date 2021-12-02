@@ -1,0 +1,59 @@
+{
+  "header": {
+    "version": "0.4.0",
+    "topic" : "event_survey-update",
+    "source" : "RESPONDENT_HOME",
+    "channel" : "RH",
+    "dateTime" : "2020-06-08T07:28:45.117Z",
+    "messageId" : "4a7d8a12-50c0-42be-b1ad-f9ed33727ed6",
+    "correlationId": "1ab700c7-cfdb-4282-80cc-6891b992255b",
+    "originatingUser": "TBD"
+  },
+  "payload": {
+    "surveyUpdate": {
+      "surveyId": "46a0a5e9-97a0-403f-9176-bd6dd0221b3d",
+      "name": "Secondary",
+      "sampleDefinitionUrl": "https://raw.githubusercontent.com/ONSdigital/ssdc-shared-events/main/sample/social/0.1.0-DRAFT/social.json",
+      "sampleDefinition": [
+        {
+          "columnName": "addressLine1",
+          "rules": [
+            {
+              "className": "uk.gov.ons.ssdc.common.validation.MandatoryRule"
+            },
+            {
+              "className": "uk.gov.ons.ssdc.common.validation.LengthRule",
+              "maxLength": 60
+            }
+          ]
+        }
+      ],
+      "allowedPrintFulfilments": [
+        {
+          "packCode": "replace-uac-en",
+          "description": "Replacement UAC - English",
+          "metadata": {
+            "suitableRegions": [
+              "E",
+              "N"
+            ]
+          }
+        },
+        {
+          "packCode": "replace-uac-cy",
+          "description": "Replacement UAC - English & Welsh",
+          "metadata": {
+            "suitableRegions": [
+              "W"
+            ]
+          }
+        }
+      ],
+      "allowedSmsFulfilments": [],
+      "allowedEmailFulfilments": [],
+      "metadata": {
+        "ex_e4": true
+      }
+    }
+  }
+}
