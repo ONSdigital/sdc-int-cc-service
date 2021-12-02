@@ -8,7 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.PersistenceException;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +52,7 @@ public class SurveyEventReceiverTest {
   @Test
   public void shouldReceiveSurveyUpdateEvent() throws Exception {
 
-    System.out.println(event.getPayload().getSurveyUpdate().getSampleDefinition());
+    System.out.println(event.getPayload().getSurveyUpdate().getSampleDefinition()); // PMB
 
     target.acceptEvent(event);
 
@@ -61,17 +63,17 @@ public class SurveyEventReceiverTest {
     verifyMappedSurvey(survey, payload);
     verifyFulfilments(
         payload.getAllowedPrintFulfilments(),
-        survey.getAllowedPrintFulfilments(),
+        filterProducts(survey, ProductType.POSTAL),
         survey.getId(),
         ProductType.POSTAL);
     verifyFulfilments(
         payload.getAllowedSmsFulfilments(),
-        survey.getAllowedSmsFulfilments(),
+        filterProducts(survey, ProductType.SMS),
         survey.getId(),
         ProductType.SMS);
     verifyFulfilments(
         payload.getAllowedEmailFulfilments(),
-        survey.getAllowedEmailFulfilments(),
+        filterProducts(survey, ProductType.EMAIL),
         survey.getId(),
         ProductType.EMAIL);
   }
@@ -107,10 +109,18 @@ public class SurveyEventReceiverTest {
 
       assertEquals(expected.getPackCode(), actual.getPackCode());
       assertEquals(expected.getDescription(), actual.getDescription());
-      assertEquals(expected.getMetadata(), actual.getMetadata());
+      Map<String, Object> ex = expected.getMetadata();
+      Map<String, ?> act = actual.getMetadata();
+      assertEquals(ex, act);
 
       assertEquals(expectedSurveyId, actual.getSurvey().getId());
       assertEquals(expectedProductType, actual.getType());
     }
+  }
+
+  private List<Product> filterProducts(Survey survey, ProductType targetProductType) {
+    return survey.getAllowedFulfilments().stream()
+        .filter(f -> f.getType() == targetProductType)
+        .collect(Collectors.toList());
   }
 }

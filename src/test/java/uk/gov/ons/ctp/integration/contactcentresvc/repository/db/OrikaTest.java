@@ -3,12 +3,11 @@ package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class OrikaTest {
 
@@ -19,8 +18,10 @@ public class OrikaTest {
   public void setUp() {
     factory = new DefaultMapperFactory.Builder().mapNulls(false).build();
     factory.registerClassMap(factory.classMap(One.class, Two.class).byDefault().toClassMap());
-    factory.registerClassMap(factory.classMap(Class3Impl1.class, Class3Impl1.class).byDefault().toClassMap());
-    factory.registerClassMap(factory.classMap(Class3Impl2.class, Class3Impl2.class).byDefault().toClassMap());
+    factory.registerClassMap(
+        factory.classMap(Class3Impl1.class, Class3Impl1.class).byDefault().toClassMap());
+    factory.registerClassMap(
+        factory.classMap(Class3Impl2.class, Class3Impl2.class).byDefault().toClassMap());
     mapper = factory.getMapperFacade();
   }
 
@@ -32,7 +33,7 @@ public class OrikaTest {
     public Class3 class3;
   }
 
-  public static abstract class Class3 {
+  public abstract static class Class3 {
     public String x = "x";
   }
 

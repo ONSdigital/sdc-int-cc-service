@@ -5,14 +5,12 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
@@ -25,27 +23,32 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 
 public class SurveyRepositoryIT extends PostgresTestBase {
 
+  @Autowired private CaseRepository caseRepo;
+  @Autowired private CollectionExerciseRepository collExRepo;
+  @Autowired private ProductRepository productRepo;
   @Autowired private SurveyRepository repo;
   @Autowired private SurveyTransactionalOps txOps;
-  
+
   @BeforeEach
   public void setup() {
     txOps.deleteAll();
   }
-  
+
   @Test
   public void shouldLoadNewSurvey() throws Exception {
-    
+
     // Load in the survey under test
-    List<SurveyUpdateEvent> testSurveys = FixtureHelper.loadClassFixtures(SurveyUpdateEvent[].class);
+    List<SurveyUpdateEvent> testSurveys =
+        FixtureHelper.loadClassFixtures(SurveyUpdateEvent[].class);
     SurveyUpdateEvent surveyUpdateEvent = testSurveys.get(0);
     txOps.loadSurvey(surveyUpdateEvent);
-    
+
     // Load another survey to make sure its data doesn't interact with the test survey
-    List<SurveyUpdateEvent> secondarySurveys = FixtureHelper.loadClassFixtures(SurveyUpdateEvent[].class, "Secondary");
+    List<SurveyUpdateEvent> secondarySurveys =
+        FixtureHelper.loadClassFixtures(SurveyUpdateEvent[].class, "Secondary");
     SurveyUpdateEvent secondarySurveyUpdateEvent = secondarySurveys.get(0);
     txOps.loadSurvey(secondarySurveyUpdateEvent);
-    
+
     // Confirm survey+products stored correctly in db
     SurveyUpdate testSurvey = surveyUpdateEvent.getPayload().getSurveyUpdate();
     String surveyId = testSurvey.getSurveyId();
@@ -57,43 +60,54 @@ public class SurveyRepositoryIT extends PostgresTestBase {
     assertEquals(testSurvey.getSurveyId(), loadedSurvey.getId().toString());
     assertEquals(testSurvey.getName(), loadedSurvey.getName());
     assertEquals(testSurvey.getSampleDefinitionUrl(), loadedSurvey.getSampleDefinitionUrl());
-    //PMB assertEquals(testSurvey.getSampleDefinition(), loadedSurvey.getSampleDefinition());
-    //PMB check metadata
-    
+    // PMB assertEquals(testSurvey.getSampleDefinition(), loadedSurvey.getSampleDefinition());
+    // PMB check metadata
+
     // Verify that the number of loaded fulfilments is correct
-    int totalNumFulfilments = testSurvey.getAllowedPrintFulfilments().size() 
-        + testSurvey.getAllowedSmsFulfilments().size() 
-        + testSurvey.getAllowedEmailFulfilments().size();
+    int totalNumFulfilments =
+        testSurvey.getAllowedPrintFulfilments().size()
+            + testSurvey.getAllowedSmsFulfilments().size()
+            + testSurvey.getAllowedEmailFulfilments().size();
     List<Product> allowedFulfilments = loadedSurvey.getAllowedFulfilments();
     assertEquals(totalNumFulfilments, allowedFulfilments.size());
-    
+
     // Confirm products loaded
-    verifyProductsLoaded(ProductType.POSTAL, testSurvey.getAllowedPrintFulfilments(), allowedFulfilments);
-    verifyProductsLoaded(ProductType.SMS, testSurvey.getAllowedSmsFulfilments(), allowedFulfilments);
-    verifyProductsLoaded(ProductType.EMAIL, testSurvey.getAllowedEmailFulfilments(), allowedFulfilments);
+    verifyProductsLoaded(
+        ProductType.POSTAL, testSurvey.getAllowedPrintFulfilments(), allowedFulfilments);
+    verifyProductsLoaded(
+        ProductType.SMS, testSurvey.getAllowedSmsFulfilments(), allowedFulfilments);
+    verifyProductsLoaded(
+        ProductType.EMAIL, testSurvey.getAllowedEmailFulfilments(), allowedFulfilments);
   }
 
-  private void verifyProductsLoaded(ProductType productType, List<SurveyFulfilment> expectedFulfilments,
+  private void verifyProductsLoaded(
+      ProductType productType,
+      List<SurveyFulfilment> expectedFulfilments,
       List<Product> actualProducts) {
-    
+
     for (SurveyFulfilment expectedFulfilment : expectedFulfilments) {
       boolean matchedExpectedFulfilment = false;
-      
-      for (int i=0; i<actualProducts.size(); i++) {
-        Product candidateProduct = actualProducts.get(i); 
-        if (candidateProduct.getType() == productType && expectedFulfilment.getPackCode().equals(candidateProduct.getPackCode())) {
-           assertEquals(expectedFulfilment.getDescription(), candidateProduct.getDescription());
-           assertEquals(expectedFulfilment.getMetadata(), candidateProduct.getMetadata());
-           
-           // Remove the current product from the list, to prevent it matching another fulfilment
-           matchedExpectedFulfilment = true;
-           actualProducts.remove(i);
-           break;
+
+      for (int i = 0; i < actualProducts.size(); i++) {
+        Product candidateProduct = actualProducts.get(i);
+        if (candidateProduct.getType() == productType
+            && expectedFulfilment.getPackCode().equals(candidateProduct.getPackCode())) {
+          assertEquals(expectedFulfilment.getDescription(), candidateProduct.getDescription());
+          assertEquals(expectedFulfilment.getMetadata(), candidateProduct.getMetadata());
+
+          // Remove the current product from the list, to prevent it matching another fulfilment
+          matchedExpectedFulfilment = true;
+          actualProducts.remove(i);
+          break;
         }
       }
-      
-      if (!matchedExpectedFulfilment) { 
-        fail("No product for for Fulfilment. Type:" + productType + " PackCode:" + expectedFulfilment.getPackCode());
+
+      if (!matchedExpectedFulfilment) {
+        fail(
+            "No product for for Fulfilment. Type:"
+                + productType
+                + " PackCode:"
+                + expectedFulfilment.getPackCode());
       }
     }
   }
@@ -105,21 +119,32 @@ public class SurveyRepositoryIT extends PostgresTestBase {
   @Component
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public static class SurveyTransactionalOps {
-    private SurveyRepository repo;
+    private CaseRepository caseRepo;
     private CollectionExerciseRepository collExRepo;
+    private ProductRepository productRepo;
+    private SurveyRepository repo;
     private CCSvcBeanMapper ccBeanMapper;
-    
-    public SurveyTransactionalOps(SurveyRepository repo, CollectionExerciseRepository collExRepo, CCSvcBeanMapper ccBeanMapper) {
+
+    public SurveyTransactionalOps(
+        CaseRepository caseRepo,
+        SurveyRepository repo,
+        ProductRepository productRepo,
+        CollectionExerciseRepository collExRepo,
+        CCSvcBeanMapper ccBeanMapper) {
       this.repo = repo;
+      this.caseRepo = caseRepo;
       this.collExRepo = collExRepo;
+      this.productRepo = productRepo;
       this.ccBeanMapper = ccBeanMapper;
     }
 
     public void deleteAll() {
+      caseRepo.deleteAll();
       collExRepo.deleteAll();
+      productRepo.deleteAll();
       repo.deleteAll();
     }
-    
+
     public void loadSurvey(SurveyUpdateEvent surveyUpdateEvent) throws Exception {
       SurveyEventReceiver surveyReceiver = new SurveyEventReceiver(repo, ccBeanMapper);
       surveyReceiver.acceptEvent(surveyUpdateEvent);
