@@ -5,8 +5,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.converter.BidirectionalConverter;
@@ -14,6 +13,7 @@ import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.event.model.Address;
@@ -21,7 +21,6 @@ import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExercise;
-import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
@@ -29,7 +28,6 @@ import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerD
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
@@ -51,11 +49,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter(new StringToUPRNConverter());
     converterFactory.registerConverter(new UtcOffsetDateTimeConverter());
     converterFactory.registerConverter(new UtcLocalDateTimeConverter());
-    //    converterFactory.registerConverter(new ArrayListConverter());
-    converterFactory.registerConverter(new ArrayListConverter2());
-    converterFactory.registerConverter(new MapConverter());
-    converterFactory.registerConverter(new LinkedHashMapConverter());
-    //    converterFactory.registerConverter(new SurveyFulfilmentConverter());
+    converterFactory.registerConverter(new ArrayListConverter());
 
     factory
         .classMap(CaseContainerDTO.class, CaseDTO.class)
@@ -148,17 +142,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     factory.classMap(CaseContainerDTO.class, Address.class).byDefault().register();
     factory.classMap(CaseContainerDTO.class, AddressCompact.class).byDefault().register();
     factory.classMap(CaseDTO.class, Case.class).byDefault().register();
-
-    //    factory
-    //        .classMap(SurveyFulfilment.class, Product.class)
-    //        .customize(
-    //            new PersonCustomMapper extends CustomMapper<SurveyFulfilment, Product> {
-    //              public void mapAtoB(A a, B b, MappingContext context) {
-    //                 // add your custom mapping code here
-    //              }
-    //            }
-    //            )
-    //        .register();
   }
 
   static class RegionConverter extends BidirectionalConverter<String, Region> {
@@ -203,76 +186,29 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     }
   }
 
-  static class MapConverter extends BidirectionalConverter<Map, Map> {
-    @Override
-    public Map convertTo(Map source, Type<Map> destinationType, MappingContext mappingContext) {
-      return null;
-    }
-
-    @Override
-    public Map convertFrom(Map source, Type<Map> destinationType, MappingContext mappingContext) {
-      return null;
-    }
-  }
-
-  static class LinkedHashMapConverter extends BidirectionalConverter<LinkedHashMap, LinkedHashMap> {
-    @Override
-    public LinkedHashMap convertTo(
-        LinkedHashMap source,
-        Type<LinkedHashMap> destinationType,
-        MappingContext LinkedHashMappingContext) {
-      return null;
-    }
-
-    @Override
-    public LinkedHashMap convertFrom(
-        LinkedHashMap source, Type<LinkedHashMap> destinationType, MappingContext mappingContext) {
-      return null;
-    }
-  }
-
-  static class SurveyFulfilmentConverter extends BidirectionalConverter<SurveyFulfilment, Product> {
-    @Override
-    public Product convertTo(
-        SurveyFulfilment source,
-        Type<Product> destinationType,
-        MappingContext LinkedHashMappingContext) {
-      return null;
-    }
-
-    @Override
-    public SurveyFulfilment convertFrom(
-        Product source, Type<SurveyFulfilment> destinationType, MappingContext mappingContext) {
-      return null;
-    }
-  }
-
-  static class ArrayListConverter extends BidirectionalConverter<ArrayList, ArrayList> {
-    @Override
-    public ArrayList convertTo(
-        ArrayList source, Type<ArrayList> destinationType, MappingContext mappingContext) {
-      return null;
-    }
-
-    @Override
-    public ArrayList convertFrom(
-        ArrayList source, Type<ArrayList> destinationType, MappingContext mappingContext) {
-      return null;
-    }
-  }
-
-  static class ArrayListConverter2 extends BidirectionalConverter<ArrayList<Object>, Object> {
+  static class ArrayListConverter extends BidirectionalConverter<ArrayList<Object>, Object> {
     @Override
     public Object convertTo(
         ArrayList<Object> source, Type<Object> destinationType, MappingContext mappingContext) {
-      // PMB Implement properly. Throw exception if not strings
-      return source;
+
+      List<String> destination = new ArrayList<>();
+      for (Object sourceElement : source) {
+        if (sourceElement instanceof String) {
+          destination.add((String) sourceElement);
+        } else {
+          throw new UnsupportedOperationException(
+              "Unsupported type found when mapping an an ArrayList: "
+                  + SourceElementNotifier.class.getCanonicalName());
+        }
+      }
+
+      return destination;
     }
 
     @Override
     public ArrayList<Object> convertFrom(
         Object source, Type<ArrayList<Object>> destinationType, MappingContext mappingContext) {
-      return null;
+      throw new UnsupportedOperationException("Conversion not implemented");
     }
   }
 }

@@ -8,14 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
@@ -33,7 +31,7 @@ public class SurveyRepositoryIT extends PostgresTestBase {
   @BeforeEach
   public void setup() throws Exception {
     txOps.deleteAll();
-    
+
     // Load a random survey to make sure its data doesn't interact with the test survey
     List<SurveyUpdateEvent> secondarySurveys =
         FixtureHelper.loadClassFixtures(SurveyUpdateEvent[].class, "Secondary");
@@ -48,7 +46,7 @@ public class SurveyRepositoryIT extends PostgresTestBase {
         FixtureHelper.loadClassFixtures(SurveyUpdateEvent[].class);
     SurveyUpdateEvent surveyUpdateEvent = testSurveys.get(0);
     txOps.writeSurvey(surveyUpdateEvent);
-    
+
     // Confirm survey+products stored correctly in db
     SurveyUpdate testSurvey = surveyUpdateEvent.getPayload().getSurveyUpdate();
     txOps.verifySurvey(testSurvey);
@@ -62,14 +60,14 @@ public class SurveyRepositoryIT extends PostgresTestBase {
         FixtureHelper.loadClassFixtures(SurveyUpdateEvent[].class);
     SurveyUpdateEvent surveyUpdateEvent = testSurveys.get(0);
     txOps.writeSurvey(surveyUpdateEvent);
-    
+
     // Confirm initial version stored correctly in db
     SurveyUpdate testSurvey = surveyUpdateEvent.getPayload().getSurveyUpdate();
     txOps.verifySurvey(testSurvey);
 
     // Update survey. Change the survey name
     testSurvey.setName("Hat size survey");
-    
+
     // Update survey. Remove an existing fulfilment
     testSurvey.getAllowedSmsFulfilments().remove(0);
 
@@ -77,18 +75,18 @@ public class SurveyRepositoryIT extends PostgresTestBase {
     SurveyFulfilment fulfilment = testSurvey.getAllowedPrintFulfilments().get(0);
     fulfilment.setDescription("N/A");
     fulfilment.getMetadata().put("code", "x11");
-    
+
     // Update survey. Add a new fulfilment
     Map<String, Object> metadata = new HashMap<>();
     metadata.put("NumberOfPages", "94");
-    SurveyFulfilment newProduct = new SurveyFulfilment("replace-uac-sw", "Replacement UAC - Swahili", metadata);
+    SurveyFulfilment newProduct =
+        new SurveyFulfilment("replace-uac-sw", "Replacement UAC - Swahili", metadata);
     testSurvey.getAllowedPrintFulfilments().add(newProduct);
-    
+
     // Write modified survey and make sure it's stored correctly in the db
     txOps.writeSurvey(surveyUpdateEvent);
     txOps.verifySurvey(testSurvey);
   }
-  
 
   /**
    * Separate class that can create/update database items and commit the results so that subsequent
@@ -127,13 +125,13 @@ public class SurveyRepositoryIT extends PostgresTestBase {
       SurveyEventReceiver surveyReceiver = new SurveyEventReceiver(repo, ccBeanMapper);
       surveyReceiver.acceptEvent(surveyUpdateEvent);
     }
-    
+
     public void verifySurvey(SurveyUpdate expectedSurvey) {
       UUID surveyUUID = UUID.fromString(expectedSurvey.getSurveyId());
       Survey actualSurvey = repo.findById(surveyUUID).get();
       verifySurveysAreEqual(expectedSurvey, actualSurvey);
     }
-    
+
     private void verifySurveysAreEqual(SurveyUpdate testSurvey, Survey loadedSurvey) {
       assertEquals(testSurvey.getSurveyId(), loadedSurvey.getId().toString());
       assertEquals(testSurvey.getName(), loadedSurvey.getName());
@@ -181,8 +179,10 @@ public class SurveyRepositoryIT extends PostgresTestBase {
         if (!foundFulfilment) {
           fail(
               "No product found for for Fulfilment. "
-              + "Type:" + productType
-              + " PackCode:" + expectedFulfilment.getPackCode());
+                  + "Type:"
+                  + productType
+                  + " PackCode:"
+                  + expectedFulfilment.getPackCode());
         }
       }
     }
