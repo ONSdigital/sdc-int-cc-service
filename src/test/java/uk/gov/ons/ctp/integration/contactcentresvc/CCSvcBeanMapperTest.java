@@ -3,7 +3,6 @@ package uk.gov.ons.ctp.integration.contactcentresvc;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.LocalDateTime;
@@ -224,7 +223,7 @@ public class CCSvcBeanMapperTest {
     List<Object> source = new ArrayList<>();
     source.add("A");
     source.add("B");
-    
+
     Object destination = mapperFacade.map(source, Object.class);
 
     assertEquals(source, destination);
@@ -235,10 +234,10 @@ public class CCSvcBeanMapperTest {
     // This test will fail without the mappers ArrayListConverter
     List<Object> source = new ArrayList<>();
     source.add(Integer.valueOf("94"));
-    
-    try { 
+
+    try {
       mapperFacade.map(source, Object.class);
-      fail("Conversion should have thrown exception");      
+      fail("Conversion should have thrown exception");
     } catch (UnsupportedOperationException e) {
       assertTrue(e.getMessage(), e.getMessage().contains("Unsupported type found when mapping"));
     }
