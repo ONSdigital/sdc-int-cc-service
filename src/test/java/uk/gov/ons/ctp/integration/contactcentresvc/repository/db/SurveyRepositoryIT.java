@@ -20,8 +20,8 @@ import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.SurveyEventReceiver;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.ProductType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 
 public class SurveyRepositoryIT extends PostgresTestBase {
@@ -149,15 +149,15 @@ public class SurveyRepositoryIT extends PostgresTestBase {
 
       // Confirm products loaded
       verifyProductsLoaded(
-          ProductType.POSTAL, testSurvey.getAllowedPrintFulfilments(), actualFulfilments);
+          DeliveryChannel.POST, testSurvey.getAllowedPrintFulfilments(), actualFulfilments);
       verifyProductsLoaded(
-          ProductType.SMS, testSurvey.getAllowedSmsFulfilments(), actualFulfilments);
+          DeliveryChannel.SMS, testSurvey.getAllowedSmsFulfilments(), actualFulfilments);
       verifyProductsLoaded(
-          ProductType.EMAIL, testSurvey.getAllowedEmailFulfilments(), actualFulfilments);
+          DeliveryChannel.EMAIL, testSurvey.getAllowedEmailFulfilments(), actualFulfilments);
     }
 
     private void verifyProductsLoaded(
-        ProductType productType,
+        DeliveryChannel deliveryChannel,
         List<SurveyFulfilment> expectedFulfilments,
         List<Product> actualProducts) {
 
@@ -166,7 +166,7 @@ public class SurveyRepositoryIT extends PostgresTestBase {
 
         for (int i = 0; i < actualProducts.size(); i++) {
           Product candidateProduct = actualProducts.get(i);
-          if (candidateProduct.getType() == productType
+          if (candidateProduct.getDeliveryChannel() == deliveryChannel
               && expectedFulfilment.getPackCode().equals(candidateProduct.getPackCode())) {
             assertEquals(expectedFulfilment.getDescription(), candidateProduct.getDescription());
             assertEquals(expectedFulfilment.getMetadata(), candidateProduct.getMetadata());
@@ -180,7 +180,7 @@ public class SurveyRepositoryIT extends PostgresTestBase {
           fail(
               "No product found for for Fulfilment. "
                   + "Type:"
-                  + productType
+                  + deliveryChannel
                   + " PackCode:"
                   + expectedFulfilment.getPackCode());
         }

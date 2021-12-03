@@ -50,7 +50,7 @@ public class Product {
 
   @ToString.Include
   @Enumerated(EnumType.STRING)
-  private ProductType type;
+  private DeliveryChannel deliveryChannel;
 
   @ToString.Include private String packCode;
   @ToString.Include private String description;

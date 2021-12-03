@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.ProductType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
@@ -54,11 +54,11 @@ public class SurveyEventReceiver {
       // Squash the 3 collections of fulfilments into a single list
       List<Product> buildFulfilmentList = new ArrayList<Product>();
       addProductsToList(
-          buildFulfilmentList, ProductType.POSTAL, payload.getAllowedPrintFulfilments(), survey);
+          buildFulfilmentList, DeliveryChannel.POST, payload.getAllowedPrintFulfilments(), survey);
       addProductsToList(
-          buildFulfilmentList, ProductType.SMS, payload.getAllowedSmsFulfilments(), survey);
+          buildFulfilmentList, DeliveryChannel.SMS, payload.getAllowedSmsFulfilments(), survey);
       addProductsToList(
-          buildFulfilmentList, ProductType.EMAIL, payload.getAllowedEmailFulfilments(), survey);
+          buildFulfilmentList, DeliveryChannel.EMAIL, payload.getAllowedEmailFulfilments(), survey);
 
       survey.setAllowedFulfilments(buildFulfilmentList);
 
@@ -72,7 +72,7 @@ public class SurveyEventReceiver {
 
   private void addProductsToList(
       List<Product> allowedFulfilments,
-      ProductType productType,
+      DeliveryChannel deliveryChannel,
       List<SurveyFulfilment> fulfilments,
       Survey survey)
       throws IOException {
@@ -82,7 +82,7 @@ public class SurveyEventReceiver {
         Product product = mapper.map(fulfilment, Product.class);
 
         product.setSurvey(survey);
-        product.setType(productType);
+        product.setDeliveryChannel(deliveryChannel);
 
         allowedFulfilments.add(product);
       }

@@ -26,8 +26,8 @@ import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.ProductType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
@@ -62,19 +62,19 @@ public class SurveyEventReceiverTest {
     verifyMappedSurvey(survey, payload);
     verifyFulfilments(
         payload.getAllowedPrintFulfilments(),
-        filterProducts(survey, ProductType.POSTAL),
+        filterProducts(survey, DeliveryChannel.POST),
         survey.getId(),
-        ProductType.POSTAL);
+        DeliveryChannel.POST);
     verifyFulfilments(
         payload.getAllowedSmsFulfilments(),
-        filterProducts(survey, ProductType.SMS),
+        filterProducts(survey, DeliveryChannel.SMS),
         survey.getId(),
-        ProductType.SMS);
+        DeliveryChannel.SMS);
     verifyFulfilments(
         payload.getAllowedEmailFulfilments(),
-        filterProducts(survey, ProductType.EMAIL),
+        filterProducts(survey, DeliveryChannel.EMAIL),
         survey.getId(),
-        ProductType.EMAIL);
+        DeliveryChannel.EMAIL);
   }
 
   @Test
@@ -94,7 +94,7 @@ public class SurveyEventReceiverTest {
       List<SurveyFulfilment> expectedFulfilments,
       List<Product> actualProducts,
       UUID expectedSurveyId,
-      ProductType expectedProductType) {
+      DeliveryChannel expectedDeliveryChannel) {
 
     if (actualProducts == null) {
       assertNull(expectedFulfilments);
@@ -111,13 +111,13 @@ public class SurveyEventReceiverTest {
       assertEquals(expected.getMetadata(), actual.getMetadata());
 
       assertEquals(expectedSurveyId, actual.getSurvey().getId());
-      assertEquals(expectedProductType, actual.getType());
+      assertEquals(expectedDeliveryChannel, actual.getDeliveryChannel());
     }
   }
 
-  private List<Product> filterProducts(Survey survey, ProductType targetProductType) {
+  private List<Product> filterProducts(Survey survey, DeliveryChannel targetDeliveryChannel) {
     return survey.getAllowedFulfilments().stream()
-        .filter(f -> f.getType() == targetProductType)
+        .filter(f -> f.getDeliveryChannel() == targetDeliveryChannel)
         .collect(Collectors.toList());
   }
 }

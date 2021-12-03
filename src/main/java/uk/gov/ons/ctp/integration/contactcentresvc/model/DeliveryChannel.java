@@ -1,7 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
-public enum ProductType {
+public enum DeliveryChannel {
   EMAIL,
   SMS,
-  POSTAL
+  POST
 }
