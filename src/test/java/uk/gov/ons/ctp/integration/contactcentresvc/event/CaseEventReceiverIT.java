@@ -76,7 +76,7 @@ public class CaseEventReceiverIT extends PostgresTestBase {
   }
 
   @Test
-  public void shouldRejectCaseMissingSurvey() {
+  public void shouldRejectCaseForMissingSurvey() {
     assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
 
     txOps.acceptEvent(caseEvent);
