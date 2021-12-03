@@ -11,3 +11,6 @@ CREATE TABLE product (
   
   PRIMARY KEY (id)
 );
+
+ALTER TABLE survey
+  ADD COLUMN metadata JSONB;

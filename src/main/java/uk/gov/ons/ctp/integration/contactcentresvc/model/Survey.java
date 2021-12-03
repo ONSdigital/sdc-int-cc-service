@@ -3,8 +3,10 @@ package uk.gov.ons.ctp.integration.contactcentresvc.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -40,27 +42,16 @@ public class Survey {
 
   @ToString.Include private String name;
 
-  private String sampleDefinitionUrl;
-
   @Type(type = "jsonb")
   private Object sampleDefinition;
 
+  private String sampleDefinitionUrl;
+  
+  @Type(type = "jsonb")
+  @Column(columnDefinition = "jsonb")
+  private Map<String, ?> metadata;
+  
   @JsonIgnore
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Product> allowedFulfilments;
-
-  // PMB
-  //  @JsonSetter("sampleDefinition")
-  //  void setMetadataFromJson(String jsonString) throws JsonMappingException,
-  // JsonProcessingException {
-  //    ObjectMapper mapper = new ObjectMapper();
-  //    this.sampleDefinition = mapper.readTree(jsonString);
-  //  }
-  //
-  //  @JsonSetter("sampleDefinition")
-  //  public void setSampleDefinition(String jsonString) throws JsonMappingException,
-  // JsonProcessingException {
-  //    ObjectMapper mapper = new ObjectMapper();
-  //    this.sampleDefinition = mapper.readTree(jsonString);
-  //  }
 }
