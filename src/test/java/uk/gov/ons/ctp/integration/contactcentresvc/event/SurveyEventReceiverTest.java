@@ -103,16 +103,14 @@ public class SurveyEventReceiverTest {
 
     assertEquals(actualProducts.size(), expectedFulfilments.size());
 
-    for (int i = 0; i < expectedFulfilments.size(); i++) {
-      SurveyFulfilment expected = expectedFulfilments.get(i);
+    for (int i = 0; i < actualProducts.size(); i++) {
       Product actual = actualProducts.get(i);
+      SurveyFulfilment expected = expectedFulfilments.get(i);
 
       assertEquals(expected.getPackCode(), actual.getPackCode());
       assertEquals(expected.getDescription(), actual.getDescription());
-      Map<String, Object> ex = expected.getMetadata();
-      Map<String, ?> act = actual.getMetadata();
-      assertEquals(ex, act);
-
+      assertEquals(expected.getMetadata(), actual.getMetadata());
+      
       assertEquals(expectedSurveyId, actual.getSurvey().getId());
       assertEquals(expectedProductType, actual.getType());
     }

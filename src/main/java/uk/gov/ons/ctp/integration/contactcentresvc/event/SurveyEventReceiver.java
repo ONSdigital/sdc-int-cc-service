@@ -52,15 +52,15 @@ public class SurveyEventReceiver {
       survey.setSampleDefinition(payload.getSampleDefinition()); // PMB needed??
 
       // Squash the 3 collections of fulfilments into a single list
-      List<Product> allowedFulfilments = new ArrayList<Product>();
+      List<Product> buildFulfilmentList = new ArrayList<Product>();
       addProductsToList(
-          allowedFulfilments, ProductType.POSTAL, payload.getAllowedPrintFulfilments(), survey);
+          buildFulfilmentList, ProductType.POSTAL, payload.getAllowedPrintFulfilments(), survey);
       addProductsToList(
-          allowedFulfilments, ProductType.SMS, payload.getAllowedSmsFulfilments(), survey);
+          buildFulfilmentList, ProductType.SMS, payload.getAllowedSmsFulfilments(), survey);
       addProductsToList(
-          allowedFulfilments, ProductType.EMAIL, payload.getAllowedEmailFulfilments(), survey);
+          buildFulfilmentList, ProductType.EMAIL, payload.getAllowedEmailFulfilments(), survey);
 
-      survey.setAllowedFulfilments(allowedFulfilments);
+      survey.setAllowedFulfilments(buildFulfilmentList);
 
       repo.saveAndFlush(survey);
     } catch (Exception e) {
