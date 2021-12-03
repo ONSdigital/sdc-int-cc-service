@@ -75,6 +75,26 @@ public class CaseEventReceiverIT extends PostgresTestBase {
     assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
   }
 
+  @Test
+  public void shouldRejectCaseMissingSurvey() {
+    assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
+
+    txOps.acceptEvent(caseEvent);
+
+    assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
+  }
+
+  @Test
+  public void shouldRejectCaseForMissingCollectionExercise() {
+    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+
+    assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
+
+    txOps.acceptEvent(caseEvent);
+
+    assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
+  }
+
   /**
    * Separate class that can create/update database items and commit the results so that subsequent
    * operations can see the effect.
