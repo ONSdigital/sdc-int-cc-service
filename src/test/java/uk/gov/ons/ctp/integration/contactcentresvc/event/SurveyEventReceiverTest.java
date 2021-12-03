@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.PersistenceException;
@@ -110,7 +109,7 @@ public class SurveyEventReceiverTest {
       assertEquals(expected.getPackCode(), actual.getPackCode());
       assertEquals(expected.getDescription(), actual.getDescription());
       assertEquals(expected.getMetadata(), actual.getMetadata());
-      
+
       assertEquals(expectedSurveyId, actual.getSurvey().getId());
       assertEquals(expectedProductType, actual.getType());
     }
