@@ -29,6 +29,18 @@ spec:
             items:
               - key: uprns
                 path: blacklist
+        - name: etc-config-keys-1
+          secret:
+            secretName: env-secrets
+            items:
+              - key: public-pgp-key-1
+                path: public-pgp-key-1.pem
+        - name: etc-config-keys-2
+          secret:
+            secretName: env-secrets
+            items:
+              - key: public-pgp-key-2
+                path: public-pgp-key-2.pem
       containers:
       - name: cloud-sql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.17
@@ -180,9 +192,17 @@ spec:
             secretKeyRef:
               name: cc-keys
               key: cc-keys
+        - name: PUBLIC_PGP_KEY1
+          value: file:/etc/config-keys-1/public-pgp-key-1.pem
+        - name: PUBLIC_PGP_KEY2
+          value: file:/etc/config-keys-2/public-pgp-key-2.pem
         - name: EQ_RESPONSE_ID_SALT
           valueFrom:
             secretKeyRef:
               name: env-secrets
               key: response-id-salt
-
+        - name: SURVEYS
+            valueFrom:
+              configMapKeyRef:
+                name: cc-config
+                key: surveys

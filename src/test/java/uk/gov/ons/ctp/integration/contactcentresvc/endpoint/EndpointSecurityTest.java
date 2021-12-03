@@ -11,6 +11,8 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_C
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_REQUEST_DATE_TIME;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
 
+import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -19,9 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.ResourceLock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -33,8 +33,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
+import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
+import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -45,9 +46,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 @ActiveProfiles("test-cc")
-@ExtendWith(MockitoExtension.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@TestPropertySource(properties = {"GOOGLE_CLOUD_PROJECT=sdc-cc-test"})
+@MockBean({EventToSendPoller.class, EventPublisher.class, PubSubTemplate.class})
+@MockBean(name = "caseEventInbound", value = PubSubInboundChannelAdapter.class)
+@MockBean(name = "surveyEventInbound", value = PubSubInboundChannelAdapter.class)
+@MockBean(name = "collectionExerciseEventInbound", value = PubSubInboundChannelAdapter.class)
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
 public class EndpointSecurityTest {
   @MockBean CaseService caseService;

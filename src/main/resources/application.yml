@@ -18,6 +18,8 @@ logging:
   profile: NON_JSON
 
 surveyName: CENSUS
+public-pgp-key-1 : classpath:pgp/key1.asc
+public-pgp-key-2 : classpath:pgp/key2.asc
 
 management:
   endpoints:
@@ -125,7 +127,7 @@ case-service-settings:
       - FULFILMENT_CONFIRMED
       - UNDELIVERED_MAIL_REPORTED
       - RESPONDENT_AUTHENTICATED
-      - SURVEY_LAUNCHED
+      - EQ_LAUNCHED
       - RESPONSE_RECEIVED
       - REFUSAL_RECEIVED
       - UAC_UPDATED
@@ -212,3 +214,6 @@ ccdb-admin:
 scheduler:
   fixed-delay-millis: 1000
   chunk-size: 1000
+
+surveys:
+  - social

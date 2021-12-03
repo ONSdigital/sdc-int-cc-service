@@ -11,8 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerciseRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
@@ -25,19 +23,18 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepositor
 @MessageEndpoint
 public class CaseEventReceiver {
   private CaseRepository caseRepo;
-  private SurveyRepository surveyRepo;
-  private CollectionExerciseRepository collExRepo;
   private MapperFacade mapper;
+  private EventFilter eventFilter;
 
   public CaseEventReceiver(
       CaseRepository caseRepo,
       SurveyRepository surveyRepo,
       CollectionExerciseRepository collExRepo,
-      MapperFacade mapper) {
+      MapperFacade mapper,
+      EventFilter eventFilter) {
     this.caseRepo = caseRepo;
-    this.surveyRepo = surveyRepo;
-    this.collExRepo = collExRepo;
     this.mapper = mapper;
+    this.eventFilter = eventFilter;
   }
 
   /**
@@ -57,11 +54,11 @@ public class CaseEventReceiver {
         kv("messageId", caseMessageId),
         kv("caseId", caseUpdate.getCaseId()));
 
-    Survey survey = findSurvey(caseUpdate);
-    boolean social = isSocial(survey);
-    boolean valid = social && isKnownCollectionExercise(caseUpdate);
-
-    if (valid) {
+    if (eventFilter.isValidEvent(
+        caseUpdate.getSurveyId(),
+        caseUpdate.getCollectionExerciseId(),
+        caseUpdate.getCaseId(),
+        caseMessageId.toString())) {
       try {
         Case caze = mapper.map(caseUpdate, Case.class);
         caseRepo.save(caze);
@@ -74,42 +71,6 @@ public class CaseEventReceiver {
         log.error("Case Event processing failed", kv("messageId", caseMessageId), e);
         throw e;
       }
-    } else {
-      logDiscardMessage(survey, social, caseEvent);
     }
-  }
-
-  private Survey findSurvey(CaseUpdate caseUpdate) {
-    return surveyRepo.getById(UUID.fromString(caseUpdate.getSurveyId()));
-  }
-
-  private boolean isSocial(Survey survey) {
-    return survey != null && survey.getSampleDefinitionUrl().endsWith("social.json");
-  }
-
-  private boolean isKnownCollectionExercise(CaseUpdate caseUpdate) {
-    CollectionExercise collEx =
-        collExRepo.getById(UUID.fromString(caseUpdate.getCollectionExerciseId()));
-    return collEx != null;
-  }
-
-  /*
-   * TODO - should we NAK the event/throw exception if we do not recognise
-   * the survey and allow the exception manager quarantine the event or
-   * allow to go to DLQ?
-   */
-  private void logDiscardMessage(Survey survey, boolean social, CaseEvent event) {
-    CaseUpdate caseUpdate = event.getPayload().getCaseUpdate();
-    UUID caseMessageId = event.getHeader().getMessageId();
-
-    String msg = null;
-    if (survey == null) {
-      msg = "Case Survey unknown - discarding case";
-    } else if (!social) {
-      msg = "Survey is not a social survey - discarding case";
-    } else {
-      msg = "Case CollectionExercise unknown - discarding case";
-    }
-    log.warn(msg, kv("messageId", caseMessageId), kv("caseId", caseUpdate.getCaseId()));
   }
 }

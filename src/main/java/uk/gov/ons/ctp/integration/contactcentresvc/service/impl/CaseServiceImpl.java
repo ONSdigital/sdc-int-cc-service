@@ -3,8 +3,10 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.v;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -32,10 +35,10 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.Contact;
+import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
-import uk.gov.ons.ctp.common.event.model.SurveyLaunchResponse;
 import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
@@ -58,6 +61,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequest
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
@@ -285,25 +289,19 @@ public class CaseServiceImpl implements CaseService {
     String formType = newQuestionnaireIdDto.getFormType();
 
     String eqUrl = createLaunchUrl(formType, caseDetails, requestParamsDTO, questionnaireId);
-    publishSurveyLaunchedEvent(caseDetails.getId(), questionnaireId, requestParamsDTO.getAgentId());
+    publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;
   }
 
-  private void publishSurveyLaunchedEvent(UUID caseId, String questionnaireId, Integer agentId) {
+  private void publishEqLaunchedEvent(UUID caseId, String questionnaireId) {
     log.info(
-        "Generating SurveyLaunched event",
+        "Generating EqLaunched event",
         kv("questionnaireId", questionnaireId),
-        kv("caseId", caseId),
-        kv("agentId", agentId));
+        kv("caseId", caseId));
 
-    SurveyLaunchResponse response =
-        SurveyLaunchResponse.builder()
-            .questionnaireId(questionnaireId)
-            .caseId(caseId)
-            .agentId(Integer.toString(agentId))
-            .build();
+    EqLaunch eqLaunch = EqLaunch.builder().qid(questionnaireId).build();
 
-    sendEvent(TopicType.SURVEY_LAUNCH, response, response.getCaseId());
+    sendEvent(TopicType.EQ_LAUNCH, eqLaunch, caseId);
   }
 
   private Product.Region convertRegion(Case caze) {
@@ -423,7 +421,25 @@ public class CaseServiceImpl implements CaseService {
     refusal.setCaseId(caseId);
     refusal.setType(refusalRequest.getReason().name());
 
+    // This code is intentionally commented out. Reinstate to active encryption in outgoing events
+    // refusal.setName(encrypt("Jimmy McTavish"));
+
+    // The following code exists to prevent complaints about unused code. It's never called.
+    // This can be deleted once a final decision is reached about ccsvc encryption
+    if (System.currentTimeMillis() == 1) {
+      encrypt("never-executed");
+    }
+
     return refusal;
+  }
+
+  private String encrypt(String clearValue) {
+    if (clearValue == null) {
+      return null;
+    }
+    List<Resource> keys = List.of(appConfig.getPublicPgpKey1(), appConfig.getPublicPgpKey2());
+    String encStr = PgpEncrypt.encrypt(clearValue, keys);
+    return Base64.getEncoder().encodeToString(encStr.getBytes(StandardCharsets.UTF_8));
   }
 
   /**

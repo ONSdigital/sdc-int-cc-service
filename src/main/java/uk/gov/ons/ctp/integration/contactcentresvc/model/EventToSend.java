@@ -6,12 +6,24 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+/**
+ * Representation of Event to send from database table.
+ *
+ * <p>Implementation note: avoid Lombok Data annotation, since generated toString, equals and
+ * hashcode are considered dangerous in combination with Entity annotation.
+ */
+@Getter
+@Setter
+@ToString
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Entity
 public class EventToSend {
   @Id private UUID id;
