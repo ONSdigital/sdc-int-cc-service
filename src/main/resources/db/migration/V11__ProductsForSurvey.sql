@@ -6,8 +6,6 @@ CREATE TABLE product (
   type TEXT NOT NULL,
   pack_code TEXT NOT NULL,
   description TEXT NOT NULL,
-  metadata_as_string Text,
-  metadata_as_jsonb JSONB,
   metadata JSONB,
   
   PRIMARY KEY (id)

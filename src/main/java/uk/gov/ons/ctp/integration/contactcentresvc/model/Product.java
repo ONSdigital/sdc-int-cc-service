@@ -17,7 +17,6 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 import lombok.AllArgsConstructor;
@@ -59,13 +58,6 @@ public class Product {
 
   @ToString.Include private String packCode;
   @ToString.Include private String description;
-
-  private String metadataAsString;
-
-  @Type(type = "jsonb")
-  @Column(columnDefinition = "jsonb")
-  @JsonRawValue()
-  private String metadataAsJsonb;
 
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb")
