@@ -3,8 +3,10 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +64,18 @@ public class CaseEventReceiverIT extends PostgresTestBase {
     assertEquals("CC3", caze.getCohort());
   }
 
+  @Test
+  public void shouldRejectCaseForIgnoredSurveyType() {
+    survey = txOps.createSurveyWeFilterOut(UUID.fromString(SURVEY_ID));
+    txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
+
+    assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
+
+    txOps.acceptEvent(caseEvent);
+
+    assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
+  }
+
   /**
    * Separate class that can create/update database items and commit the results so that subsequent
    * operations can see the effect.
@@ -105,6 +119,18 @@ public class CaseEventReceiverIT extends PostgresTestBase {
               .id(id)
               .name("LMS")
               .sampleDefinitionUrl("https://some.domain/social.json")
+              .sampleDefinition("{}")
+              .build();
+      surveyRepo.save(survey);
+      return survey;
+    }
+
+    public Survey createSurveyWeFilterOut(UUID id) {
+      Survey survey =
+          Survey.builder()
+              .id(id)
+              .name("LMS")
+              .sampleDefinitionUrl("https://some.domain/test.json")
               .sampleDefinition("{}")
               .build();
       surveyRepo.save(survey);

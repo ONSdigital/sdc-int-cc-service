@@ -23,8 +23,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepositor
 @MessageEndpoint
 public class CaseEventReceiver {
   private CaseRepository caseRepo;
-  private SurveyRepository surveyRepo;
-  private CollectionExerciseRepository collExRepo;
   private MapperFacade mapper;
   private EventFilter eventFilter;
 
@@ -35,8 +33,6 @@ public class CaseEventReceiver {
       MapperFacade mapper,
       EventFilter eventFilter) {
     this.caseRepo = caseRepo;
-    this.surveyRepo = surveyRepo;
-    this.collExRepo = collExRepo;
     this.mapper = mapper;
     this.eventFilter = eventFilter;
   }

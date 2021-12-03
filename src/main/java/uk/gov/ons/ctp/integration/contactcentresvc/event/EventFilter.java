@@ -62,9 +62,7 @@ public class EventFilter {
   }
 
   private boolean isKnownCollectionExercise(String collexId) {
-    CollectionExercise collEx =
-        collectionExerciseRepository.findById(UUID.fromString(collexId)).orElse(null);
-    return collEx != null;
+    return collectionExerciseRepository.findById(UUID.fromString(collexId)).isPresent();
   }
 
   /*
