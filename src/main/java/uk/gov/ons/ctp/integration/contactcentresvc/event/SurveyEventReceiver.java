@@ -49,13 +49,9 @@ public class SurveyEventReceiver {
     try {
       Survey survey = mapper.map(payload, Survey.class);
 
-      //      Map<String, ?> m = survey.getAllowedPrintFulfilments().get(0).getMetadata();
-      //
-      //      String valueClassName = m.get("suitableRegions").getClass().getCanonicalName();
-      //      ArrayList<String> foo = (ArrayList<String>) m.get("suitableRegions");
+      survey.setSampleDefinition(payload.getSampleDefinition()); // PMB needed??
 
-      survey.setSampleDefinition(payload.getSampleDefinition());
-
+      // Squash the 3 collections of fulfilments into a single list
       List<Product> allowedFulfilments = new ArrayList<Product>();
       addProductsToList(
           allowedFulfilments, ProductType.POSTAL, payload.getAllowedPrintFulfilments(), survey);
@@ -63,14 +59,6 @@ public class SurveyEventReceiver {
           allowedFulfilments, ProductType.SMS, payload.getAllowedSmsFulfilments(), survey);
       addProductsToList(
           allowedFulfilments, ProductType.EMAIL, payload.getAllowedEmailFulfilments(), survey);
-
-      //      setSurveyIdForProducts(survey.getAllowedPrintFulfilments(), survey);
-      //      setSurveyIdForProducts(survey.getAllowedSmsFulfilments(), survey);
-      //      setSurveyIdForProducts(survey.getAllowedEmailFulfilments(), survey);
-      //
-      //      setProductType(survey.getAllowedPrintFulfilments(), ProductType.POSTAL);
-      //      setProductType(survey.getAllowedSmsFulfilments(), ProductType.SMS);
-      //      setProductType(survey.getAllowedEmailFulfilments(), ProductType.EMAIL);
 
       survey.setAllowedFulfilments(allowedFulfilments);
 
@@ -95,26 +83,8 @@ public class SurveyEventReceiver {
 
         product.setSurvey(survey);
         product.setType(productType);
-        product.serializeMetadata();
 
         allowedFulfilments.add(product);
-      }
-    }
-  }
-
-  private void setProductType(List<Product> products, ProductType productType) throws IOException {
-    if (products != null) {
-      for (Product product : products) {
-        product.setType(productType);
-        product.serializeMetadata();
-      }
-    }
-  }
-
-  private void setSurveyIdForProducts(List<Product> products, Survey survey) {
-    if (products != null) {
-      for (Product product : products) {
-        product.setSurvey(survey);
       }
     }
   }
