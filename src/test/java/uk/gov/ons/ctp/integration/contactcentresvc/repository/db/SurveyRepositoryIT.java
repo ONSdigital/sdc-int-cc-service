@@ -137,7 +137,7 @@ public class SurveyRepositoryIT extends PostgresTestBase {
       assertEquals(testSurvey.getName(), loadedSurvey.getName());
       assertEquals(testSurvey.getSampleDefinitionUrl(), loadedSurvey.getSampleDefinitionUrl());
       // PMB assertEquals(testSurvey.getSampleDefinition(), loadedSurvey.getSampleDefinition());
-      // PMB check metadata
+      assertEquals(testSurvey.getMetadata(), loadedSurvey.getMetadata());
 
       // Verify that the number of loaded fulfilments is correct
       int expectedNumFulfilments =
