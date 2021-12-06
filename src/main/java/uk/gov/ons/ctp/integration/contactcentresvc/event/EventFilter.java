@@ -42,12 +42,16 @@ public class EventFilter {
   }
 
   private Survey findSurvey(String surveyId, String messageId, String caseId) throws CTPException {
-    Survey survey = surveyRepository.findById(UUID.fromString(surveyId)).orElse(null);
-    if (survey == null) {
-      log.warn("Survey unknown - NAKing message", kv("messageId", messageId), kv("caseId", caseId));
-      throw new CTPException(CTPException.Fault.VALIDATION_FAILED, "Survey unknown");
-    }
-    return survey;
+    return surveyRepository
+        .findById(UUID.fromString(surveyId))
+        .orElseThrow(
+            () -> {
+              log.warn(
+                  "Survey unknown - NAKing message",
+                  kv("messageId", messageId),
+                  kv("caseId", caseId));
+              return new CTPException(CTPException.Fault.VALIDATION_FAILED, "Survey unknown");
+            });
   }
 
   private boolean isAcceptedSurveyType(Survey survey, String messageId, String caseId) {
@@ -69,14 +73,17 @@ public class EventFilter {
   private boolean isKnownCollectionExercise(String collexId, String messageId, String caseId)
       throws CTPException {
     CollectionExercise collex =
-        collectionExerciseRepository.findById(UUID.fromString(collexId)).orElse(null);
-    if (collex == null) {
-      log.warn(
-          "CollectionExercise unknown - NAKing message",
-          kv("messageId", messageId),
-          kv("caseId", caseId));
-      throw new CTPException(CTPException.Fault.VALIDATION_FAILED, "CollectionExercise unknown");
-    }
+        collectionExerciseRepository
+            .findById(UUID.fromString(collexId))
+            .orElseThrow(
+                () -> {
+                  log.warn(
+                      "CollectionExercise unknown - NAKing message",
+                      kv("messageId", messageId),
+                      kv("caseId", caseId));
+                  return new CTPException(
+                      CTPException.Fault.VALIDATION_FAILED, "CollectionExercise unknown");
+                });
     return true;
   }
 }
