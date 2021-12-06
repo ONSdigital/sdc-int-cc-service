@@ -26,12 +26,12 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class SurveyEventReceiverTest {
+public class SurveyUpdateEventReceiverTest {
 
   @Mock private SurveyRepository repo;
   @Spy private MapperFacade mapper = new CCSvcBeanMapper();
 
-  @InjectMocks private SurveyEventReceiver target;
+  @InjectMocks private SurveyUpdateEventReceiver target;
 
   @Captor private ArgumentCaptor<Survey> surveyCaptor;
 

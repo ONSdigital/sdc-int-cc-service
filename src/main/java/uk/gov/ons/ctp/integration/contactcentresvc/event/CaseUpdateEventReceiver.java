@@ -8,6 +8,7 @@ import ma.glasnost.orika.MapperFacade;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
@@ -21,12 +22,12 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepositor
  */
 @Slf4j
 @MessageEndpoint
-public class CaseEventReceiver {
+public class CaseUpdateEventReceiver {
   private CaseRepository caseRepo;
   private MapperFacade mapper;
   private EventFilter eventFilter;
 
-  public CaseEventReceiver(
+  public CaseUpdateEventReceiver(
       CaseRepository caseRepo,
       SurveyRepository surveyRepo,
       CollectionExerciseRepository collExRepo,
@@ -44,7 +45,7 @@ public class CaseEventReceiver {
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
   @Transactional
-  public void acceptEvent(CaseEvent caseEvent) {
+  public void acceptEvent(CaseEvent caseEvent) throws CTPException {
 
     CaseUpdate caseUpdate = caseEvent.getPayload().getCaseUpdate();
     UUID caseMessageId = caseEvent.getHeader().getMessageId();
