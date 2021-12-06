@@ -52,7 +52,10 @@ public class Product {
   @Enumerated(EnumType.STRING)
   private DeliveryChannel deliveryChannel;
 
-  @ToString.Include private String productGroup;
+  @ToString.Include
+  @Enumerated(EnumType.STRING)
+  private ProductGroup productGroup;
+
   @ToString.Include private String packCode;
   @ToString.Include private String description;
 

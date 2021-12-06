@@ -15,6 +15,7 @@ import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.ProductGroup;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
@@ -81,6 +82,7 @@ public class SurveyEventReceiver {
 
         product.setSurvey(survey);
         product.setDeliveryChannel(deliveryChannel);
+        product.setProductGroup(ProductGroup.UAC);
 
         allowedFulfilments.add(product);
       }

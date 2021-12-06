@@ -22,6 +22,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.SurveyEventReceiver;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.ProductGroup;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 
 public class SurveyRepositoryIT extends PostgresTestBase {
@@ -169,6 +170,7 @@ public class SurveyRepositoryIT extends PostgresTestBase {
               && expectedFulfilment.getPackCode().equals(candidateProduct.getPackCode())) {
             assertEquals(expectedFulfilment.getDescription(), candidateProduct.getDescription());
             assertEquals(expectedFulfilment.getMetadata(), candidateProduct.getMetadata());
+            assertEquals(ProductGroup.UAC, candidateProduct.getProductGroup());
 
             foundFulfilment = true;
             break;
