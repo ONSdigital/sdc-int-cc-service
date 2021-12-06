@@ -186,6 +186,8 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     }
   }
 
+  // This converter was added to support the conversion of the metadata map used by
+  // the Product class
   static class ArrayListConverter extends BidirectionalConverter<ArrayList<Object>, Object> {
     @Override
     public Object convertTo(

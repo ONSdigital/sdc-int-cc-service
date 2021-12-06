@@ -8,14 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
@@ -35,7 +33,8 @@ public class SurveyRepositoryIT extends PostgresTestBase {
   public void setup() throws Exception {
     txOps.deleteAll();
 
-    // Load a random survey to make sure its data doesn't interact with the test survey
+    // Load a random survey, to make that there is no inteference between the test survey
+    // and any pre-existing surveys
     List<SurveyUpdateEvent> secondarySurveys =
         FixtureHelper.loadClassFixtures(SurveyUpdateEvent[].class, "Secondary");
     SurveyUpdateEvent secondarySurveyUpdateEvent = secondarySurveys.get(0);

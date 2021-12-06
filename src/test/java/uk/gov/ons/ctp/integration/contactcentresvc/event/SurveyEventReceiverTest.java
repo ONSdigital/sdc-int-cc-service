@@ -10,9 +10,8 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.persistence.PersistenceException;
-
+import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,8 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;

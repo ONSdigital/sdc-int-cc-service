@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +37,7 @@ public class SurveyEventReceiver {
    */
   @ServiceActivator(inputChannel = "acceptSurveyUpdateEvent")
   @Transactional
-  public void acceptEvent(SurveyUpdateEvent event) throws Exception {
+  public void acceptEvent(SurveyUpdateEvent event) {
 
     SurveyUpdate payload = event.getPayload().getSurveyUpdate();
 
@@ -73,8 +72,7 @@ public class SurveyEventReceiver {
       List<Product> allowedFulfilments,
       DeliveryChannel deliveryChannel,
       List<SurveyFulfilment> fulfilments,
-      Survey survey)
-      throws IOException {
+      Survey survey) {
 
     if (fulfilments != null) {
       for (SurveyFulfilment fulfilment : fulfilments) {
