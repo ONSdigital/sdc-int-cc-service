@@ -1,8 +1,8 @@
 package uk.gov.ons.ctp.integration.contactcentresvc;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.LocalDateTime;
@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import ma.glasnost.orika.MapperFacade;
+
 import org.junit.jupiter.api.Test;
+
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
@@ -237,7 +239,7 @@ public class CCSvcBeanMapperTest {
       mapperFacade.map(source, Object.class);
       fail("Conversion should have thrown exception");
     } catch (UnsupportedOperationException e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("Unsupported type found when mapping"));
+      assertTrue(e.getMessage().contains("Unsupported type found when mapping"), e.getMessage());
     }
   }
 
