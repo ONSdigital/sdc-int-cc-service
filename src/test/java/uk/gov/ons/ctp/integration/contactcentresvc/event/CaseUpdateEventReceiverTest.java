@@ -25,6 +25,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.Region;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CaseUpdateSample;
@@ -60,7 +61,7 @@ public class CaseUpdateEventReceiverTest {
   }
 
   @Test
-  public void shouldReceiveEvent() {
+  public void shouldReceiveEvent() throws CTPException {
     when(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
         .thenReturn(true);
     target.acceptEvent(caseEvent);
@@ -73,7 +74,7 @@ public class CaseUpdateEventReceiverTest {
   }
 
   @Test
-  public void shouldRejectFilteredEvent() {
+  public void shouldRejectFilteredEvent() throws CTPException {
     when(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
         .thenReturn(false);
     target.acceptEvent(caseEvent);
@@ -82,7 +83,7 @@ public class CaseUpdateEventReceiverTest {
   }
 
   @Test
-  public void shouldRejectFailingSave() {
+  public void shouldRejectFailingSave() throws CTPException {
     when(caseRepo.save(any())).thenThrow(PersistenceException.class);
     when(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
         .thenReturn(true);

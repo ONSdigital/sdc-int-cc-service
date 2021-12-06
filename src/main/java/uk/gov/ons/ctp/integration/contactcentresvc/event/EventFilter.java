@@ -6,7 +6,9 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerciseRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
@@ -28,27 +30,27 @@ public class EventFilter {
     this.collectionExerciseRepository = collectionExerciseRepository;
   }
 
-  public boolean isValidEvent(String surveyId, String collexId, String caseId, String messageId) {
+  public boolean isValidEvent(String surveyId, String collexId, String caseId, String messageId)
+      throws CTPException {
 
     log.info("Entering acceptCaseEvent {}, {}", kv("messageId", messageId), kv("caseId", caseId));
 
-    Survey survey = findSurvey(surveyId);
-    boolean acceptedSurveyType = isAcceptedSurveyType(survey);
-    boolean valid = acceptedSurveyType && isKnownCollectionExercise(collexId);
+    Survey survey = findSurvey(surveyId, messageId, caseId);
 
-    if (valid) {
-      return true;
-    } else {
-      logDiscardMessage(survey, messageId, acceptedSurveyType, caseId);
-      return false;
+    return isAcceptedSurveyType(survey, messageId, caseId)
+        && isKnownCollectionExercise(collexId, messageId, caseId);
+  }
+
+  private Survey findSurvey(String surveyId, String messageId, String caseId) throws CTPException {
+    Survey survey = surveyRepository.findById(UUID.fromString(surveyId)).orElse(null);
+    if (survey == null) {
+      log.warn("Survey unknown - NAKing message", kv("messageId", messageId), kv("caseId", caseId));
+      throw new CTPException(CTPException.Fault.VALIDATION_FAILED, "Survey unknown");
     }
+    return survey;
   }
 
-  private Survey findSurvey(String surveyId) {
-    return surveyRepository.findById(UUID.fromString(surveyId)).orElse(null);
-  }
-
-  private boolean isAcceptedSurveyType(Survey survey) {
+  private boolean isAcceptedSurveyType(Survey survey, String messageId, String caseId) {
     if (survey != null) {
       Set<String> surveysTypes = appConfig.getSurveys();
       for (String surveyType : surveysTypes) {
@@ -57,29 +59,24 @@ public class EventFilter {
         }
       }
     }
+    log.warn(
+        "Survey is not an accepted survey type - discarding message",
+        kv("messageId", messageId),
+        kv("caseId", caseId));
     return false;
   }
 
-  private boolean isKnownCollectionExercise(String collexId) {
-    return collectionExerciseRepository.findById(UUID.fromString(collexId)).isPresent();
-  }
-
-  /*
-   * TODO - should we NAK the event/throw exception if we do not recognise
-   * the survey and allow the exception manager quarantine the event or
-   * allow to go to DLQ?
-   */
-  private void logDiscardMessage(
-      Survey survey, String messageId, boolean acceptedSurveyType, String caseId) {
-
-    String msg = null;
-    if (survey == null) {
-      msg = "Case Survey unknown - discarding message";
-    } else if (!acceptedSurveyType) {
-      msg = "Survey is not an accepted survey type - discarding message";
-    } else {
-      msg = "Case CollectionExercise unknown - discarding message";
+  private boolean isKnownCollectionExercise(String collexId, String messageId, String caseId)
+      throws CTPException {
+    CollectionExercise collex =
+        collectionExerciseRepository.findById(UUID.fromString(collexId)).orElse(null);
+    if (collex == null) {
+      log.warn(
+          "CollectionExercise unknown - NAKing message",
+          kv("messageId", messageId),
+          kv("caseId", caseId));
+      throw new CTPException(CTPException.Fault.VALIDATION_FAILED, "CollectionExercise unknown");
     }
-    log.warn(msg, kv("messageId", messageId), kv("caseId", caseId));
+    return true;
   }
 }

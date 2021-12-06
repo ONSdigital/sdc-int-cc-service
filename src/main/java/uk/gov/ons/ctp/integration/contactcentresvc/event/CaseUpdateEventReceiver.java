@@ -8,6 +8,7 @@ import ma.glasnost.orika.MapperFacade;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
@@ -44,7 +45,7 @@ public class CaseUpdateEventReceiver {
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
   @Transactional
-  public void acceptEvent(CaseEvent caseEvent) {
+  public void acceptEvent(CaseEvent caseEvent) throws CTPException {
 
     CaseUpdate caseUpdate = caseEvent.getPayload().getCaseUpdate();
     UUID caseMessageId = caseEvent.getHeader().getMessageId();

@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
@@ -48,7 +50,7 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
   }
 
   @Test
-  public void shouldReceiveCase() {
+  public void shouldReceiveCase() throws CTPException {
     survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
     txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
 
@@ -64,7 +66,7 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
   }
 
   @Test
-  public void shouldRejectCaseForIgnoredSurveyType() {
+  public void shouldRejectCaseForIgnoredSurveyType() throws CTPException {
     survey = txOps.createSurveyWeFilterOut(UUID.fromString(SURVEY_ID));
     txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
 
@@ -79,7 +81,8 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
   public void shouldRejectCaseForMissingSurvey() {
     assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
 
-    txOps.acceptEvent(caseEvent);
+    CTPException thrown = assertThrows(CTPException.class, () -> txOps.acceptEvent(caseEvent));
+    assertEquals(CTPException.Fault.VALIDATION_FAILED, thrown.getFault());
 
     assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
   }
@@ -90,7 +93,8 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
 
     assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
 
-    txOps.acceptEvent(caseEvent);
+    CTPException thrown = assertThrows(CTPException.class, () -> txOps.acceptEvent(caseEvent));
+    assertEquals(CTPException.Fault.VALIDATION_FAILED, thrown.getFault());
 
     assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
   }
@@ -169,7 +173,7 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
       collExRepo.save(cx);
     }
 
-    public void acceptEvent(CaseEvent event) {
+    public void acceptEvent(CaseEvent event) throws CTPException {
       target.acceptEvent(event);
     }
   }

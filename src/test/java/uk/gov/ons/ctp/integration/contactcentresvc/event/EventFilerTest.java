@@ -1,6 +1,8 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
@@ -36,7 +39,7 @@ public class EventFilerTest {
   @InjectMocks private EventFilter eventFilter;
 
   @Test
-  public void shouldAcceptEventWithAllPrerequisiteEvents() {
+  public void shouldAcceptEventWithAllPrerequisiteEvents() throws CTPException {
     when(appConfig.getSurveys()).thenReturn(ACCEPTED_SURVEYS);
     mockSocialSurvey();
     mockCollectionExercise();
@@ -44,14 +47,18 @@ public class EventFilerTest {
   }
 
   @Test
-  public void shouldDiscardEventWithUnknownSurvey() {
+  public void shouldDiscardEventWithUnknownSurvey() throws CTPException {
     when(surveyRepo.findById(any())).thenReturn(Optional.empty());
-    assertFalse(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
+    CTPException thrown =
+        assertThrows(
+            CTPException.class,
+            () -> eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
+    assertEquals(CTPException.Fault.VALIDATION_FAILED, thrown.getFault());
     verify(collExRepo, never()).getById(any());
   }
 
   @Test
-  public void shouldDiscardEventWithNonSocialSurvey() {
+  public void shouldDiscardEventWithNonSocialSurvey() throws CTPException {
     when(appConfig.getSurveys()).thenReturn(ACCEPTED_SURVEYS);
     mockSurvey("test/somethingelse.json");
     assertFalse(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
@@ -59,11 +66,15 @@ public class EventFilerTest {
   }
 
   @Test
-  public void shouldDiscardEventWithUnknownCollectionExercise() {
+  public void shouldDiscardEventWithUnknownCollectionExercise() throws CTPException {
     when(appConfig.getSurveys()).thenReturn(ACCEPTED_SURVEYS);
     mockSocialSurvey();
     when(collExRepo.findById(any())).thenReturn(Optional.empty());
-    assertFalse(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
+    CTPException thrown =
+        assertThrows(
+            CTPException.class,
+            () -> eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID));
+    assertEquals(CTPException.Fault.VALIDATION_FAILED, thrown.getFault());
   }
 
   private void mockSocialSurvey() {
