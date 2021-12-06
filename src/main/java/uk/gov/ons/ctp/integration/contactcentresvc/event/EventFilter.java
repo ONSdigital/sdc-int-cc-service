@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerciseRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
@@ -72,18 +71,17 @@ public class EventFilter {
 
   private boolean isKnownCollectionExercise(String collexId, String messageId, String caseId)
       throws CTPException {
-    CollectionExercise collex =
-        collectionExerciseRepository
-            .findById(UUID.fromString(collexId))
-            .orElseThrow(
-                () -> {
-                  log.warn(
-                      "CollectionExercise unknown - NAKing message",
-                      kv("messageId", messageId),
-                      kv("caseId", caseId));
-                  return new CTPException(
-                      CTPException.Fault.VALIDATION_FAILED, "CollectionExercise unknown");
-                });
+    collectionExerciseRepository
+        .findById(UUID.fromString(collexId))
+        .orElseThrow(
+            () -> {
+              log.warn(
+                  "CollectionExercise unknown - NAKing message",
+                  kv("messageId", messageId),
+                  kv("caseId", caseId));
+              return new CTPException(
+                  CTPException.Fault.VALIDATION_FAILED, "CollectionExercise unknown");
+            });
     return true;
   }
 }
