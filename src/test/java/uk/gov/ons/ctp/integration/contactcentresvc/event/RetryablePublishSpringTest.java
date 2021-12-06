@@ -66,9 +66,9 @@ public class RetryablePublishSpringTest {
   }
 
   private EventToSend createEvent(String id) {
-    String payload = FixtureHelper.loadPackageObjectNode("SurveyLaunchResponse").toString();
+    String payload = FixtureHelper.loadPackageObjectNode("EqLaunch").toString();
     return new EventToSend(
-        UUID.fromString(id), TopicType.SURVEY_LAUNCH.name(), payload, LocalDateTime.now());
+        UUID.fromString(id), TopicType.EQ_LAUNCH.name(), payload, LocalDateTime.now());
   }
 
   private void verifySent(int numTimes) {
@@ -80,7 +80,7 @@ public class RetryablePublishSpringTest {
             payloadCaptor.capture());
 
     if (numTimes != 0) {
-      assertEquals(TopicType.SURVEY_LAUNCH, typeCaptor.getValue());
+      assertEquals(TopicType.EQ_LAUNCH, typeCaptor.getValue());
       assertEquals(Source.CONTACT_CENTRE_API, sourceCaptor.getValue());
       assertEquals(Channel.CC, channelCaptor.getValue());
       assertNotNull(payloadCaptor.getValue());

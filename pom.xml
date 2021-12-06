@@ -21,7 +21,7 @@
     <groupId>ons.sdc.int.common</groupId>
     <artifactId>common</artifactId>
     <!-- change this to the version of ALL common libs to be used by this build -->
-    <version>1.0.64-228-SNAPSHOT</version>
+    <version>1.0.67-228-SNAPSHOT</version>
   </parent>
 
   <scm>
@@ -213,6 +213,22 @@
       <artifactId>testcontainers</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Junit4 mocks allow us to remove the unwanted junit4 transitive dependency
+         introduced by testcontainers in a safe way. It is a minimal library of
+         about 4 or 5 dummy interfaces. This will no longer be needed when
+         testcontainers moves to version 2 -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit4-mock</artifactId>
+      <version>2.5.0.Final</version>
     </dependency>
 
     <dependency>
