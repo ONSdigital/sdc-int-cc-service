@@ -46,11 +46,11 @@ public class Survey {
   private Object sampleDefinition;
 
   private String sampleDefinitionUrl;
-  
+
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb")
   private Map<String, ?> metadata;
-  
+
   @JsonIgnore
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Product> allowedFulfilments;

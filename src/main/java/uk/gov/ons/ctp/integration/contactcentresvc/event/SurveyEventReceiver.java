@@ -49,9 +49,7 @@ public class SurveyEventReceiver {
     try {
       Survey survey = mapper.map(payload, Survey.class);
 
-      survey.setSampleDefinition(payload.getSampleDefinition()); // PMB needed??
-
-      // Squash the 3 collections of fulfilments into a single list
+      // Squash the 3 fulfilment collections into a single list
       List<Product> buildFulfilmentList = new ArrayList<Product>();
       addProductsToList(
           buildFulfilmentList, DeliveryChannel.POST, payload.getAllowedPrintFulfilments(), survey);

@@ -51,8 +51,6 @@ public class SurveyEventReceiverTest {
   @Test
   public void shouldReceiveSurveyUpdateEvent() throws Exception {
 
-    System.out.println(event.getPayload().getSurveyUpdate().getSampleDefinition()); // PMB
-
     target.acceptEvent(event);
 
     verify(repo).saveAndFlush(surveyCaptor.capture());
