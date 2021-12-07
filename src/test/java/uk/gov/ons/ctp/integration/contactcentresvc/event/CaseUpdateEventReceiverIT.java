@@ -3,6 +3,8 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
@@ -24,7 +27,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerc
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.PostgresTestBase;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
-public class CaseEventReceiverIT extends PostgresTestBase {
+public class CaseUpdateEventReceiverIT extends PostgresTestBase {
   private static final String CASE_ID = "ad24e36c-2a61-11ec-aa00-4c3275913db5";
   private static final String SURVEY_ID = "3883af91-0052-4497-9805-3238544fcf8a";
   private static final String COLLECTION_EX_ID = "4883af91-0052-4497-9805-3238544fcf8a";
@@ -47,7 +50,7 @@ public class CaseEventReceiverIT extends PostgresTestBase {
   }
 
   @Test
-  public void shouldReceiveCase() {
+  public void shouldReceiveCase() throws CTPException {
     survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
     txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
 
@@ -62,6 +65,40 @@ public class CaseEventReceiverIT extends PostgresTestBase {
     assertEquals("CC3", caze.getCohort());
   }
 
+  @Test
+  public void shouldRejectCaseForIgnoredSurveyType() throws CTPException {
+    survey = txOps.createSurveyWeFilterOut(UUID.fromString(SURVEY_ID));
+    txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
+
+    assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
+
+    txOps.acceptEvent(caseEvent);
+
+    assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
+  }
+
+  @Test
+  public void shouldRejectCaseForMissingSurvey() {
+    assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
+
+    CTPException thrown = assertThrows(CTPException.class, () -> txOps.acceptEvent(caseEvent));
+    assertEquals(CTPException.Fault.VALIDATION_FAILED, thrown.getFault());
+
+    assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
+  }
+
+  @Test
+  public void shouldRejectCaseForMissingCollectionExercise() {
+    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+
+    assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
+
+    CTPException thrown = assertThrows(CTPException.class, () -> txOps.acceptEvent(caseEvent));
+    assertEquals(CTPException.Fault.VALIDATION_FAILED, thrown.getFault());
+
+    assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
+  }
+
   /**
    * Separate class that can create/update database items and commit the results so that subsequent
    * operations can see the effect.
@@ -72,13 +109,13 @@ public class CaseEventReceiverIT extends PostgresTestBase {
     private CaseRepository caseRepo;
     private SurveyRepository surveyRepo;
     private CollectionExerciseRepository collExRepo;
-    private CaseEventReceiver target;
+    private CaseUpdateEventReceiver target;
 
     public TransactionalOps(
         SurveyRepository surveyRepo,
         CollectionExerciseRepository collExRepo,
         CaseRepository caseRepo,
-        CaseEventReceiver target) {
+        CaseUpdateEventReceiver target) {
       this.surveyRepo = surveyRepo;
       this.collExRepo = collExRepo;
       this.caseRepo = caseRepo;
@@ -111,6 +148,18 @@ public class CaseEventReceiverIT extends PostgresTestBase {
       return survey;
     }
 
+    public Survey createSurveyWeFilterOut(UUID id) {
+      Survey survey =
+          Survey.builder()
+              .id(id)
+              .name("LMS")
+              .sampleDefinitionUrl("https://some.domain/test.json")
+              .sampleDefinition("{}")
+              .build();
+      surveyRepo.save(survey);
+      return survey;
+    }
+
     public void createCollex(Survey survey, UUID id) {
       CollectionExercise cx =
           CollectionExercise.builder()
@@ -124,7 +173,7 @@ public class CaseEventReceiverIT extends PostgresTestBase {
       collExRepo.save(cx);
     }
 
-    public void acceptEvent(CaseEvent event) {
+    public void acceptEvent(CaseEvent event) throws CTPException {
       target.acceptEvent(event);
     }
   }

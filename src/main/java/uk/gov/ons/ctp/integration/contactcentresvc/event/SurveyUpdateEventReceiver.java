@@ -20,11 +20,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepositor
 
 @Slf4j
 @MessageEndpoint
-public class SurveyEventReceiver {
+public class SurveyUpdateEventReceiver {
   private SurveyRepository repo;
   private MapperFacade mapper;
 
-  public SurveyEventReceiver(SurveyRepository repo, MapperFacade mapper) {
+  public SurveyUpdateEventReceiver(SurveyRepository repo, MapperFacade mapper) {
     this.repo = repo;
     this.mapper = mapper;
   }

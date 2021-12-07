@@ -201,4 +201,8 @@ spec:
             secretKeyRef:
               name: env-secrets
               key: response-id-salt
-
+        - name: SURVEYS
+            valueFrom:
+              configMapKeyRef:
+                name: cc-config
+                key: surveys

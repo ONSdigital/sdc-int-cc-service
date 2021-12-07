@@ -19,13 +19,13 @@ import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
-import uk.gov.ons.ctp.integration.contactcentresvc.event.SurveyEventReceiver;
+import uk.gov.ons.ctp.integration.contactcentresvc.event.SurveyUpdateEventReceiver;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.ProductGroup;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 
-public class SurveyRepositoryIT extends PostgresTestBase {
+public class SurveyUpdateRepositoryIT extends PostgresTestBase {
 
   @Autowired private SurveyTransactionalOps txOps;
 
@@ -124,7 +124,7 @@ public class SurveyRepositoryIT extends PostgresTestBase {
     }
 
     public void writeSurvey(SurveyUpdateEvent surveyUpdateEvent) throws Exception {
-      SurveyEventReceiver surveyReceiver = new SurveyEventReceiver(repo, ccBeanMapper);
+      SurveyUpdateEventReceiver surveyReceiver = new SurveyUpdateEventReceiver(repo, ccBeanMapper);
       surveyReceiver.acceptEvent(surveyUpdateEvent);
     }
 
