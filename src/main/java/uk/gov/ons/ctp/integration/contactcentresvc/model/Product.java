@@ -21,6 +21,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import uk.gov.ons.ctp.common.domain.DeliveryChannel;
+import uk.gov.ons.ctp.common.domain.ProductGroup;
 
 /**
  * Representation of Product from database table.

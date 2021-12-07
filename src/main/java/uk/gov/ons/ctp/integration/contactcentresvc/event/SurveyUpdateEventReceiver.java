@@ -9,12 +9,12 @@ import ma.glasnost.orika.MapperFacade;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.ctp.common.domain.DeliveryChannel;
+import uk.gov.ons.ctp.common.domain.ProductGroup;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.ProductGroup;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
