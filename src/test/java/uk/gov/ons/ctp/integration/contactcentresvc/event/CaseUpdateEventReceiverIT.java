@@ -98,6 +98,8 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
 
     assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
   }
+  
+  //TODO test PENDING is overwritten when actual case is updated
 
   /**
    * Separate class that can create/update database items and commit the results so that subsequent

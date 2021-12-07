@@ -53,4 +53,6 @@ public class Case {
 
   private LocalDateTime createdAt;
   private LocalDateTime lastUpdatedAt;
+
+  private String ccStatus;
 }

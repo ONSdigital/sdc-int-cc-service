@@ -25,11 +25,13 @@ import lombok.ToString;
 @NoArgsConstructor
 @Entity
 @Table(name = "case_response")
-public class CaseResponse {
+public class Uac {
 
   @ToString.Include @Id private UUID id;
 
   @ToString.Include private UUID caseId;
+  @ToString.Include private UUID collectionExerciseId;
+  @ToString.Include private UUID surveyId;
 
   private int waveNum;
 
@@ -39,4 +41,5 @@ public class CaseResponse {
 
   private String questionnaire;
   private String uacHash;
+  private String collectionInstrumentUrl;
 }
