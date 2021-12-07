@@ -33,7 +33,7 @@ public class SurveyUpdateRepositoryIT extends PostgresTestBase {
   public void setup() throws Exception {
     txOps.deleteAll();
 
-    // Load a random survey, to make that there is no inteference between the test survey
+    // Load a random survey, to make that there is no interference between the test survey
     // and any pre-existing surveys
     List<SurveyUpdateEvent> secondarySurveys =
         FixtureHelper.loadClassFixtures(SurveyUpdateEvent[].class, "Secondary");
@@ -100,7 +100,7 @@ public class SurveyUpdateRepositoryIT extends PostgresTestBase {
     private CaseRepository caseRepo;
     private CollectionExerciseRepository collExRepo;
     private ProductRepository productRepo;
-    private SurveyRepository repo;
+    private SurveyRepository surveyRepo;
     private CCSvcBeanMapper ccBeanMapper;
 
     public SurveyTransactionalOps(
@@ -109,7 +109,7 @@ public class SurveyUpdateRepositoryIT extends PostgresTestBase {
         ProductRepository productRepo,
         CollectionExerciseRepository collExRepo,
         CCSvcBeanMapper ccBeanMapper) {
-      this.repo = repo;
+      this.surveyRepo = repo;
       this.caseRepo = caseRepo;
       this.collExRepo = collExRepo;
       this.productRepo = productRepo;
@@ -120,17 +120,17 @@ public class SurveyUpdateRepositoryIT extends PostgresTestBase {
       caseRepo.deleteAll();
       collExRepo.deleteAll();
       productRepo.deleteAll();
-      repo.deleteAll();
+      surveyRepo.deleteAll();
     }
 
     public void writeSurvey(SurveyUpdateEvent surveyUpdateEvent) throws Exception {
-      SurveyUpdateEventReceiver surveyReceiver = new SurveyUpdateEventReceiver(repo, ccBeanMapper);
+      SurveyUpdateEventReceiver surveyReceiver = new SurveyUpdateEventReceiver(surveyRepo, ccBeanMapper);
       surveyReceiver.acceptEvent(surveyUpdateEvent);
     }
 
     public void verifySurvey(SurveyUpdate expectedSurvey) {
       UUID surveyUUID = UUID.fromString(expectedSurvey.getSurveyId());
-      Survey actualSurvey = repo.findById(surveyUUID).get();
+      Survey actualSurvey = surveyRepo.findById(surveyUUID).get();
       verifySurveysAreEqual(expectedSurvey, actualSurvey);
     }
 
