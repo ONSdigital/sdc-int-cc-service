@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 import java.util.UUID;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -24,10 +25,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "case_response")
+@Table(name = "uac")
 public class Uac {
 
-  @ToString.Include @Id private UUID id;
+  @GeneratedValue @ToString.Include @Id private UUID id;
 
   @ToString.Include private UUID caseId;
   @ToString.Include private UUID collectionExerciseId;

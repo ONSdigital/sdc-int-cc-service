@@ -16,10 +16,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
@@ -38,6 +41,7 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
   private CaseEvent caseEvent;
   private CaseUpdate caseUpdate;
   private Survey survey;
+  private CollectionExercise collectionExercise;
 
   @BeforeEach
   public void setup() {
@@ -98,8 +102,27 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
 
     assertTrue(caseRepo.findById(UUID.fromString(CASE_ID)).isEmpty());
   }
-  
-  //TODO test PENDING is overwritten when actual case is updated
+
+  @Test
+  public void shouldPopulateSkeletonCase() throws CTPException {
+    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+    collectionExercise = txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
+    txOps.createSkeletonCase(collectionExercise, UUID.fromString(CASE_ID));
+
+    Case skeletonCase = caseRepo.getById(UUID.fromString(CASE_ID));
+    assertNotNull(skeletonCase);
+
+    txOps.acceptEvent(caseEvent);
+
+    Case caze = caseRepo.getById(UUID.fromString(CASE_ID));
+    assertNotNull(caze);
+    assertEquals("10000000017", caze.getCaseRef());
+    assertEquals("AB1 2ZX", caze.getAddress().getPostcode());
+    assertEquals("CC3", caze.getCohort());
+    assertEquals(CCStatus.RECEIVED, caze.getCcStatus());
+    assertNotNull(caze.getAddress());
+
+  }
 
   /**
    * Separate class that can create/update database items and commit the results so that subsequent
@@ -162,7 +185,7 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
       return survey;
     }
 
-    public void createCollex(Survey survey, UUID id) {
+    public CollectionExercise createCollex(Survey survey, UUID id) {
       CollectionExercise cx =
           CollectionExercise.builder()
               .id(id)
@@ -173,6 +196,27 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
               .endDate(LocalDateTime.now().plusDays(1))
               .build();
       collExRepo.save(cx);
+      return cx;
+    }
+
+    public void createSkeletonCase(CollectionExercise collectionExercise, UUID id) {
+      Case caze =
+          Case.builder()
+              .id(id)
+              .collectionExercise(collectionExercise)
+              .ccStatus(CCStatus.PENDING)
+              .caseRef("")
+              .lastUpdatedAt(LocalDateTime.parse("9999-01-01T00:00:00.000"))
+              .createdAt(LocalDateTime.parse("9999-01-01T00:00:00.000"))
+              .address(CaseAddress.builder()
+                  .uprn("")
+                  .addressLine1("")
+                  .townName("")
+                  .postcode("")
+                  .region(Region.E)
+                  .build())
+              .build();
+      caseRepo.save(caze);
     }
 
     public void acceptEvent(CaseEvent event) throws CTPException {

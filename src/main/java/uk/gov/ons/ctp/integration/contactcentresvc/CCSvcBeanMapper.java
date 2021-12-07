@@ -19,6 +19,7 @@ import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExercise;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
+import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
@@ -26,6 +27,7 @@ import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 
@@ -133,6 +135,13 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .field("censusEstabType", "address.estabType")
         .field("countryCode", "address.region")
         .field("organisationName", "organisationName")
+        .register();
+
+    factory
+        .classMap(UacUpdate.class, Uac.class)
+        .field("metadata.wave", "waveNum")
+        .field("qid", "questionnaire")
+        .byDefault()
         .register();
 
     factory.classMap(CaseContainerDTO.class, Address.class).byDefault().register();

@@ -1,28 +1,18 @@
-ALTER TABLE case_response RENAME TO uac;
+DROP TABLE case_response;
 
-ALTER TABLE uac DROP COLUMN cohort;
-ALTER TABLE uac DROP COLUMN responded;
-
-ALTER TABLE uac ADD COLUMN active BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE uac ADD COLUMN receipt_received BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE uac ADD COLUMN eq_launched BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE uac ADD COLUMN uac_hash TEXT NOT NULL DEFAULT '';
-ALTER TABLE uac ADD COLUMN questionnaire TEXT NOT NULL DEFAULT '';
-ALTER TABLE uac ADD COLUMN active BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE uac ADD COLUMN collectionExerciseId uuid NOT NULL DEFAULT false;
-ALTER TABLE uac ADD COLUMN surveyId uuid NOT NULL DEFAULT false;
-ALTER TABLE uac ADD COLUMN collectionInstrumentUrl TEXT NOT NULL DEFAULT '';
-
-ALTER TABLE uac ALTER COLUMN active DROP DEFAULT;
-ALTER TABLE uac ALTER COLUMN receipt_received DROP DEFAULT;
-ALTER TABLE uac ALTER COLUMN eq_launched DROP DEFAULT;
-ALTER TABLE uac ALTER COLUMN uac_hash DROP DEFAULT;
-ALTER TABLE uac ALTER COLUMN questionnaire DROP DEFAULT;
-ALTER TABLE uac ALTER COLUMN collectionExerciseId DROP DEFAULT;
-ALTER TABLE uac ALTER COLUMN surveyId DROP DEFAULT;
-ALTER TABLE uac ALTER COLUMN collectionInstrumentUrl DROP DEFAULT;
+CREATE TABLE uac (
+   id UUID PRIMARY KEY,
+   case_id UUID REFERENCES collection_case NOT NULL,
+   wave_num INTEGER NOT NULL,
+   active BOOLEAN NOT NULL,
+   receipt_received BOOLEAN NOT NULL,
+   eq_launched BOOLEAN NOT NULL,
+   uac_hash TEXT NOT NULL,
+   questionnaire TEXT NOT NULL,
+   collection_exercise_id uuid NOT NULL,
+   survey_id uuid NOT NULL,
+   collection_instrument_url TEXT NOT NULL
+);
 
 ALTER TABLE collection_case ADD COLUMN cc_status TEXT NOT NULL DEFAULT '';
 ALTER TABLE collection_case ALTER COLUMN cc_status DROP DEFAULT;
-
-

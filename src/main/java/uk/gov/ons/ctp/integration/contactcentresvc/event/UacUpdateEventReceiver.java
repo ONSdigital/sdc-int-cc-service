@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -9,10 +10,14 @@ import ma.glasnost.orika.MapperFacade;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.UacEvent;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
@@ -48,12 +53,17 @@ public class UacUpdateEventReceiver {
     String uacMessageId = uacEvent.getHeader().getMessageId().toString();
 
     log.info(
-        "Entering acceptUACEvent", kv("messageId", uacMessageId), kv("caseId", uacUpdate.getCaseId()));
+        "Entering acceptUACEvent",
+        kv("messageId", uacMessageId),
+        kv("caseId", uacUpdate.getCaseId()));
 
-    Optional<Case> caseOptional = caseRepository.findById(UUID.fromString(uacUpdate.getCaseId()));
-
-    if(eventFilter.isValidEvent(uacUpdate.getSurveyId(), uacUpdate.getCollectionExerciseId(), uacUpdate.getCaseId(), uacMessageId)) {
+    if (eventFilter.isValidEvent(
+        uacUpdate.getSurveyId(),
+        uacUpdate.getCollectionExerciseId(),
+        uacUpdate.getCaseId(),
+        uacMessageId)) {
       Uac uac = mapper.map(uacUpdate, Uac.class);
+      Optional<Case> caseOptional = caseRepository.findById(UUID.fromString(uacUpdate.getCaseId()));
       if (caseOptional.isPresent()) {
         try {
           uacRepository.save(uac);
@@ -78,10 +88,24 @@ public class UacUpdateEventReceiver {
     }
   }
 
+  //placeholder values for fields that cannot be NULL
   private Case createSkeletonCase(Uac uac) {
     Case collectionCase = new Case();
     collectionCase.setId(uac.getCaseId());
-    collectionCase.setCcStatus("PENDING");
+    collectionCase.setCcStatus(CCStatus.PENDING);
+    collectionCase.setCaseRef("");
+    collectionCase.setLastUpdatedAt(LocalDateTime.parse("9999-01-01T00:00:00.000"));
+    collectionCase.setCreatedAt(LocalDateTime.parse("9999-01-01T00:00:00.000"));
+    collectionCase.setCollectionExercise(
+        CollectionExercise.builder().id(uac.getCollectionExerciseId()).build());
+    collectionCase.setAddress(CaseAddress.builder()
+        .uprn("")
+        .addressLine1("")
+        .townName("")
+        .postcode("")
+        .region(Region.E)
+        .build());
+
     return collectionCase;
   }
 }
