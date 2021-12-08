@@ -99,32 +99,29 @@ public class SurveyUpdateRepositoryIT extends PostgresTestBase {
   public static class SurveyTransactionalOps {
     private CaseRepository caseRepo;
     private CollectionExerciseRepository collExRepo;
-    private ProductRepository productRepo;
     private SurveyRepository surveyRepo;
     private CCSvcBeanMapper ccBeanMapper;
 
     public SurveyTransactionalOps(
         CaseRepository caseRepo,
         SurveyRepository repo,
-        ProductRepository productRepo,
         CollectionExerciseRepository collExRepo,
         CCSvcBeanMapper ccBeanMapper) {
       this.surveyRepo = repo;
       this.caseRepo = caseRepo;
       this.collExRepo = collExRepo;
-      this.productRepo = productRepo;
       this.ccBeanMapper = ccBeanMapper;
     }
 
     public void deleteAll() {
       caseRepo.deleteAll();
       collExRepo.deleteAll();
-      productRepo.deleteAll();
       surveyRepo.deleteAll();
     }
 
     public void writeSurvey(SurveyUpdateEvent surveyUpdateEvent) throws Exception {
-      SurveyUpdateEventReceiver surveyReceiver = new SurveyUpdateEventReceiver(surveyRepo, ccBeanMapper);
+      SurveyUpdateEventReceiver surveyReceiver =
+          new SurveyUpdateEventReceiver(surveyRepo, ccBeanMapper);
       surveyReceiver.acceptEvent(surveyUpdateEvent);
     }
 
