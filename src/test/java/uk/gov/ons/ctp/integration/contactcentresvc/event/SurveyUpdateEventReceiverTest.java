@@ -1,12 +1,15 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.PersistenceException;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,9 +22,13 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.DeliveryChannel;
+import uk.gov.ons.ctp.common.domain.ProductGroup;
+import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
@@ -43,19 +50,35 @@ public class SurveyUpdateEventReceiverTest {
   }
 
   @Test
-  public void shouldReceiveSurveyUpdateEvent() {
+  public void shouldReceiveSurveyUpdateEvent() throws Exception {
+
     target.acceptEvent(event);
 
-    verify(repo).save(surveyCaptor.capture());
+    verify(repo).saveAndFlush(surveyCaptor.capture());
 
     SurveyUpdate payload = event.getPayload().getSurveyUpdate();
     Survey survey = surveyCaptor.getValue();
     verifyMappedSurvey(survey, payload);
+    verifyFulfilments(
+        payload.getAllowedPrintFulfilments(),
+        filterProducts(survey, DeliveryChannel.POST),
+        survey.getId(),
+        DeliveryChannel.POST);
+    verifyFulfilments(
+        payload.getAllowedSmsFulfilments(),
+        filterProducts(survey, DeliveryChannel.SMS),
+        survey.getId(),
+        DeliveryChannel.SMS);
+    verifyFulfilments(
+        payload.getAllowedEmailFulfilments(),
+        filterProducts(survey, DeliveryChannel.EMAIL),
+        survey.getId(),
+        DeliveryChannel.EMAIL);
   }
 
   @Test
   public void shouldRejectFailingSave() {
-    when(repo.save(any())).thenThrow(PersistenceException.class);
+    when(repo.saveAndFlush(any())).thenThrow(PersistenceException.class);
     assertThrows(PersistenceException.class, () -> target.acceptEvent(event));
   }
 
@@ -64,5 +87,37 @@ public class SurveyUpdateEventReceiverTest {
     assertEquals(surveyUpdate.getName(), survey.getName());
     assertEquals(surveyUpdate.getSampleDefinitionUrl(), survey.getSampleDefinitionUrl());
     assertEquals(surveyUpdate.getSampleDefinition(), survey.getSampleDefinition());
+  }
+
+  private void verifyFulfilments(
+      List<SurveyFulfilment> expectedFulfilments,
+      List<Product> actualProducts,
+      UUID expectedSurveyId,
+      DeliveryChannel expectedDeliveryChannel) {
+
+    if (actualProducts == null) {
+      assertNull(expectedFulfilments);
+    }
+
+    assertEquals(actualProducts.size(), expectedFulfilments.size());
+
+    for (int i = 0; i < actualProducts.size(); i++) {
+      Product actual = actualProducts.get(i);
+      SurveyFulfilment expected = expectedFulfilments.get(i);
+
+      assertEquals(expected.getPackCode(), actual.getPackCode());
+      assertEquals(expected.getDescription(), actual.getDescription());
+      assertEquals(expected.getMetadata(), actual.getMetadata());
+
+      assertEquals(expectedSurveyId, actual.getSurvey().getId());
+      assertEquals(expectedDeliveryChannel, actual.getDeliveryChannel());
+      assertEquals(ProductGroup.UAC, actual.getProductGroup());
+    }
+  }
+
+  private List<Product> filterProducts(Survey survey, DeliveryChannel targetDeliveryChannel) {
+    return survey.getAllowedFulfilments().stream()
+        .filter(f -> f.getDeliveryChannel() == targetDeliveryChannel)
+        .collect(Collectors.toList());
   }
 }

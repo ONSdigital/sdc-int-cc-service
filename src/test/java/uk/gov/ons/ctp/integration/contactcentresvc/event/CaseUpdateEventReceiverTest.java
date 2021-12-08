@@ -66,7 +66,7 @@ public class CaseUpdateEventReceiverTest {
         .thenReturn(true);
     target.acceptEvent(caseEvent);
 
-    verify(caseRepo).save(caseCaptor.capture());
+    verify(caseRepo).saveAndFlush(caseCaptor.capture());
 
     CaseUpdate ccase = caseEvent.getPayload().getCaseUpdate();
     Case caze = caseCaptor.getValue();
@@ -79,12 +79,12 @@ public class CaseUpdateEventReceiverTest {
         .thenReturn(false);
     target.acceptEvent(caseEvent);
 
-    verify(caseRepo, times(0)).save(caseCaptor.capture());
+    verify(caseRepo, times(0)).saveAndFlush(caseCaptor.capture());
   }
 
   @Test
   public void shouldRejectFailingSave() throws CTPException {
-    when(caseRepo.save(any())).thenThrow(PersistenceException.class);
+    when(caseRepo.saveAndFlush(any())).thenThrow(PersistenceException.class);
     when(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
         .thenReturn(true);
     assertThrows(PersistenceException.class, () -> target.acceptEvent(caseEvent));

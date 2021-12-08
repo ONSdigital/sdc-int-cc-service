@@ -3,7 +3,9 @@ package uk.gov.ons.ctp.integration.contactcentresvc;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.converter.BidirectionalConverter;
@@ -11,6 +13,7 @@ import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.event.model.Address;
@@ -46,6 +49,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter(new StringToUPRNConverter());
     converterFactory.registerConverter(new UtcOffsetDateTimeConverter());
     converterFactory.registerConverter(new UtcLocalDateTimeConverter());
+    converterFactory.registerConverter(new ArrayListConverter());
 
     factory
         .classMap(CaseContainerDTO.class, CaseDTO.class)
@@ -179,6 +183,34 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     public Date convertFrom(
         LocalDateTime source, Type<Date> destinationType, MappingContext mappingContext) {
       return new Date(source.toInstant(ZoneOffset.UTC).toEpochMilli());
+    }
+  }
+
+  // This converter was added to support the conversion of the metadata map used by
+  // the Product class
+  static class ArrayListConverter extends BidirectionalConverter<ArrayList<Object>, Object> {
+    @Override
+    public Object convertTo(
+        ArrayList<Object> source, Type<Object> destinationType, MappingContext mappingContext) {
+
+      List<String> destination = new ArrayList<>();
+      for (Object sourceElement : source) {
+        if (sourceElement instanceof String) {
+          destination.add((String) sourceElement);
+        } else {
+          throw new UnsupportedOperationException(
+              "Unsupported type found when mapping an an ArrayList: "
+                  + SourceElementNotifier.class.getCanonicalName());
+        }
+      }
+
+      return destination;
+    }
+
+    @Override
+    public ArrayList<Object> convertFrom(
+        Object source, Type<ArrayList<Object>> destinationType, MappingContext mappingContext) {
+      throw new UnsupportedOperationException("Conversion not implemented");
     }
   }
 }
