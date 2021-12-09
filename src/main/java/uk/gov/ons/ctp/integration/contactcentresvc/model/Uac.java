@@ -13,7 +13,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Representation of Case entity from database table.
+ * Representation of Uac entity from database table.
  *
  * <p>Implementation note: avoid Lombok Data annotation, since generated toString, equals and
  * hashcode are considered dangerous in combination with Entity annotation.
