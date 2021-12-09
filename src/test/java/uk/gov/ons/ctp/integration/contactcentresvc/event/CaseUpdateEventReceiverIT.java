@@ -121,7 +121,6 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
     assertEquals("CC3", caze.getCohort());
     assertEquals(CCStatus.RECEIVED, caze.getCcStatus());
     assertNotNull(caze.getAddress());
-
   }
 
   /**
@@ -208,13 +207,14 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
               .caseRef("")
               .lastUpdatedAt(LocalDateTime.parse("9999-01-01T00:00:00.000"))
               .createdAt(LocalDateTime.parse("9999-01-01T00:00:00.000"))
-              .address(CaseAddress.builder()
-                  .uprn("")
-                  .addressLine1("")
-                  .townName("")
-                  .postcode("")
-                  .region(Region.E)
-                  .build())
+              .address(
+                  CaseAddress.builder()
+                      .uprn("")
+                      .addressLine1("")
+                      .townName("")
+                      .postcode("")
+                      .region(Region.E)
+                      .build())
               .build();
       caseRepo.save(caze);
     }

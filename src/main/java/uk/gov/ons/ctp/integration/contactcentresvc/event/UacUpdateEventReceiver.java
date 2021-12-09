@@ -14,9 +14,9 @@ import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.UacEvent;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
@@ -88,7 +88,7 @@ public class UacUpdateEventReceiver {
     }
   }
 
-  //placeholder values for fields that cannot be NULL
+  // placeholder values for fields that cannot be NULL
   private Case createSkeletonCase(Uac uac) {
     Case collectionCase = new Case();
     collectionCase.setId(uac.getCaseId());
@@ -98,13 +98,14 @@ public class UacUpdateEventReceiver {
     collectionCase.setCreatedAt(LocalDateTime.parse("9999-01-01T00:00:00.000"));
     collectionCase.setCollectionExercise(
         CollectionExercise.builder().id(uac.getCollectionExerciseId()).build());
-    collectionCase.setAddress(CaseAddress.builder()
-        .uprn("")
-        .addressLine1("")
-        .townName("")
-        .postcode("")
-        .region(Region.E)
-        .build());
+    collectionCase.setAddress(
+        CaseAddress.builder()
+            .uprn("")
+            .addressLine1("")
+            .townName("")
+            .postcode("")
+            .region(Region.E)
+            .build());
 
     return collectionCase;
   }

@@ -23,6 +23,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.UacEvent;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
@@ -111,6 +112,6 @@ public class UacUpdateEventReceiverTest {
 
   private void verifySkeletonCase(Case collectionCase) {
     assertEquals(CASE_ID, collectionCase.getId().toString());
-    assertEquals("PENDING", collectionCase.getCcStatus());
+    assertEquals(CCStatus.PENDING, collectionCase.getCcStatus());
   }
 }

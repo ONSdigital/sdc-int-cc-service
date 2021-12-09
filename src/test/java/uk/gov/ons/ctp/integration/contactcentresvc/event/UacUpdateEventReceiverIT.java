@@ -1,5 +1,14 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +21,10 @@ import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.UacEvent;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseContact;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
@@ -25,17 +34,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerc
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.PostgresTestBase;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class UacUpdateEventReceiverIT extends PostgresTestBase {
 
@@ -82,7 +80,6 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
     assertEquals(uacUpdate.getMetadata().getWave(), uac.getWaveNum());
     assertEquals(uacUpdate.getCollectionInstrumentUrl(), uac.getCollectionInstrumentUrl());
     assertNotNull(uac.getId());
-
   }
 
   @Test
@@ -118,7 +115,6 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
     assertTrue(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isEmpty());
   }
 
-
   @Test
   public void shouldSaveUacAndSkeletonCaseWhenCaseNotFound() throws CTPException {
     survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
@@ -140,13 +136,14 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
     assertEquals(uacUpdate.getCollectionInstrumentUrl(), uac.getCollectionInstrumentUrl());
     assertNotNull(uac.getId());
 
-    CaseAddress address = CaseAddress.builder()
-        .uprn("")
-        .addressLine1("")
-        .townName("")
-        .postcode("")
-        .region(Region.E)
-        .build();
+    CaseAddress address =
+        CaseAddress.builder()
+            .uprn("")
+            .addressLine1("")
+            .townName("")
+            .postcode("")
+            .region(Region.E)
+            .build();
 
     Case caze = caseRepo.findById(UUID.fromString(CASE_ID)).orElse(null);
     assertNotNull(caze);
@@ -256,13 +253,14 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
               .id(id)
               .collectionExercise(collectionExercise)
               .caseRef("1")
-              .address(CaseAddress.builder()
-                  .uprn("1234")
-                  .addressLine1("1 Street Name")
-                  .townName("Town")
-                  .postcode("PO57 6DE")
-                  .region(Region.E)
-                  .build())
+              .address(
+                  CaseAddress.builder()
+                      .uprn("1234")
+                      .addressLine1("1 Street Name")
+                      .townName("Town")
+                      .postcode("PO57 6DE")
+                      .region(Region.E)
+                      .build())
               .ccStatus(CCStatus.RECEIVED)
               .cohort("1")
               .contact(new CaseContact())
@@ -271,7 +269,8 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
               .lastUpdatedAt(LocalDateTime.parse("2021-12-01T00:00:00.000"))
               .questionnaire("1")
               .refusalReceived(RefusalType.EXTRAORDINARY_REFUSAL)
-              .sampleUnitRef("unit").build();
+              .sampleUnitRef("unit")
+              .build();
       caseRepository.save(collectionCase);
     }
 

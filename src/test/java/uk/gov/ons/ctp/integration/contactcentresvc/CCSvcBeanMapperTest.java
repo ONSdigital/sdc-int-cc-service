@@ -242,12 +242,13 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(source.getCaseId(), destination.getCaseId().toString()),
         () ->
             assertEquals(
-                source.getCollectionExerciseId(),
-                destination.getCollectionExerciseId().toString()),
+                source.getCollectionExerciseId(), destination.getCollectionExerciseId().toString()),
         () -> assertEquals(source.getQid(), destination.getQuestionnaire()),
         () -> assertEquals(source.getMetadata().getWave(), destination.getWaveNum()),
         () -> assertEquals(source.getUacHash(), destination.getUacHash()),
-        () -> assertEquals(source.getCollectionInstrumentUrl(), destination.getCollectionInstrumentUrl()),
+        () ->
+            assertEquals(
+                source.getCollectionInstrumentUrl(), destination.getCollectionInstrumentUrl()),
         () -> assertEquals(source.getSurveyId(), destination.getSurveyId().toString()));
   }
 
