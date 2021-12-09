@@ -64,7 +64,7 @@ public class CaseUpdateEventReceiver {
       try {
         Case caze = mapper.map(caseUpdate, Case.class);
         caze.setCcStatus(CCStatus.RECEIVED);
-        caseRepo.save(caze);
+        caseRepo.saveAndFlush(caze);
 
         log.info(
             "Successful saved Case to database {}, {}",

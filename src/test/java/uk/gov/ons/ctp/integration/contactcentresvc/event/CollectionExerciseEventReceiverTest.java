@@ -47,7 +47,7 @@ public class CollectionExerciseEventReceiverTest {
   public void shouldReceiveSurveyUpdateEvent() {
     target.acceptEvent(event);
 
-    verify(repo).save(collExCaptor.capture());
+    verify(repo).saveAndFlush(collExCaptor.capture());
 
     uk.gov.ons.ctp.common.event.model.CollectionExercise payload =
         event.getPayload().getCollectionExerciseUpdate();
@@ -57,7 +57,7 @@ public class CollectionExerciseEventReceiverTest {
 
   @Test
   public void shouldRejectFailingSave() {
-    when(repo.save(any())).thenThrow(PersistenceException.class);
+    when(repo.saveAndFlush(any())).thenThrow(PersistenceException.class);
     assertThrows(PersistenceException.class, () -> target.acceptEvent(event));
   }
 

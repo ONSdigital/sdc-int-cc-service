@@ -43,7 +43,7 @@ public class CollectionExerciseEventReceiver {
 
     try {
       CollectionExercise entity = mapper.map(payload, CollectionExercise.class);
-      repo.save(entity);
+      repo.saveAndFlush(entity);
     } catch (Exception e) {
       log.error(
           "CollectionExercise Event processing failed",

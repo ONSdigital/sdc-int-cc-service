@@ -2,9 +2,12 @@ package uk.gov.ons.ctp.integration.contactcentresvc;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +21,7 @@ import uk.gov.ons.ctp.common.event.model.CaseUpdateSample;
 import uk.gov.ons.ctp.common.event.model.CaseUpdateSampleSensitive;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExercise;
+import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
@@ -25,6 +29,7 @@ import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
@@ -198,6 +203,44 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(source.getName(), destination.getName()),
         () -> assertEquals(source.getSampleDefinitionUrl(), destination.getSampleDefinitionUrl()),
         () -> assertEquals(source.getSampleDefinition(), destination.getSampleDefinition()));
+  }
+
+  @Test
+  public void shouldMapSurveyFulfilmentToProduct() {
+    // This test will fail without the mappers ArrayListConverter
+    SurveyFulfilment source = FixtureHelper.loadClassFixtures(SurveyFulfilment[].class).get(0);
+    Product destination = mapperFacade.map(source, Product.class);
+
+    assertAll(
+        () -> assertEquals(source.getPackCode(), destination.getPackCode()),
+        () -> assertEquals(source.getDescription(), destination.getDescription()),
+        () -> assertEquals(source.getMetadata(), destination.getMetadata()));
+  }
+
+  @Test
+  public void shouldMapArrayListOfStrings() {
+    // This test will fail without the mappers ArrayListConverter
+    List<Object> source = new ArrayList<>();
+    source.add("A");
+    source.add("B");
+
+    Object destination = mapperFacade.map(source, Object.class);
+
+    assertEquals(source, destination);
+  }
+
+  @Test
+  public void shouldFailToMapArrayListOfNonStrings() {
+    // This test will fail without the mappers ArrayListConverter
+    List<Object> source = new ArrayList<>();
+    source.add(Integer.valueOf("94"));
+
+    try {
+      mapperFacade.map(source, Object.class);
+      fail("Conversion should have thrown exception");
+    } catch (UnsupportedOperationException e) {
+      assertTrue(e.getMessage().contains("Unsupported type found when mapping"), e.getMessage());
+    }
   }
 
   @Test

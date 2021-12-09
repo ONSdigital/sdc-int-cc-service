@@ -1,15 +1,15 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,12 +17,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import uk.gov.ons.ctp.common.domain.DeliveryChannel;
+import uk.gov.ons.ctp.common.domain.ProductGroup;
 
 /**
- * Representation of Survey from database table.
+ * Representation of Product from database table.
  *
  * <p>Implementation note: avoid Lombok Data annotation, since generated toString, equals and
  * hashcode are considered dangerous in combination with Entity annotation.
@@ -35,23 +38,30 @@ import org.hibernate.annotations.TypeDefs;
 @ToString(onlyExplicitlyIncluded = true)
 @Entity
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
-@Table(name = "survey")
-public class Survey {
+@Table(name = "product")
+public class Product {
+  @ToString.Include
+  @Id
+  @GeneratedValue(generator = "UUID")
+  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+  @Column(name = "id", updatable = false, nullable = false)
+  private UUID id;
 
-  @ToString.Include @Id private UUID id;
+  @ManyToOne(optional = false)
+  private Survey survey;
 
-  @ToString.Include private String name;
+  @ToString.Include
+  @Enumerated(EnumType.STRING)
+  private DeliveryChannel deliveryChannel;
 
-  @Type(type = "jsonb")
-  private Object sampleDefinition;
+  @ToString.Include
+  @Enumerated(EnumType.STRING)
+  private ProductGroup productGroup;
 
-  private String sampleDefinitionUrl;
+  @ToString.Include private String packCode;
+  @ToString.Include private String description;
 
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb")
   private Map<String, ?> metadata;
-
-  @JsonIgnore
-  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Product> allowedFulfilments;
 }
