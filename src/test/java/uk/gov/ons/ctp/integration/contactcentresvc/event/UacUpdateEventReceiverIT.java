@@ -217,7 +217,7 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
               .sampleDefinitionUrl("https://some.domain/social.json")
               .sampleDefinition("{}")
               .build();
-      surveyRepo.save(survey);
+      surveyRepo.saveAndFlush(survey);
       return survey;
     }
 
@@ -229,7 +229,7 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
               .sampleDefinitionUrl("https://some.domain/test.json")
               .sampleDefinition("{}")
               .build();
-      surveyRepo.save(survey);
+      surveyRepo.saveAndFlush(survey);
       return survey;
     }
 
@@ -243,7 +243,7 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
               .startDate(LocalDateTime.now())
               .endDate(LocalDateTime.now().plusDays(1))
               .build();
-      collExRepo.save(cx);
+      collExRepo.saveAndFlush(cx);
       return cx;
     }
 
@@ -271,7 +271,7 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
               .refusalReceived(RefusalType.EXTRAORDINARY_REFUSAL)
               .sampleUnitRef("unit")
               .build();
-      caseRepository.save(collectionCase);
+      caseRepository.saveAndFlush(collectionCase);
     }
 
     public void acceptEvent(UacEvent event) throws CTPException {

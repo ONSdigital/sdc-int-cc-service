@@ -66,7 +66,7 @@ public class UacUpdateEventReceiver {
       Optional<Case> caseOptional = caseRepository.findById(UUID.fromString(uacUpdate.getCaseId()));
       if (caseOptional.isPresent()) {
         try {
-          uacRepository.save(uac);
+          uacRepository.saveAndFlush(uac);
         } catch (Exception e) {
           log.error("Uac Event processing failed", kv("messageId", uacMessageId), e);
           throw e;
@@ -78,8 +78,8 @@ public class UacUpdateEventReceiver {
             kv("caseId", uacUpdate.getCaseId()));
         Case collectionCase = createSkeletonCase(uac);
         try {
-          caseRepository.save(collectionCase);
-          uacRepository.save(uac);
+          caseRepository.saveAndFlush(collectionCase);
+          uacRepository.saveAndFlush(uac);
         } catch (Exception e) {
           log.error("Uac Event processing failed", kv("messageId", uacMessageId), e);
           throw e;

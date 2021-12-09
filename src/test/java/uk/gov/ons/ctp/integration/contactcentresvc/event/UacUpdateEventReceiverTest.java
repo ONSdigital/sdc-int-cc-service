@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import java.util.UUID;
+import javax.persistence.PersistenceException;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,8 +64,8 @@ public class UacUpdateEventReceiverTest {
 
     target.acceptEvent(uacEvent);
 
-    verify(uacRepository).save(uacCaptor.capture());
-    verify(caseRepo, times(0)).save(any());
+    verify(uacRepository).saveAndFlush(uacCaptor.capture());
+    verify(caseRepo, times(0)).saveAndFlush(any());
 
     UacUpdate uacUpdate = uacEvent.getPayload().getUacUpdate();
     Uac uac = uacCaptor.getValue();
@@ -77,9 +79,9 @@ public class UacUpdateEventReceiverTest {
 
     target.acceptEvent(uacEvent);
 
-    verify(uacRepository, times(0)).save(any());
+    verify(uacRepository, times(0)).saveAndFlush(any());
     verify(caseRepo, times(0)).findById(any());
-    verify(caseRepo, times(0)).save(any());
+    verify(caseRepo, times(0)).saveAndFlush(any());
   }
 
   @Test
@@ -88,13 +90,30 @@ public class UacUpdateEventReceiverTest {
         .thenReturn(true);
     target.acceptEvent(uacEvent);
 
-    verify(uacRepository).save(uacCaptor.capture());
-    verify(caseRepo).save(caseCaptor.capture());
+    verify(uacRepository).saveAndFlush(uacCaptor.capture());
+    verify(caseRepo).saveAndFlush(caseCaptor.capture());
 
     UacUpdate uacUpdate = uacEvent.getPayload().getUacUpdate();
     Uac uac = uacCaptor.getValue();
     verifyMappedUac(uac, uacUpdate);
     verifySkeletonCase(caseCaptor.getValue());
+  }
+
+  @Test
+  public void shouldRejectFailingSave() throws CTPException {
+    when(caseRepo.saveAndFlush(any())).thenThrow(PersistenceException.class);
+    when(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
+        .thenReturn(true);
+    assertThrows(PersistenceException.class, () -> target.acceptEvent(uacEvent));
+  }
+
+  @Test
+  public void shouldRejectFailingSaveFoundCase() throws CTPException {
+    when(caseRepo.findById(UUID.fromString(CASE_ID))).thenReturn(Optional.of(new Case()));
+    when(uacRepository.saveAndFlush(any())).thenThrow(PersistenceException.class);
+    when(eventFilter.isValidEvent(SURVEY_ID, COLLECTION_EX_ID, CASE_ID, MESSAGE_ID))
+        .thenReturn(true);
+    assertThrows(PersistenceException.class, () -> target.acceptEvent(uacEvent));
   }
 
   private void verifyMappedUac(Uac uac, UacUpdate uacUpdate) {
