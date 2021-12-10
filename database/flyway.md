@@ -58,7 +58,7 @@ then we can simply delete the migration entry in our `flyway_schema_history` tab
 See details in [database readme](README.md) for how to connect using `psql` . 
 Using `psql` we could delete our V24 entry like so:
 ```sql
-DELETE FROM cc_schema.flyway_schema_history  WHERE version = '24';
+DELETE FROM cc_schema.flyway_schema_history WHERE version = '24';
 ``` 
 In order to do this successfully our V24 migration script will need to initially delete the items that it is about to create, e.g.
 ```sql
@@ -165,14 +165,29 @@ In order to clean the `DEV` database, do the following:
 ## Considerations
 
 As we get more production ready (or during production updates), database migrations will become more and more important, 
-and to guard agains this the following needs consideration:
+and to guard against problems the following needs consideration:
 
 - The production data will become precious, and migrations must preserve and not corrupt that data. 
   To this end each migration must be thoroughly tested, migrating from realistic production data
 - Migrations will run as the pod is coming up. If you write SQL that takes a long time, this could cause delays in startup
-  which could be an issue (although the deployment script has been adjusted to allow for this to some extent)
+  which could be an issue (although the deployment script has been adjusted to allow for this to some extent). In some
+  instances indexing on existing large volumes of data can take quite a lot of time, and we should avoid this, or perhaps
+  move the indexing step to a manual update.
 - We believe that new deployments to production will happen during a scheduled "downtime", which means our pods can be 
   scheduled back to zero, and the update made. This makes migration scripts much much easier to develop, since we don't 
   have to have staged compatible updates to allow for 24/7 operation (allowing for coexistence of pods at the previous
-  version and the new version). This means we can delete / rename table, columns etc in a straightforward way.
+  version and the new version). This means we can delete / rename table, columns etc in a straightforward way. If this
+  ever changes, then this README needs considerable enhancement to guide developers on how to do this.
+
+## A note about style
+
+The existing SQL migration scripts have been written in the following style, and it is helpful to follow this:
+- SQL keywords in `UPPER CASE`
+- our DB schemas, tables, columes, indexes etc written in `lower_case`
+- generated indexes and constraints follow a particular naming convention (e.g. when we use `PRIMARY KEY` or `REFERENCES`,
+  then the indexes and constraints are generated for us). If we create our own indexes or constraints we should use the 
+  same naming conventions. Also if we rename tables/columns etc, we should also rename the indexes and constraints to be in line.
+  An example of these naming conventions is easily seen in `psql` with `\d cc_schema.collection_case`.
+
+
 
