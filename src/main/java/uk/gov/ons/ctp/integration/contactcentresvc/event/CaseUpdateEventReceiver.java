@@ -63,7 +63,7 @@ public class CaseUpdateEventReceiver {
         caseMessageId.toString())) {
       try {
         Case caze = mapper.map(caseUpdate, Case.class);
-        caze.setCcStatus(CCStatus.RECEIVED);
+        caze.setCcStatus(CCStatus.READY);
         caseRepo.saveAndFlush(caze);
 
         log.info(

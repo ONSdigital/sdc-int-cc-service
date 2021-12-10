@@ -261,7 +261,7 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
                       .postcode("PO57 6DE")
                       .region(Region.E)
                       .build())
-              .ccStatus(CCStatus.RECEIVED)
+              .ccStatus(CCStatus.READY)
               .cohort("1")
               .contact(new CaseContact())
               .createdAt(LocalDateTime.parse("2021-12-01T00:00:00.000"))
