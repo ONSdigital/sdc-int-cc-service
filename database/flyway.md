@@ -26,7 +26,7 @@ The contents of the database is therefore the combination of all the migration s
 
 ## Practicalities of developing new migration scripts
 
-As developers, we will not get everything perfect first time. Development is an interative process and therefore we may work on 
+As developers, we will not get everything perfect first time. Development is an iterative process and therefore we may work on 
 a migration script, e.g. the fictional `V24__AddAuditStructure.sql` , which may add several tables, indexes, and possibly alter
 some existing tables. We will typically create JPA Java entities, and other JPA code in lock-step with this SQL. We may take
 several iterations at getting our V24 migration script correct. Each time we will need to put the DB into the correct state
