@@ -38,7 +38,7 @@ public class CaseDataClient {
   public List<Case> getCaseByUprn(Long uprn) throws CTPException {
     log.debug("Find case details by Uprn", kv("uprn", uprn));
 
-    List<Case> cases = caseRepo.findByAddressUprn(uprn.toString());
+    List<Case> cases = caseRepo.findBySampleContains(, uprn.toString(), );
 
     log.debug("Found {} case details by Uprn", cases.size(), kv("uprn", uprn));
     return cases;

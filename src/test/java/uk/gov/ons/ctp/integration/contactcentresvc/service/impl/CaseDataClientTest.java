@@ -56,7 +56,7 @@ public class CaseDataClientTest {
   public void shouldGetCaseByUprn() throws Exception {
     List<Case> cases = new ArrayList<>();
     cases.add(caze);
-    when(caseRepo.findByAddressUprn(any())).thenReturn(cases);
+    when(caseRepo.findBySampleContains(, any(), )).thenReturn(cases);
     resultList = target.getCaseByUprn(UPRN);
     assertEquals(1, resultList.size());
     assertEquals(UPRN.toString(), resultList.get(0).getAddress().getUprn());
@@ -78,7 +78,7 @@ public class CaseDataClientTest {
 
   @Test
   public void shouldHandleEmptyResultsForGetCaseByUprn() throws Exception {
-    when(caseRepo.findByAddressUprn(any())).thenReturn(new ArrayList<>());
+    when(caseRepo.findBySampleContains(, any(), )).thenReturn(new ArrayList<>());
     resultList = target.getCaseByUprn(UPRN);
     assertEquals(0, resultList.size());
   }

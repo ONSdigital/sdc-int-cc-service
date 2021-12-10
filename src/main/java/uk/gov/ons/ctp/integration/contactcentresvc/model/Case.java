@@ -1,7 +1,9 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -15,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.Type;
 
 /**
  * Representation of Case entity from database table.
@@ -48,8 +51,13 @@ public class Case {
   private String sampleUnitRef;
   private String cohort;
 
-  @Embedded private CaseAddress address;
-  @Embedded private CaseContact contact;
+  @Type(type = "jsonb")
+  @Column(columnDefinition = "jsonb")
+  private Map<String, String> sample;
+
+  @Type(type = "jsonb")
+  @Column(columnDefinition = "jsonb")
+  private Map<String, String> sampleSensitive;
 
   private LocalDateTime createdAt;
   private LocalDateTime lastUpdatedAt;
