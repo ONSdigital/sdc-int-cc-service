@@ -68,7 +68,7 @@ public class UacUpdateEventReceiver {
         try {
           uacRepository.saveAndFlush(uac);
         } catch (Exception e) {
-          log.error("Uac Event processing failed", kv("messageId", uacMessageId), e);
+          log.error("UAC Event processing failed", kv("messageId", uacMessageId), e);
           throw e;
         }
       } else {
@@ -81,7 +81,7 @@ public class UacUpdateEventReceiver {
           caseRepository.saveAndFlush(collectionCase);
           uacRepository.saveAndFlush(uac);
         } catch (Exception e) {
-          log.error("Uac Event processing failed", kv("messageId", uacMessageId), e);
+          log.error("UAC Event processing failed", kv("messageId", uacMessageId), e);
           throw e;
         }
       }
