@@ -168,7 +168,8 @@ As we get more production ready (or during production updates), database migrati
 and to guard against problems the following needs consideration:
 
 - The production data will become precious, and migrations must preserve and not corrupt that data. 
-  To this end each migration must be thoroughly tested, migrating from realistic production data. **IT IS NOT SUFFICIENT TO TEST A MIGRATION FROM SCRATCH, SINCE THAT WILL NOT TEST REALISTIC PRODUCTION DATA MIGRATION**.
+  To this end each migration must be thoroughly tested, migrating from realistic production data. 
+  **IT IS NOT SUFFICIENT TO JUST TEST A MIGRATION FROM SCRATCH, SINCE THAT WILL MISS REALISTIC PRODUCTION DATA MIGRATION**.
 - Migrations will run as the pod is coming up. If you write SQL that takes a long time, this could cause delays in startup
   which could be an issue (although the deployment script has been adjusted to allow for this to some extent). In some
   instances indexing on existing large volumes of data can take quite a lot of time, and we should avoid this, or perhaps
