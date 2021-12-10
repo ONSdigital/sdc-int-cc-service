@@ -168,7 +168,7 @@ As we get more production ready (or during production updates), database migrati
 and to guard against problems the following needs consideration:
 
 - The production data will become precious, and migrations must preserve and not corrupt that data. 
-  To this end each migration must be thoroughly tested, migrating from realistic production data
+  To this end each migration must be thoroughly tested, migrating from realistic production data. **IT IS NOT SUFFICIENT TO TEST A MIGRATION FROM SCRATCH, SINCE THAT WILL NOT TEST REALISTIC PRODUCTION DATA MIGRATION**.
 - Migrations will run as the pod is coming up. If you write SQL that takes a long time, this could cause delays in startup
   which could be an issue (although the deployment script has been adjusted to allow for this to some extent). In some
   instances indexing on existing large volumes of data can take quite a lot of time, and we should avoid this, or perhaps
@@ -189,5 +189,15 @@ The existing SQL migration scripts have been written in the following style, and
   same naming conventions. Also if we rename tables/columns etc, we should also rename the indexes and constraints to be in line.
   An example of these naming conventions is easily seen in `psql` with `\d cc_schema.collection_case`.
 
+## Using the actuator flyway endpoint
 
+When CCSvc is running, you can list migrations in JSON with the following for your local environment:
+```sh
+curl -s http://localhost:8171/ccsvc/flyway | jq .
+```
+
+To do the same for `DEV` environment:
+```sh
+curl -sk https://cc-dev.int.gcp.onsdigital.uk/ccsvc/flyway | jq .
+```
 
