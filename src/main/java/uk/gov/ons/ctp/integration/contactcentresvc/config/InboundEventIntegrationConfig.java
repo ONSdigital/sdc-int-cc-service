@@ -11,6 +11,7 @@ import org.springframework.messaging.MessageChannel;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdateEvent;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdateEvent;
+import uk.gov.ons.ctp.common.event.model.UacEvent;
 
 /** Integration configuration for inbound events. */
 @Configuration
@@ -32,6 +33,13 @@ public class InboundEventIntegrationConfig {
       @Qualifier("acceptCaseEvent") MessageChannel channel, PubSubTemplate pubSubTemplate) {
     return makeAdapter(
         channel, pubSubTemplate, appConfig.getQueueConfig().getCaseSubscription(), CaseEvent.class);
+  }
+
+  @Bean
+  public PubSubInboundChannelAdapter uacEventInbound(
+      @Qualifier("acceptUacEvent") MessageChannel channel, PubSubTemplate pubSubTemplate) {
+    return makeAdapter(
+        channel, pubSubTemplate, appConfig.getQueueConfig().getUacSubscription(), UacEvent.class);
   }
 
   @Bean
@@ -89,6 +97,14 @@ public class InboundEventIntegrationConfig {
   public MessageChannel acceptCollectionExerciseEvent() {
     DirectChannel channel = new DirectChannel();
     channel.setDatatypes(CollectionExerciseUpdateEvent.class);
+    return channel;
+  }
+
+  /** @return channel for accepting uac events */
+  @Bean
+  public MessageChannel acceptUacEvent() {
+    DirectChannel channel = new DirectChannel();
+    channel.setDatatypes(UacEvent.class);
     return channel;
   }
 }

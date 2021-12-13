@@ -23,6 +23,7 @@ import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExercise;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
+import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
@@ -30,6 +31,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
@@ -273,6 +275,24 @@ public class CCSvcBeanMapperTest {
     CaseContainerDTO source = FixtureHelper.loadClassFixtures(CaseContainerDTO[].class).get(0);
     AddressCompact destination = mapperFacade.map(source, AddressCompact.class);
     verifyMapping(destination, source);
+  }
+
+  @Test
+  public void shouldMapUacUpdate_to_Uac() {
+    UacUpdate source = FixtureHelper.loadClassFixtures(UacUpdate[].class).get(0);
+    Uac destination = mapperFacade.map(source, Uac.class);
+    assertAll(
+        () -> assertEquals(source.getCaseId(), destination.getCaseId().toString()),
+        () ->
+            assertEquals(
+                source.getCollectionExerciseId(), destination.getCollectionExerciseId().toString()),
+        () -> assertEquals(source.getQid(), destination.getQuestionnaire()),
+        () -> assertEquals(source.getMetadata().getWave(), destination.getWaveNum()),
+        () -> assertEquals(source.getUacHash(), destination.getUacHash()),
+        () ->
+            assertEquals(
+                source.getCollectionInstrumentUrl(), destination.getCollectionInstrumentUrl()),
+        () -> assertEquals(source.getSurveyId(), destination.getSurveyId().toString()));
   }
 
   private LocalDateTime toLocalDateTime(Date date) {

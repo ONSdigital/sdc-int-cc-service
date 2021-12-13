@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerciseRepository;
@@ -62,6 +63,7 @@ public class CaseUpdateEventReceiver {
         caseMessageId.toString())) {
       try {
         Case caze = mapper.map(caseUpdate, Case.class);
+        caze.setCcStatus(CCStatus.READY);
         caseRepo.saveAndFlush(caze);
 
         log.info(

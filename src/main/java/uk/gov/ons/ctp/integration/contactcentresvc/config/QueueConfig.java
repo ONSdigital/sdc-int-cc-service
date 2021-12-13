@@ -7,4 +7,5 @@ public class QueueConfig {
   private String caseSubscription;
   private String surveySubscription;
   private String collectionExerciseSubscription;
+  private String uacSubscription;
 }

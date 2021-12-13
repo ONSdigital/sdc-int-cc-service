@@ -23,6 +23,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 @MockBean({EventToSendPoller.class, EventPublisher.class, PubSubTemplate.class})
 @MockBean(name = "caseEventInbound", value = PubSubInboundChannelAdapter.class)
 @MockBean(name = "surveyEventInbound", value = PubSubInboundChannelAdapter.class)
+@MockBean(name = "uacEventInbound", value = PubSubInboundChannelAdapter.class)
 @MockBean(name = "collectionExerciseEventInbound", value = PubSubInboundChannelAdapter.class)
 @Transactional
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
