@@ -15,6 +15,7 @@ Do the following steps to set up the code to run locally:
 There is a dependency on PostgreSQL database. When running locally a local PostgreSQL will be needed.
 
 To setup postgres locally, see instructions at: [database readme](database/README.md).
+To manage flyway development, see [flyway readme](database/flyway.md).
 
 ## Running
 There are two ways of running this service:
