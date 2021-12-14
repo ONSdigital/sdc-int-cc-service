@@ -179,14 +179,14 @@ public class CaseServiceImpl implements CaseService {
   }
 
   @Override
-  public List<CaseDTO> getCaseByUPRN(
-      UniquePropertyReferenceNumber uprn, CaseQueryRequestDTO requestParamsDTO)
+  public List<CaseDTO> getCaseBySampleAttribute(
+      String key, String value, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.debug("Fetching latest case details by UPRN", kv("uprn", uprn));
+      log.debug("Fetching latest case details by {", key, kv(key, value));
     }
 
-    return callCaseSvcByUPRN(uprn.getValue(), requestParamsDTO.getCaseEvents());
+    return callCaseSvcBySampleAttribute(key, value, requestParamsDTO.getCaseEvents());
   }
 
   @Override
@@ -401,8 +401,8 @@ public class CaseServiceImpl implements CaseService {
     return caseDataClient.getCaseByCaseRef(caseRef);
   }
 
-  private List<Case> getCasesFromDb(long uprn) throws CTPException {
-    return caseDataClient.getCaseByUprn(uprn);
+  private List<Case> getCasesFromDb(String key, String value) throws CTPException {
+    return caseDataClient.getCaseBySampleAttribute(key, value);
   }
 
   /**
@@ -443,24 +443,25 @@ public class CaseServiceImpl implements CaseService {
   }
 
   /**
-   * Make Case Service request to return cases by UPRN
+   * Make Case Service request to return cases by a given Sample attribute
    *
-   * @param uprn of requested cases
+   * @param key sample attribute of requested cases
+   * @param value of key to be searched for
    * @param listCaseEvents boolean of whether require case events
-   * @return List of cases for UPRN
+   * @return List of cases for given Sample attribute
    * @throws CTPException
    */
-  private List<CaseDTO> callCaseSvcByUPRN(Long uprn, Boolean listCaseEvents) throws CTPException {
+  private List<CaseDTO> callCaseSvcBySampleAttribute(String key, String value, Boolean listCaseEvents) throws CTPException {
 
     List<Case> dbCases = new ArrayList<>();
     try {
-      dbCases = getCasesFromDb(uprn);
+      dbCases = getCasesFromDb(key, value);
     } catch (CTPException ex) {
       if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
-        log.info("Case by UPRN Not Found calling Case Service", kv("uprn", uprn));
+        log.info("Case by {} Not Found calling Case Service", key, kv(key, value));
         return Collections.emptyList();
       } else {
-        log.error("Error calling Case Service", kv("uprn", uprn), ex);
+        log.error("Error calling Case Service", kv(key, value), ex);
         throw ex;
       }
     }

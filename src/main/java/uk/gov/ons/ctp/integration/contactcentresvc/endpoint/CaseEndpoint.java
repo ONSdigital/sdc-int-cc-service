@@ -77,15 +77,14 @@ public class CaseEndpoint implements CTPEndpoint {
    * @return the case
    * @throws CTPException something went wrong
    */
-  @RequestMapping(value = "/uprn/{uprn}", method = RequestMethod.GET)
-  public ResponseEntity<List<CaseDTO>> getCaseByUPRN(
-      @PathVariable(value = "uprn") final UniquePropertyReferenceNumber uprn,
+  @RequestMapping(value = "/attribute/{key}/{value}", method = RequestMethod.GET)
+  public ResponseEntity<List<CaseDTO>> getCaseByAttribute(String key, String value,
       @Valid CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     log.info(
         "Entering GET getCaseByUPRN", kv("pathParam", uprn), kv("requestParams", requestParamsDTO));
 
-    List<CaseDTO> results = caseService.getCaseByUPRN(uprn, requestParamsDTO);
+    List<CaseDTO> results = caseService.getCaseBySampleAttribute(uprn, requestParamsDTO);
 
     return ResponseEntity.ok(results);
   }

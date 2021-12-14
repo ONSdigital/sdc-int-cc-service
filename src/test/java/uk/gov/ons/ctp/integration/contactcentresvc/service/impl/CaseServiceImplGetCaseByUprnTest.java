@@ -69,7 +69,7 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
   @Test
   public void testGetCaseByUprn_caseSvcUncheckedException() throws Exception {
-    doThrow(new IllegalArgumentException()).when(caseDataClient).getCaseByUprn(eq(UPRN.getValue()));
+    doThrow(new IllegalArgumentException()).when(caseDataClient).getCaseBySampleAttribute(eq(UPRN.getValue()));
 
     assertThrows(
         IllegalArgumentException.class,
@@ -86,17 +86,17 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
   // ---- helpers methods below ---
 
   private void mockCasesFromDb() throws Exception {
-    when(caseDataClient.getCaseByUprn(eq(UPRN.getValue()))).thenReturn(casesFromDb);
+    when(caseDataClient.getCaseBySampleAttribute(eq(UPRN.getValue()))).thenReturn(casesFromDb);
   }
 
   private void mockNothingInDb() throws Exception {
     doThrow(new CTPException(Fault.RESOURCE_NOT_FOUND))
         .when(caseDataClient)
-        .getCaseByUprn(eq(UPRN.getValue()));
+        .getCaseBySampleAttribute(eq(UPRN.getValue()));
   }
 
   private void verifyCallToGetCasesFromDb() throws Exception {
-    verify(caseDataClient).getCaseByUprn(any(Long.class));
+    verify(caseDataClient).getCaseBySampleAttribute(any(Long.class));
   }
 
   private void verifyDbCase(CaseDTO results, int dataIndex) throws Exception {

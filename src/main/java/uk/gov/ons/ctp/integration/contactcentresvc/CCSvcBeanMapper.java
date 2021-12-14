@@ -85,18 +85,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .field("sample.questionnaire", "questionnaire")
         .field("sample.sampleUnitRef", "sampleUnitRef")
         .field("sample.cohort", "cohort")
-        .field("sample.addressLine1", "address.addressLine1")
-        .field("sample.addressLine2", "address.addressLine2")
-        .field("sample.addressLine3", "address.addressLine3")
-        .field("sample.townName", "address.townName")
-        .field("sample.postcode", "address.postcode")
-        .field("sample.region", "address.region")
-        .field("sample.uprn", "address.uprn")
-        .field("sample.uprnLatitude", "address.uprnLatitude")
-        .field("sample.uprnLongitude", "address.uprnLongitude")
-        .field("sample.gor9d", "address.gor9d")
-        .field("sample.laCode", "address.laCode")
-        .field("sampleSensitive.phoneNumber", "contact.phoneNumber")
         .byDefault()
         .register();
 

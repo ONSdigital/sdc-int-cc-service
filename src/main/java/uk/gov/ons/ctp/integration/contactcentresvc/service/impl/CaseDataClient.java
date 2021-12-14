@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.keyValue;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.List;
@@ -35,12 +36,12 @@ public class CaseDataClient {
     return caze;
   }
 
-  public List<Case> getCaseByUprn(Long uprn) throws CTPException {
-    log.debug("Find case details by Uprn", kv("uprn", uprn));
+  public List<Case> getCaseBySampleAttribute(String key, String value) throws CTPException {
+    log.debug("Find case details by {}", key,  kv(key, value));
 
-    List<Case> cases = caseRepo.findBySampleContains(, uprn.toString(), );
+    List<Case> cases = caseRepo.findBySampleContains(key, value);
 
-    log.debug("Found {} case details by Uprn", cases.size(), kv("uprn", uprn));
+    log.debug("Found {} case details by {}", cases.size(), key, kv(key, value));
     return cases;
   }
 
