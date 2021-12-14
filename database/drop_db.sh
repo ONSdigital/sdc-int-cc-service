@@ -15,6 +15,7 @@ PGPASSWORD=password psql -v ON_ERROR_STOP=1 -h localhost -U "postgres" -w --dbna
 	\c cc
 	REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA cc_schema FROM ccuser;
 	REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA cc_schema FROM ccuser;
+	DROP TYPE IF EXISTS cc_schema.CASE_TYPE_ENUM CASCADE;
 	DROP OWNED BY ccuser;
 	DROP USER IF EXISTS ccuser;
 	DROP OWNED BY ccadmin;

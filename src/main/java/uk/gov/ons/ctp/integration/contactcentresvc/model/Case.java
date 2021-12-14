@@ -61,4 +61,7 @@ public class Case {
 
   private LocalDateTime createdAt;
   private LocalDateTime lastUpdatedAt;
+
+  @Enumerated(EnumType.STRING)
+  private CCStatus ccStatus;
 }

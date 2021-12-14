@@ -147,6 +147,7 @@ queueconfig:
   case-subscription: event_case-update_cc
   collection-exercise-subscription: event_collection-exercise-update_cc
   survey-subscription: event_survey-update_cc
+  uac-subscription: event_uac-update_cc
     
 messaging:
   publish:
