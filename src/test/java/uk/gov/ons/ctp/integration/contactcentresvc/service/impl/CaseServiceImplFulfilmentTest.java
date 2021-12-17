@@ -30,6 +30,7 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
@@ -150,7 +151,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     Product expectedSearchCriteria =
         getExpectedSearchCriteria(
-            Product.Region.valueOf(caze.getAddress().getRegion().name()),
+            Product.Region.valueOf(caze.getSample().get(CaseUpdate.ATTRIBUTE_REGION)),
             requestBodyDTOFixture.getFulfilmentCode(),
             Product.DeliveryChannel.POST);
 

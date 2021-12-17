@@ -3,6 +3,8 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
@@ -56,10 +59,11 @@ public class CaseDataClientTest {
   public void shouldGetCaseByUprn() throws Exception {
     List<Case> cases = new ArrayList<>();
     cases.add(caze);
-    when(caseRepo.findBySampleContains(, any(), )).thenReturn(cases);
-    resultList = target.getCaseBySampleAttribute(UPRN);
+    when(caseRepo.findBySampleContains(eq(CaseUpdate.ATTRIBUTE_UPRN), anyString()))
+        .thenReturn(cases);
+    resultList = target.getCaseBySampleAttribute(CaseUpdate.ATTRIBUTE_UPRN, UPRN.toString());
     assertEquals(1, resultList.size());
-    assertEquals(UPRN.toString(), resultList.get(0).getAddress().getUprn());
+    assertEquals(UPRN.toString(), resultList.get(0).getSample().get(CaseUpdate.ATTRIBUTE_UPRN));
   }
 
   @Test
@@ -78,8 +82,9 @@ public class CaseDataClientTest {
 
   @Test
   public void shouldHandleEmptyResultsForGetCaseByUprn() throws Exception {
-    when(caseRepo.findBySampleContains(, any(), )).thenReturn(new ArrayList<>());
-    resultList = target.getCaseBySampleAttribute(UPRN);
+    when(caseRepo.findBySampleContains(eq(CaseUpdate.ATTRIBUTE_UPRN), anyString()))
+        .thenReturn(new ArrayList<>());
+    resultList = target.getCaseBySampleAttribute(CaseUpdate.ATTRIBUTE_UPRN, UPRN.toString());
     assertEquals(0, resultList.size());
   }
 

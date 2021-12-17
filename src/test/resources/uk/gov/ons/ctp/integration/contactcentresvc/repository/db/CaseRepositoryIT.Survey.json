@@ -1,0 +1,21 @@
+[
+  {
+    "id": "2883af91-0052-4497-9805-3238544fcf8a",
+    "name": "LMS",
+    "sampleDefinitionUrl": "https://raw.githubusercontent.com/ONSdigital/ssdc-shared-events/main/sample/social/0.1.0-DRAFT/social.json",
+    "sampleDefinition": [
+      {
+        "columnName": "addressLine1",
+        "rules": [
+          {
+            "className": "uk.gov.ons.ssdc.common.validation.MandatoryRule"
+          },
+          {
+            "className": "uk.gov.ons.ssdc.common.validation.LengthRule",
+            "maxLength": 60
+          }
+        ]
+      }
+    ]
+  }
+]

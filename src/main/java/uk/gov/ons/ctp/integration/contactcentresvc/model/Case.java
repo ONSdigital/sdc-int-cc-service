@@ -1,10 +1,10 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 /**
  * Representation of Case entity from database table.
@@ -32,6 +34,7 @@ import org.hibernate.annotations.Type;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
 @Table(name = "collection_case")
 public class Case {
 
@@ -46,10 +49,6 @@ public class Case {
 
   @Enumerated(EnumType.STRING)
   private RefusalType refusalReceived;
-
-  private String questionnaire;
-  private String sampleUnitRef;
-  private String cohort;
 
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb")

@@ -2,7 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
@@ -24,11 +24,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryReque
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /**
- * Unit Test {@link CaseService#getCaseByUPRN(UniquePropertyReferenceNumber, CaseQueryRequestDTO)
- * getCaseByUPRN}.
+ * Unit Test {@link CaseService#getCaseBySampleAttribute(String, String, CaseQueryRequestDTO)
+ * getCaseBySampleAttribute}.
  */
 @ExtendWith(MockitoExtension.class)
-public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
+public class CaseServiceImplGetCaseBySampleAttributeTest extends CaseServiceImplTestBase {
   private static final UniquePropertyReferenceNumber UPRN =
       new UniquePropertyReferenceNumber(334999999999L);
 
@@ -69,11 +69,15 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
 
   @Test
   public void testGetCaseByUprn_caseSvcUncheckedException() throws Exception {
-    doThrow(new IllegalArgumentException()).when(caseDataClient).getCaseBySampleAttribute(eq(UPRN.getValue()));
+    doThrow(new IllegalArgumentException())
+        .when(caseDataClient)
+        .getCaseBySampleAttribute("uprn", String.valueOf(UPRN.getValue()));
 
     assertThrows(
         IllegalArgumentException.class,
-        () -> target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(false)));
+        () ->
+            target.getCaseBySampleAttribute(
+                "uprn", String.valueOf(UPRN.getValue()), new CaseQueryRequestDTO(false)));
   }
 
   @Test
@@ -86,17 +90,18 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
   // ---- helpers methods below ---
 
   private void mockCasesFromDb() throws Exception {
-    when(caseDataClient.getCaseBySampleAttribute(eq(UPRN.getValue()))).thenReturn(casesFromDb);
+    when(caseDataClient.getCaseBySampleAttribute("uprn", String.valueOf(UPRN.getValue())))
+        .thenReturn(casesFromDb);
   }
 
   private void mockNothingInDb() throws Exception {
     doThrow(new CTPException(Fault.RESOURCE_NOT_FOUND))
         .when(caseDataClient)
-        .getCaseBySampleAttribute(eq(UPRN.getValue()));
+        .getCaseBySampleAttribute("uprn", String.valueOf(UPRN.getValue()));
   }
 
   private void verifyCallToGetCasesFromDb() throws Exception {
-    verify(caseDataClient).getCaseBySampleAttribute(any(Long.class));
+    verify(caseDataClient).getCaseBySampleAttribute(eq("uprn"), anyString());
   }
 
   private void verifyDbCase(CaseDTO results, int dataIndex) throws Exception {
@@ -105,7 +110,9 @@ public class CaseServiceImplGetCaseByUprnTest extends CaseServiceImplTestBase {
   }
 
   private CaseDTO getCasesByUprn(boolean caseEvents) throws CTPException {
-    List<CaseDTO> results = target.getCaseByUPRN(UPRN, new CaseQueryRequestDTO(caseEvents));
+    List<CaseDTO> results =
+        target.getCaseBySampleAttribute(
+            "uprn", String.valueOf(UPRN.getValue()), new CaseQueryRequestDTO(caseEvents));
     return results.size() >= 1 ? results.get(0) : null;
   }
 }

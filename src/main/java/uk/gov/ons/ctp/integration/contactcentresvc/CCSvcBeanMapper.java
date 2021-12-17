@@ -25,8 +25,8 @@ import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
@@ -54,29 +54,11 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter(new ArrayListConverter());
 
     factory
-        .classMap(CaseContainerDTO.class, CaseDTO.class)
-        .field("uprn", "address.uprn")
-        .field("addressLine1", "address.addressLine1")
-        .field("addressLine2", "address.addressLine2")
-        .field("addressLine3", "address.addressLine3")
-        .field("townName", "address.townName")
-        .field("postcode", "address.postcode")
-        .byDefault()
-        .fieldMap("region", "address.region")
+        .classMap(RmCaseDTO.class, CaseDTO.class)
+        // TODO Map Region
+        .fieldMap("sample['region']", "sample{value}")
         .converter("regionConverter")
         .add()
-        .register();
-
-    factory
-        .classMap(CaseContainerDTO.class, Case.class)
-        .field("collectionExerciseId", "collectionExercise.id")
-        .field("uprn", "address.uprn")
-        .field("addressLine1", "address.addressLine1")
-        .field("addressLine2", "address.addressLine2")
-        .field("addressLine3", "address.addressLine3")
-        .field("townName", "address.townName")
-        .field("postcode", "address.postcode")
-        .field("region", "address.region")
         .byDefault()
         .register();
 
@@ -84,9 +66,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .classMap(CaseUpdate.class, Case.class)
         .field("collectionExerciseId", "collectionExercise.id")
         .field("caseId", "id")
-        .field("sample.questionnaire", "questionnaire")
-        .field("sample.sampleUnitRef", "sampleUnitRef")
-        .field("sample.cohort", "cohort")
         .byDefault()
         .register();
 
@@ -136,8 +115,25 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .byDefault()
         .register();
 
-    factory.classMap(CaseContainerDTO.class, Address.class).byDefault().register();
-    factory.classMap(CaseContainerDTO.class, AddressCompact.class).byDefault().register();
+    factory
+        .classMap(RmCaseDTO.class, Address.class)
+        .field("sample['uprnLatitude']", "latitude")
+        .field("sample['uprnlongitude']", "longitude")
+        .register();
+
+    factory
+        .classMap(RmCaseDTO.class, AddressCompact.class)
+        .byDefault()
+        .field("sample['addressLine1']", "addressLine1")
+        .field("sample['addressLine2']", "addressLine2")
+        .field("sample['addressLine3']", "addressLine3")
+        .field("sample['townName']", "townName")
+        .field("sample['postcode']", "postcode")
+        .field("sample['region']", "region")
+        .field("sample['uprn']", "uprn")
+        .register();
+
+    factory.classMap(RmCaseDTO.class, Case.class).byDefault().register();
     factory.classMap(CaseDTO.class, Case.class).byDefault().register();
   }
 

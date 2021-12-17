@@ -12,7 +12,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,15 +30,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /**
  * Contact Centre Data Endpoint Unit tests. This class tests the get case endpoints, covering gets
- * based on uuid, ref and uprn.
+ * based on uuid, ref and the sample attribute search.
  */
 @ExtendWith(MockitoExtension.class)
 public final class CaseEndpointGetCaseTest {
@@ -128,48 +130,44 @@ public final class CaseEndpointGetCaseTest {
   }
 
   @Test
-  public void getCaseByUprn_GoodUPRN() throws Exception {
+  public void getCaseBySampleAttribute_GoodUPRN() throws Exception {
     List<CaseDTO> testCases = new ArrayList<>();
     testCases.add(createResponseCaseDTO());
     testCases.add(createResponseCaseDTO());
     UniquePropertyReferenceNumber expectedUprn = new UniquePropertyReferenceNumber(123456789012L);
-    Mockito.when(caseService.getCaseByUPRN(eq(expectedUprn), any())).thenReturn(testCases);
+    Mockito.when(
+            caseService.getCaseBySampleAttribute(
+                eq(CaseUpdate.ATTRIBUTE_UPRN), eq(String.valueOf(expectedUprn.getValue())), any()))
+        .thenReturn(testCases);
 
-    ResultActions actions = mockMvc.perform(getJson("/cases/uprn/123456789012"));
+    ResultActions actions = mockMvc.perform(getJson("/cases/attribute/uprn/123456789012"));
     actions.andExpect(status().isOk());
 
     verifyStructureOfMultiResultsActions(actions);
   }
 
   @Test
-  public void getCaseByUprn_UPRNTooLong() throws Exception {
-    ResultActions actions = mockMvc.perform(getJson("/cases/uprn/123456789012345"));
-    actions.andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void getCaseByUprn_BadUPRN() throws Exception {
-    ResultActions actions = mockMvc.perform(getJson("/cases/uprn/A12345678901234"));
-    actions.andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void getCaseByUprn_CaseEventsTrue() throws Exception {
+  public void getCaseBySampleAttribute_CaseEventsTrue() throws Exception {
     List<CaseDTO> testCases = new ArrayList<>();
     testCases.add(createResponseCaseDTO());
     testCases.add(createResponseCaseDTO());
     UniquePropertyReferenceNumber expectedUprn = new UniquePropertyReferenceNumber(123456789012L);
-    Mockito.when(caseService.getCaseByUPRN(eq(expectedUprn), any())).thenReturn(testCases);
+    Mockito.when(
+            caseService.getCaseBySampleAttribute(
+                eq(CaseUpdate.ATTRIBUTE_UPRN), eq(String.valueOf(expectedUprn.getValue())), any()))
+        .thenReturn(testCases);
 
-    ResultActions actions = mockMvc.perform(getJson("/cases/uprn/123456789012?caseEvents=1"));
+    ResultActions actions =
+        mockMvc.perform(getJson("/cases/attribute/uprn/123456789012?caseEvents=1"));
     actions.andExpect(status().isOk());
 
     verifyStructureOfMultiResultsActions(actions);
   }
 
   @Test
-  public void getCaseByUprn_CaseEventsDuff() throws Exception {
-    ResultActions actions = mockMvc.perform(getJson("/cases/uprn/12345678901234?caseEvents=maybe"));
+  public void getCaseBySampleAttribute_CaseEventsDuff() throws Exception {
+    ResultActions actions =
+        mockMvc.perform(getJson("/cases/attribute/uprn/12345678901234?caseEvents=maybe"));
     actions.andExpect(status().isBadRequest());
   }
 
@@ -183,36 +181,31 @@ public final class CaseEndpointGetCaseTest {
             .createdDateTime(formatter.parse(EVENT_DATE_TIME))
             .build();
 
-    CaseAddressDTO fakeAddr =
-        CaseAddressDTO.builder()
-            .addressLine1(ADDRESS_LINE_1)
-            .addressLine2(ADDRESS_LINE_2)
-            .addressLine3(ADDRESS_LINE_3)
-            .townName(TOWN)
-            .postcode(POSTCODE)
-            .region(REGION)
-            .build();
+    Map<String, Object> fakeSample = new HashMap<>();
+    fakeSample.put(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_1, ADDRESS_LINE_1);
+    fakeSample.put(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_2, ADDRESS_LINE_2);
+    fakeSample.put(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_3, ADDRESS_LINE_3);
+    fakeSample.put(CaseUpdate.ATTRIBUTE_TOWN_NAME, TOWN);
+    fakeSample.put(CaseUpdate.ATTRIBUTE_POSTCODE, POSTCODE);
+    fakeSample.put(CaseUpdate.ATTRIBUTE_REGION, REGION.name());
 
-    CaseDTO fakeCaseDTO =
-        CaseDTO.builder()
-            .id(UUID.fromString(CASE_UUID_STRING))
-            .caseRef(CASE_REF)
-            .address(fakeAddr)
-            .caseEvents(Arrays.asList(caseEventDTO1))
-            .build();
-
-    return fakeCaseDTO;
+    return CaseDTO.builder()
+        .id(UUID.fromString(CASE_UUID_STRING))
+        .caseRef(CASE_REF)
+        .sample(fakeSample)
+        .caseEvents(Arrays.asList(caseEventDTO1))
+        .build();
   }
 
   private void verifyStructureOfResultsActions(ResultActions actions) throws Exception {
     actions.andExpect(jsonPath("$.id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$.caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$.address.addressLine1", is(ADDRESS_LINE_1)));
-    actions.andExpect(jsonPath("$.address.addressLine2", is(ADDRESS_LINE_2)));
-    actions.andExpect(jsonPath("$.address.addressLine3", is(ADDRESS_LINE_3)));
-    actions.andExpect(jsonPath("$.address.townName", is(TOWN)));
-    actions.andExpect(jsonPath("$.address.region", is(REGION.name())));
-    actions.andExpect(jsonPath("$.address.postcode", is(POSTCODE)));
+    actions.andExpect(jsonPath("$.sample.addressLine1", is(ADDRESS_LINE_1)));
+    actions.andExpect(jsonPath("$.sample.addressLine2", is(ADDRESS_LINE_2)));
+    actions.andExpect(jsonPath("$.sample.addressLine3", is(ADDRESS_LINE_3)));
+    actions.andExpect(jsonPath("$.sample.townName", is(TOWN)));
+    actions.andExpect(jsonPath("$.sample.region", is(REGION.name())));
+    actions.andExpect(jsonPath("$.sample.postcode", is(POSTCODE)));
 
     actions.andExpect(jsonPath("$.caseEvents[0].category", is(EVENT_CATEGORY)));
     actions.andExpect(jsonPath("$.caseEvents[0].description", is(EVENT_DESCRIPTION)));
@@ -224,12 +217,12 @@ public final class CaseEndpointGetCaseTest {
     // assertions repeatedly
     actions.andExpect(jsonPath("$[0].id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$[0].caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$[0].address.addressLine1", is(ADDRESS_LINE_1)));
-    actions.andExpect(jsonPath("$[0].address.addressLine2", is(ADDRESS_LINE_2)));
-    actions.andExpect(jsonPath("$[0].address.addressLine3", is(ADDRESS_LINE_3)));
-    actions.andExpect(jsonPath("$[0].address.townName", is(TOWN)));
-    actions.andExpect(jsonPath("$[0].address.region", is(REGION.name())));
-    actions.andExpect(jsonPath("$[0].address.postcode", is(POSTCODE)));
+    actions.andExpect(jsonPath("$[0].sample.addressLine1", is(ADDRESS_LINE_1)));
+    actions.andExpect(jsonPath("$[0].sample.addressLine2", is(ADDRESS_LINE_2)));
+    actions.andExpect(jsonPath("$[0].sample.addressLine3", is(ADDRESS_LINE_3)));
+    actions.andExpect(jsonPath("$[0].sample.townName", is(TOWN)));
+    actions.andExpect(jsonPath("$[0].sample.region", is(REGION.name())));
+    actions.andExpect(jsonPath("$[0].sample.postcode", is(POSTCODE)));
 
     actions.andExpect(jsonPath("$[0].caseEvents[0].category", is(EVENT_CATEGORY)));
     actions.andExpect(jsonPath("$[0].caseEvents[0].description", is(EVENT_DESCRIPTION)));
@@ -237,12 +230,12 @@ public final class CaseEndpointGetCaseTest {
 
     actions.andExpect(jsonPath("$[1].id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$[1].caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$[1].address.addressLine1", is(ADDRESS_LINE_1)));
-    actions.andExpect(jsonPath("$[1].address.addressLine2", is(ADDRESS_LINE_2)));
-    actions.andExpect(jsonPath("$[1].address.addressLine3", is(ADDRESS_LINE_3)));
-    actions.andExpect(jsonPath("$[1].address.townName", is(TOWN)));
-    actions.andExpect(jsonPath("$[1].address.region", is(REGION.name())));
-    actions.andExpect(jsonPath("$[1].address.postcode", is(POSTCODE)));
+    actions.andExpect(jsonPath("$[1].sample.addressLine1", is(ADDRESS_LINE_1)));
+    actions.andExpect(jsonPath("$[1].sample.addressLine2", is(ADDRESS_LINE_2)));
+    actions.andExpect(jsonPath("$[1].sample.addressLine3", is(ADDRESS_LINE_3)));
+    actions.andExpect(jsonPath("$[1].sample.townName", is(TOWN)));
+    actions.andExpect(jsonPath("$[1].sample.region", is(REGION.name())));
+    actions.andExpect(jsonPath("$[1].sample.postcode", is(POSTCODE)));
 
     actions.andExpect(jsonPath("$[1].caseEvents[0].category", is(EVENT_CATEGORY)));
     actions.andExpect(jsonPath("$[1].caseEvents[0].description", is(EVENT_DESCRIPTION)));

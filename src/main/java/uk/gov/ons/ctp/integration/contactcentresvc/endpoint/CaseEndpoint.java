@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -70,21 +69,27 @@ public class CaseEndpoint implements CTPEndpoint {
   }
 
   /**
-   * the GET end point to get a Case by UPRN
+   * the GET end point to get a Case by a Sample attribute
    *
-   * @param uprn the UPRN
+   * @param key the attribute key to search
+   * @param value the attribute value to search
    * @param requestParamsDTO contains request params
    * @return the case
    * @throws CTPException something went wrong
    */
   @RequestMapping(value = "/attribute/{key}/{value}", method = RequestMethod.GET)
-  public ResponseEntity<List<CaseDTO>> getCaseByAttribute(String key, String value,
+  public ResponseEntity<List<CaseDTO>> getCaseByAttribute(
+      @PathVariable("key") String key,
+      @PathVariable("value") String value,
       @Valid CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     log.info(
-        "Entering GET getCaseByUPRN", kv("pathParam", uprn), kv("requestParams", requestParamsDTO));
+        "Entering GET getCaseBySampleAttribute",
+        kv("key", key),
+        kv("value", value),
+        kv("requestParams", requestParamsDTO));
 
-    List<CaseDTO> results = caseService.getCaseBySampleAttribute(uprn, requestParamsDTO);
+    List<CaseDTO> results = caseService.getCaseBySampleAttribute(key, value, requestParamsDTO);
 
     return ResponseEntity.ok(results);
   }
