@@ -12,7 +12,8 @@ public interface CaseRepository extends JpaRepository<Case, UUID> {
 
   @Query(
       value =
-          "SELECT * FROM cc_schema.collection_case WHERE UPPER(REPLACE(sample ->> ?1, ' ', '')) LIKE CONCAT('%', UPPER(REPLACE(?2, ' ', '')), '%')",
+          "SELECT * FROM cc_schema.collection_case WHERE UPPER(REPLACE(sample ->> ?1, ' ', '')) "
+              + "LIKE CONCAT('%', UPPER(REPLACE(?2, ' ', '')), '%')",
       nativeQuery = true)
   List<Case> findBySampleContains(String key, String value);
 }

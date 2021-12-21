@@ -46,21 +46,11 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
    */
   protected final void configure(final MapperFactory factory) {
     ConverterFactory converterFactory = factory.getConverterFactory();
-    converterFactory.registerConverter("regionConverter", new RegionConverter());
     converterFactory.registerConverter(new StringToUUIDConverter());
     converterFactory.registerConverter(new StringToUPRNConverter());
     converterFactory.registerConverter(new UtcOffsetDateTimeConverter());
     converterFactory.registerConverter(new UtcLocalDateTimeConverter());
     converterFactory.registerConverter(new ArrayListConverter());
-
-    factory
-        .classMap(RmCaseDTO.class, CaseDTO.class)
-        // TODO Map Region
-        .fieldMap("sample['region']", "sample{value}")
-        .converter("regionConverter")
-        .add()
-        .byDefault()
-        .register();
 
     factory
         .classMap(CaseUpdate.class, Case.class)
