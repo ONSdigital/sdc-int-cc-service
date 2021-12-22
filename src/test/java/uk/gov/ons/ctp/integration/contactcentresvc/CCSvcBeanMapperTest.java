@@ -21,7 +21,6 @@ import uk.gov.ons.ctp.common.event.model.CollectionExercise;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
@@ -29,24 +28,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 
 public class CCSvcBeanMapperTest {
 
   private MapperFacade mapperFacade = new CCSvcBeanMapper();
-
-  private void verifyMapping(List<EventDTO> sourceList, List<CaseEventDTO> destinationList) {
-    for (int i = 0; i < sourceList.size(); i++) {
-      EventDTO sourceEvent = sourceList.get(i);
-      CaseEventDTO destinationEvent = destinationList.get(i);
-      assertAll(
-          () -> assertEquals(sourceEvent.getDescription(), destinationEvent.getDescription()),
-          () -> assertEquals(sourceEvent.getEventType(), destinationEvent.getCategory()),
-          () ->
-              assertEquals(
-                  sourceEvent.getCreatedDateTime(), destinationEvent.getCreatedDateTime()));
-    }
-  }
 
   @Test
   public void shouldMapCase_to_RmCaseDTO() {
