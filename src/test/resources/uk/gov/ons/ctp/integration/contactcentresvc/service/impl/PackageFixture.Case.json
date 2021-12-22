@@ -6,10 +6,10 @@
   "caseRef": "1000000000000001",
   "invalid": false,
   "refusalReceived": null,
-  "questionnaire": "dummy_9wbthzvgj6",
-  "sampleUnitRef": "dummy_6zfd5iq9pg",
-  "cohort": "CC3",
-  "address": {
+  "sample": {
+    "questionnaire": "dummy_9wbthzvgj6",
+    "sampleUnitRef": "dummy_6zfd5iq9pg",
+    "cohort": "CC3",
     "uprn": "334999999999",
     "addressLine1": "Napier House",
     "addressLine2": "11 Park Street",
@@ -22,7 +22,7 @@
     "uprnLatitude": "52.35064053950229",
     "uprnLongitude": "-1.580400903268521"
   },
-  "contact": {
+  "sampleSensitive": {
     "phoneNumber": "07427678921"
   }
 }

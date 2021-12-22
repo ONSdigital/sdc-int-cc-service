@@ -3,10 +3,12 @@ package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 
 public class CaseDTOTest {
   private static final UniquePropertyReferenceNumber A_UPRN =
@@ -33,13 +35,13 @@ public class CaseDTOTest {
   public void shouldSerialiseAndDeserialise() {
     aCase = new CaseDTO();
     aCase.setId(A_UUID);
-    aCase.getAddress().setUprn(A_UPRN);
+    aCase.setSample(Map.of(CaseUpdate.ATTRIBUTE_UPRN, A_UPRN.toString()));
 
     String json = prettySerialise(aCase);
 
     CaseDTO deser = deserialise(json, CaseDTO.class);
 
     assertEquals(A_UUID, deser.getId());
-    assertEquals(A_UPRN, deser.getAddress().getUprn());
+    assertEquals(A_UPRN.toString(), deser.getSample().get(CaseUpdate.ATTRIBUTE_UPRN));
   }
 }

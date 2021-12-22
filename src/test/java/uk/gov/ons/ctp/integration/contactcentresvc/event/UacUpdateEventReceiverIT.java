@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,12 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.UacEvent;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseContact;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
@@ -136,15 +137,6 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
     assertEquals(uacUpdate.getCollectionInstrumentUrl(), uac.getCollectionInstrumentUrl());
     assertNotNull(uac.getId());
 
-    CaseAddress address =
-        CaseAddress.builder()
-            .uprn("")
-            .addressLine1("")
-            .townName("")
-            .postcode("")
-            .region(Region.E)
-            .build();
-
     Case caze = caseRepo.findById(UUID.fromString(CASE_ID)).orElse(null);
     assertNotNull(caze);
     assertEquals(CCStatus.PENDING, caze.getCcStatus());
@@ -152,11 +144,9 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
     assertEquals(LocalDateTime.parse("9999-01-01T00:00:00.000"), caze.getLastUpdatedAt());
     assertEquals(LocalDateTime.parse("9999-01-01T00:00:00.000"), caze.getCreatedAt());
     assertEquals(COLLECTION_EX_ID, caze.getCollectionExercise().getId().toString());
-    assertEquals(address, caze.getAddress());
+    assertEquals(Map.of("", ""), caze.getSample());
+    assertEquals(Map.of("", ""), caze.getSampleSensitive());
     assertFalse(caze.isInvalid());
-    assertNull(caze.getContact());
-    assertNull(caze.getCohort());
-    assertNull(caze.getSampleUnitRef());
     assertNull(caze.getRefusalReceived());
   }
 
@@ -248,28 +238,29 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
     }
 
     public void createCase(CollectionExercise collectionExercise, UUID id) {
+
+      Map<String, String> sample = new HashMap<>();
+      sample.put(CaseUpdate.ATTRIBUTE_UPRN, "1234");
+      sample.put(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_1, "1 Street Name");
+      sample.put(CaseUpdate.ATTRIBUTE_TOWN_NAME, "TOWN");
+      sample.put(CaseUpdate.ATTRIBUTE_POSTCODE, "PO57 6DE");
+      sample.put(CaseUpdate.ATTRIBUTE_REGION, Region.E.name());
+      sample.put(CaseUpdate.ATTRIBUTE_COHORT, "1");
+      sample.put(CaseUpdate.ATTRIBUTE_QUESTIONNAIRE, "1");
+      sample.put(CaseUpdate.ATTRIBUTE_SAMPLE_UNIT_REF, "unit");
+
       Case collectionCase =
           Case.builder()
               .id(id)
               .collectionExercise(collectionExercise)
               .caseRef("1")
-              .address(
-                  CaseAddress.builder()
-                      .uprn("1234")
-                      .addressLine1("1 Street Name")
-                      .townName("Town")
-                      .postcode("PO57 6DE")
-                      .region(Region.E)
-                      .build())
+              .sample(sample)
               .ccStatus(CCStatus.READY)
-              .cohort("1")
-              .contact(new CaseContact())
+              .sampleSensitive(new HashMap<>())
               .createdAt(LocalDateTime.parse("2021-12-01T00:00:00.000"))
               .invalid(false)
               .lastUpdatedAt(LocalDateTime.parse("2021-12-01T00:00:00.000"))
-              .questionnaire("1")
               .refusalReceived(RefusalType.EXTRAORDINARY_REFUSAL)
-              .sampleUnitRef("unit")
               .build();
       caseRepository.saveAndFlush(collectionCase);
     }

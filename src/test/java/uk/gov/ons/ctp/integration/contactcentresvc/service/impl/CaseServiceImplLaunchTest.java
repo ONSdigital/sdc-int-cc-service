@@ -37,7 +37,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.EqLaunch;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.EqConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
@@ -96,14 +96,14 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
 
   @SneakyThrows
   private void assertThatInvalidLaunchComboIsRejected(
-      CaseContainerDTO dto, String expectedMsg, Fault expectedFault) {
+      RmCaseDTO dto, String expectedMsg, Fault expectedFault) {
     CTPException e = assertThrows(CTPException.class, () -> doLaunchTest(false, FormType.C));
     assertEquals(expectedFault, e.getFault());
     assertTrue(e.getMessage().contains(expectedMsg), e.getMessage());
   }
 
   @SneakyThrows
-  private void assertThatCeManagerFormFromUnitRegionIsRejected(CaseContainerDTO dto) {
+  private void assertThatCeManagerFormFromUnitRegionIsRejected(RmCaseDTO dto) {
     assertThatInvalidLaunchComboIsRejected(
         dto,
         "A CE Manager form can only be launched against an establishment address not a UNIT.",

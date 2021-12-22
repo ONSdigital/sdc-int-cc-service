@@ -35,12 +35,12 @@ public class CaseRepositoryClient {
     return caze;
   }
 
-  public List<Case> getCaseByUprn(Long uprn) throws CTPException {
-    log.debug("Find case details by Uprn", kv("uprn", uprn));
+  public List<Case> getCaseBySampleAttribute(String key, String value) throws CTPException {
+    log.debug("Find case details by {}", key, kv("key", key), kv("value", value));
 
-    List<Case> cases = caseRepo.findByAddressUprn(uprn.toString());
+    List<Case> cases = caseRepo.findBySampleContains(key, value);
 
-    log.debug("Found {} case details by Uprn", cases.size(), kv("uprn", uprn));
+    log.debug("Found {} case details by {}", cases.size(), key, kv("key", key), kv("value", value));
     return cases;
   }
 

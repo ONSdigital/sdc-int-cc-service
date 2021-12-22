@@ -24,16 +24,11 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
-import uk.gov.ons.ctp.common.event.model.CaseUpdateSample;
-import uk.gov.ons.ctp.common.event.model.CaseUpdateSampleSensitive;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseContact;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 
@@ -96,14 +91,10 @@ public class CaseUpdateEventReceiverTest {
     assertEquals(UUID.fromString(COLLECTION_EX_ID), caze.getCollectionExercise().getId());
     assertTrue(caze.isInvalid());
     assertEquals(RefusalType.HARD_REFUSAL, caze.getRefusalReceived());
-    assertEquals(sample.getQuestionnaire(), caze.getQuestionnaire());
-    assertEquals(sample.getSampleUnitRef(), caze.getSampleUnitRef());
-    assertEquals(sample.getCohort(), caze.getCohort());
+    assertEquals(sample, caze.getSample());
 
-    CaseContact contact = caze.getContact();
-    CaseAddress address = caze.getAddress();
-    assertEquals(expectedContact(ccase.getSampleSensitive()), contact);
-    assertEquals(expectedAddress(sample), address);
+    assertEquals(ccase.getSample(), caze.getSample());
+    assertEquals(ccase.getSampleSensitive(), caze.getSampleSensitive());
     assertEquals(ccase.getCaseRef(), caze.getCaseRef());
     assertEquals(toLocalDateTime(ccase.getCreatedAt()), caze.getCreatedAt());
     assertEquals(toLocalDateTime(ccase.getLastUpdatedAt()), caze.getLastUpdatedAt());
@@ -111,25 +102,5 @@ public class CaseUpdateEventReceiverTest {
 
   private LocalDateTime toLocalDateTime(Date date) {
     return date.toInstant().atOffset(ZoneOffset.UTC).toLocalDateTime();
-  }
-
-  private CaseContact expectedContact(CaseUpdateSampleSensitive sensitive) {
-    return CaseContact.builder().phoneNumber(sensitive.getPhoneNumber()).build();
-  }
-
-  private CaseAddress expectedAddress(CaseUpdateSample addr) {
-    return CaseAddress.builder()
-        .uprn(addr.getUprn())
-        .addressLine1(addr.getAddressLine1())
-        .addressLine2(addr.getAddressLine2())
-        .addressLine3(addr.getAddressLine3())
-        .townName(addr.getTownName())
-        .postcode(addr.getPostcode())
-        .region(Region.valueOf(addr.getRegion()))
-        .gor9d(addr.getGor9d())
-        .laCode(addr.getLaCode())
-        .uprnLatitude(addr.getUprnLatitude())
-        .uprnLongitude(addr.getUprnLongitude())
-        .build();
   }
 }

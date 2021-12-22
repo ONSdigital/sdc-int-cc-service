@@ -36,7 +36,7 @@ import uk.gov.ons.ctp.common.event.PubSubEventSender;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.rest.RestClientConfig;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientService;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 import uk.gov.ons.ctp.integration.eqlaunch.service.impl.EqLaunchServiceImpl;
@@ -98,10 +98,10 @@ public class ContactCentreSvcApplication {
 
   @Bean
   @Qualifier("caseServiceClient")
-  public CaseServiceClientServiceImpl caseServiceClient() throws CTPException {
+  public CaseServiceClientService caseServiceClient() throws CTPException {
     RestClientConfig clientConfig = appConfig.getCaseServiceSettings().getRestClientConfig();
     RestClient restHelper = new RestClient(clientConfig, httpErrorMapping, defaultHttpStatus);
-    CaseServiceClientServiceImpl csClientServiceImpl = new CaseServiceClientServiceImpl(restHelper);
+    CaseServiceClientService csClientServiceImpl = new CaseServiceClientService(restHelper);
     return csClientServiceImpl;
   }
 
