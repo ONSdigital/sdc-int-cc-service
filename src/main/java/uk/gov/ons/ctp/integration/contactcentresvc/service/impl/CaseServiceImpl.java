@@ -68,9 +68,6 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 @Slf4j
 @Service
 public class CaseServiceImpl implements CaseService {
-  private static final List<DeliveryChannel> ALL_DELIVERY_CHANNELS =
-      List.of(DeliveryChannel.POST, DeliveryChannel.SMS);
-
   @Autowired private AppConfig appConfig;
 
   @Autowired private CaseDataClient caseDataClient;
