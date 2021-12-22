@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
-import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
@@ -146,15 +145,12 @@ public class CaseRepositoryIT extends PostgresTestBase {
     private CaseRepository caseRepo;
     private CollectionExerciseRepository collectionExerciseRepository;
     private SurveyRepository surveyRepository;
-    private CCSvcBeanMapper ccBeanMapper;
 
     public CaseTransactionalOps(
         CaseRepository caseRepo,
-        CCSvcBeanMapper ccBeanMapper,
         CollectionExerciseRepository collectionExerciseRepository,
         SurveyRepository surveyRepository) {
       this.caseRepo = caseRepo;
-      this.ccBeanMapper = ccBeanMapper;
       this.collectionExerciseRepository = collectionExerciseRepository;
       this.surveyRepository = surveyRepository;
     }
