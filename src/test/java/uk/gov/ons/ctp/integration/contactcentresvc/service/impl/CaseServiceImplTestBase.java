@@ -89,8 +89,6 @@ public abstract class CaseServiceImplTestBase {
   void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
-    assertEquals(
-        expectedCaseResult.getAllowedDeliveryChannels(), results.getAllowedDeliveryChannels());
     assertEquals(expectedCaseResult, results);
     verifyEventNotSent();
   }
@@ -101,8 +99,8 @@ public abstract class CaseServiceImplTestBase {
         CaseDTO.builder()
             .id(caseFromDb.getId())
             .caseRef(caseFromDb.getCaseRef())
-            .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
             .sample(new HashMap<>(caseFromDb.getSample()))
+            .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))
             .caseEvents(Collections.emptyList())
             .build();
     return expectedCaseResult;

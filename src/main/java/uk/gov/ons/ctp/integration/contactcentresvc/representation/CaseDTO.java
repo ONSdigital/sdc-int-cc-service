@@ -26,9 +26,9 @@ public class CaseDTO {
   @LoggingScope(scope = Scope.HASH)
   private String caseRef;
 
-  private List<DeliveryChannel> allowedDeliveryChannels;
-
   private Map<String, Object> sample;
+
+  private Map<String, String> sampleSensitive;
 
   private List<CaseEventDTO> caseEvents;
 }

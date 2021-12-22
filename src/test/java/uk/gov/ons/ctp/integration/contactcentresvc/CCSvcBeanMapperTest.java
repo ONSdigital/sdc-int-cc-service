@@ -50,7 +50,8 @@ public class CCSvcBeanMapperTest {
     assertAll(
         () -> assertEquals(source.getId(), destination.getId()),
         () -> assertEquals(source.getCaseRef(), destination.getCaseRef()),
-        () -> assertEquals(source.getSample(), destination.getSample()));
+        () -> assertEquals(source.getSample(), destination.getSample()),
+        () -> assertEquals(source.getSampleSensitive(), destination.getSampleSensitive()));
   }
 
   @Test

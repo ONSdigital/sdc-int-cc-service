@@ -484,14 +484,12 @@ public class CaseServiceImpl implements CaseService {
 
   private CaseDTO mapCaseToDto(Case caze) {
     CaseDTO caseServiceResponse = mapper.map(caze, CaseDTO.class);
-    caseServiceResponse.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
     return caseServiceResponse;
   }
 
   private List<CaseDTO> mapCaseToDtoList(List<Case> casesToReturn) {
     List<CaseDTO> dtoList = mapper.mapAsList(casesToReturn, CaseDTO.class);
     for (CaseDTO dto : dtoList) {
-      dto.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
       dto.setCaseEvents(Collections.emptyList());
     }
     return dtoList;
@@ -538,7 +536,6 @@ public class CaseServiceImpl implements CaseService {
     response
         .getSample()
         .put(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_3, modifyRequestDTO.getAddressLine3());
-    response.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
     response.setCaseEvents(Collections.emptyList());
   }
 
