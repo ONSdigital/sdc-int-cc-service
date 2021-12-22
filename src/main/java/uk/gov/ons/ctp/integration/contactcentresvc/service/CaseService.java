@@ -18,16 +18,6 @@ public interface CaseService {
 
   CaseDTO getCaseById(final UUID caseId, CaseQueryRequestDTO requestParamsDTO) throws CTPException;
 
-  /**
-   * Return the latest HH, CE and SPG (but not HI) case at the address given by the Sample key/value
-   * pair.
-   *
-   * @param key Sample attribute to search
-   * @param value to search for Cases to return
-   * @param requestParamsDTO request details
-   * @return List of Cases at address, excluding HI cases
-   * @throws CTPException error querying for case
-   */
   List<CaseDTO> getCaseBySampleAttribute(
       String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException;
 

@@ -181,7 +181,20 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching latest case details by {}", key, kv("key", key), kv("value", value));
     }
 
-    return callCaseSvcBySampleAttribute(key, value, requestParamsDTO.getCaseEvents());
+    List<Case> dbCases = new ArrayList<>();
+    try {
+      dbCases = getCasesFromDb(key, value);
+    } catch (CTPException ex) {
+      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
+        log.info(
+            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
+        return Collections.emptyList();
+      } else {
+        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
+        throw ex;
+      }
+    }
+    return mapCaseToDtoList(dbCases);
   }
 
   @Override
@@ -439,34 +452,6 @@ public class CaseServiceImpl implements CaseService {
     return Base64.getEncoder().encodeToString(encStr.getBytes(StandardCharsets.UTF_8));
   }
 
-  /**
-   * Make Case Service request to return cases by a given Sample attribute
-   *
-   * @param key sample attribute of requested cases
-   * @param value of key to be searched for
-   * @param listCaseEvents boolean of wether require case events
-   * @return List of cases for given Sample attribute
-   * @throws CTPException
-   */
-  private List<CaseDTO> callCaseSvcBySampleAttribute(
-      String key, String value, Boolean listCaseEvents) throws CTPException {
-
-    List<Case> dbCases = new ArrayList<>();
-    try {
-      dbCases = getCasesFromDb(key, value);
-    } catch (CTPException ex) {
-      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
-        log.info(
-            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
-        return Collections.emptyList();
-      } else {
-        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
-        throw ex;
-      }
-    }
-    return mapCaseToDtoList(dbCases);
-  }
-
   private void sendEvent(TopicType topicType, EventPayload payload, Object caseId) {
     UUID transferId = eventTransfer.send(topicType, payload);
     if (log.isDebugEnabled()) {
@@ -613,8 +598,6 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
     String encryptedPayload = "";
     RmCaseDTO caseDetails = mapper.map(caze, RmCaseDTO.class);
-    //    caseDetails.setCaseType("HH"); // compatibility
-    //    caseDetails.setSurveyType("SOCIAL"); // compatibility
     try {
       EqLaunchData eqLuanchCoreDate =
           EqLaunchData.builder()
