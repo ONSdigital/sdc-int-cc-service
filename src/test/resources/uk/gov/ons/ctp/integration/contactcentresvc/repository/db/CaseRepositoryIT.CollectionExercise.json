@@ -1,0 +1,14 @@
+{
+  "id": "12684ede-7d5f-4f53-9069-2398055c61b2",
+  "survey": {
+    "id":"2883af91-0052-4497-9805-3238544fcf8a"
+  },
+  "name": "velit",
+  "reference": "MVP012021",
+  "startDate": "2021-09-17T23:59:59.999Z",
+  "endDate": "2021-09-27T23:59:59.999Z",
+  "numberOfWaves": "3",
+  "waveLength": "2",
+  "cohorts": "3",
+  "cohortSchedule": "7"
+}

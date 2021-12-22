@@ -15,6 +15,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -24,12 +25,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientService;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
@@ -37,8 +37,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -49,7 +47,7 @@ public abstract class CaseServiceImplTestBase {
 
   @Mock ProductReference productReference;
 
-  @Mock CaseServiceClientServiceImpl caseServiceClient;
+  @Mock CaseServiceClientService caseServiceClient;
 
   @Mock CaseDataClient caseDataClient;
 
@@ -91,32 +89,18 @@ public abstract class CaseServiceImplTestBase {
   void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
-    assertEquals(
-        expectedCaseResult.getAllowedDeliveryChannels(), results.getAllowedDeliveryChannels());
     assertEquals(expectedCaseResult, results);
     verifyEventNotSent();
   }
 
   CaseDTO createExpectedCaseDTO(Case caseFromDb) {
-    CaseAddress addr = caseFromDb.getAddress();
-
-    CaseAddressDTO addrDto =
-        CaseAddressDTO.builder()
-            .addressLine1(addr.getAddressLine1())
-            .addressLine2(addr.getAddressLine2())
-            .addressLine3(addr.getAddressLine3())
-            .townName(addr.getTownName())
-            .region(addr.getRegion())
-            .postcode(addr.getPostcode())
-            .uprn(createUprn(addr.getUprn()))
-            .build();
 
     CaseDTO expectedCaseResult =
         CaseDTO.builder()
             .id(caseFromDb.getId())
             .caseRef(caseFromDb.getCaseRef())
-            .allowedDeliveryChannels(ALL_DELIVERY_CHANNELS)
-            .address(addrDto)
+            .sample(new HashMap<>(caseFromDb.getSample()))
+            .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))
             .caseEvents(Collections.emptyList())
             .build();
     return expectedCaseResult;
@@ -128,7 +112,7 @@ public abstract class CaseServiceImplTestBase {
 
   Case mockGetCaseById(String region) throws Exception {
     Case caze = FixtureHelper.loadPackageFixtures(Case[].class).get(0);
-    caze.getAddress().setRegion(Region.valueOf(region));
+    caze.getSample().put("region", region);
     mockGetCaseById(UUID_0, caze);
     return caze;
   }

@@ -34,6 +34,7 @@ import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
@@ -41,8 +42,8 @@ import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
 import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientService;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
@@ -50,10 +51,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -68,14 +67,11 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 @Slf4j
 @Service
 public class CaseServiceImpl implements CaseService {
-  private static final List<DeliveryChannel> ALL_DELIVERY_CHANNELS =
-      List.of(DeliveryChannel.POST, DeliveryChannel.SMS);
-
   @Autowired private AppConfig appConfig;
 
   @Autowired private CaseDataClient caseDataClient;
 
-  @Autowired private CaseServiceClientServiceImpl caseServiceClient;
+  @Autowired private CaseServiceClientService caseServiceClient;
 
   @Autowired private ProductReference productReference;
 
@@ -179,14 +175,26 @@ public class CaseServiceImpl implements CaseService {
   }
 
   @Override
-  public List<CaseDTO> getCaseByUPRN(
-      UniquePropertyReferenceNumber uprn, CaseQueryRequestDTO requestParamsDTO)
-      throws CTPException {
+  public List<CaseDTO> getCaseBySampleAttribute(
+      String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException {
     if (log.isDebugEnabled()) {
-      log.debug("Fetching latest case details by UPRN", kv("uprn", uprn));
+      log.debug("Fetching latest case details by {}", key, kv("key", key), kv("value", value));
     }
 
-    return callCaseSvcByUPRN(uprn.getValue(), requestParamsDTO.getCaseEvents());
+    List<Case> dbCases = new ArrayList<>();
+    try {
+      dbCases = getCasesFromDb(key, value);
+    } catch (CTPException ex) {
+      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
+        log.info(
+            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
+        return Collections.emptyList();
+      } else {
+        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
+        throw ex;
+      }
+    }
+    return mapCaseToDtoList(dbCases);
   }
 
   @Override
@@ -206,7 +214,9 @@ public class CaseServiceImpl implements CaseService {
     }
 
     // Return a 404 if the UPRN is blacklisted
-    UniquePropertyReferenceNumber foundUprn = caseServiceResponse.getAddress().getUprn();
+    UniquePropertyReferenceNumber foundUprn =
+        UniquePropertyReferenceNumber.create(
+            caseServiceResponse.getSample().get(CaseUpdate.ATTRIBUTE_UPRN).toString());
     if (blacklistedUPRNBean.isUPRNBlacklisted(foundUprn)) {
       log.info(
           "UPRN is blacklisted. Not returning case",
@@ -305,7 +315,7 @@ public class CaseServiceImpl implements CaseService {
   }
 
   private Product.Region convertRegion(Case caze) {
-    return Product.Region.valueOf(caze.getAddress().getRegion().name());
+    return Product.Region.valueOf(caze.getSample().get(CaseUpdate.ATTRIBUTE_REGION));
   }
 
   /**
@@ -401,8 +411,8 @@ public class CaseServiceImpl implements CaseService {
     return caseDataClient.getCaseByCaseRef(caseRef);
   }
 
-  private List<Case> getCasesFromDb(long uprn) throws CTPException {
-    return caseDataClient.getCaseByUprn(uprn);
+  private List<Case> getCasesFromDb(String key, String value) throws CTPException {
+    return caseDataClient.getCaseBySampleAttribute(key, value);
   }
 
   /**
@@ -442,31 +452,6 @@ public class CaseServiceImpl implements CaseService {
     return Base64.getEncoder().encodeToString(encStr.getBytes(StandardCharsets.UTF_8));
   }
 
-  /**
-   * Make Case Service request to return cases by UPRN
-   *
-   * @param uprn of requested cases
-   * @param listCaseEvents boolean of whether require case events
-   * @return List of cases for UPRN
-   * @throws CTPException
-   */
-  private List<CaseDTO> callCaseSvcByUPRN(Long uprn, Boolean listCaseEvents) throws CTPException {
-
-    List<Case> dbCases = new ArrayList<>();
-    try {
-      dbCases = getCasesFromDb(uprn);
-    } catch (CTPException ex) {
-      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
-        log.info("Case by UPRN Not Found calling Case Service", kv("uprn", uprn));
-        return Collections.emptyList();
-      } else {
-        log.error("Error calling Case Service", kv("uprn", uprn), ex);
-        throw ex;
-      }
-    }
-    return mapCaseToDtoList(dbCases);
-  }
-
   private void sendEvent(TopicType topicType, EventPayload payload, Object caseId) {
     UUID transferId = eventTransfer.send(topicType, payload);
     if (log.isDebugEnabled()) {
@@ -480,14 +465,12 @@ public class CaseServiceImpl implements CaseService {
 
   private CaseDTO mapCaseToDto(Case caze) {
     CaseDTO caseServiceResponse = mapper.map(caze, CaseDTO.class);
-    caseServiceResponse.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
     return caseServiceResponse;
   }
 
   private List<CaseDTO> mapCaseToDtoList(List<Case> casesToReturn) {
     List<CaseDTO> dtoList = mapper.mapAsList(casesToReturn, CaseDTO.class);
     for (CaseDTO dto : dtoList) {
-      dto.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
       dto.setCaseEvents(Collections.emptyList());
     }
     return dtoList;
@@ -525,11 +508,15 @@ public class CaseServiceImpl implements CaseService {
       CaseDTO response, ModifyCaseRequestDTO modifyRequestDTO, UUID caseId, String caseRef) {
     response.setId(caseId);
     response.setCaseRef(caseRef);
-    CaseAddressDTO addr = response.getAddress();
-    addr.setAddressLine1(modifyRequestDTO.getAddressLine1());
-    addr.setAddressLine2(modifyRequestDTO.getAddressLine2());
-    addr.setAddressLine3(modifyRequestDTO.getAddressLine3());
-    response.setAllowedDeliveryChannels(ALL_DELIVERY_CHANNELS);
+    response
+        .getSample()
+        .put(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_1, modifyRequestDTO.getAddressLine1());
+    response
+        .getSample()
+        .put(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_2, modifyRequestDTO.getAddressLine2());
+    response
+        .getSample()
+        .put(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_3, modifyRequestDTO.getAddressLine3());
     response.setCaseEvents(Collections.emptyList());
   }
 
@@ -610,9 +597,7 @@ public class CaseServiceImpl implements CaseService {
       String formType, Case caze, LaunchRequestDTO requestParamsDTO, String questionnaireId)
       throws CTPException {
     String encryptedPayload = "";
-    CaseContainerDTO caseDetails = mapper.map(caze, CaseContainerDTO.class);
-    caseDetails.setCaseType("HH"); // compatibility
-    caseDetails.setSurveyType("SOCIAL"); // compatibility
+    RmCaseDTO caseDetails = mapper.map(caze, RmCaseDTO.class);
     try {
       EqLaunchData eqLuanchCoreDate =
           EqLaunchData.builder()

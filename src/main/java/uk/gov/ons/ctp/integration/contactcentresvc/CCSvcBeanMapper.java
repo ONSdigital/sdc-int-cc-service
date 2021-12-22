@@ -12,12 +12,8 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
 import org.springframework.stereotype.Component;
-import uk.gov.ons.ctp.common.domain.Region;
-import uk.gov.ons.ctp.common.event.model.Address;
-import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExercise;
@@ -25,14 +21,12 @@ import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 
 /** The bean mapper that maps to/from DTOs and JPA entity types. */
 @Component
@@ -46,7 +40,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
    */
   protected final void configure(final MapperFactory factory) {
     ConverterFactory converterFactory = factory.getConverterFactory();
-    converterFactory.registerConverter("regionConverter", new RegionConverter());
     converterFactory.registerConverter(new StringToUUIDConverter());
     converterFactory.registerConverter(new StringToUPRNConverter());
     converterFactory.registerConverter(new UtcOffsetDateTimeConverter());
@@ -54,51 +47,9 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter(new ArrayListConverter());
 
     factory
-        .classMap(CaseContainerDTO.class, CaseDTO.class)
-        .field("uprn", "address.uprn")
-        .field("addressLine1", "address.addressLine1")
-        .field("addressLine2", "address.addressLine2")
-        .field("addressLine3", "address.addressLine3")
-        .field("townName", "address.townName")
-        .field("postcode", "address.postcode")
-        .byDefault()
-        .fieldMap("region", "address.region")
-        .converter("regionConverter")
-        .add()
-        .register();
-
-    factory
-        .classMap(CaseContainerDTO.class, Case.class)
-        .field("collectionExerciseId", "collectionExercise.id")
-        .field("uprn", "address.uprn")
-        .field("addressLine1", "address.addressLine1")
-        .field("addressLine2", "address.addressLine2")
-        .field("addressLine3", "address.addressLine3")
-        .field("townName", "address.townName")
-        .field("postcode", "address.postcode")
-        .field("region", "address.region")
-        .byDefault()
-        .register();
-
-    factory
         .classMap(CaseUpdate.class, Case.class)
         .field("collectionExerciseId", "collectionExercise.id")
         .field("caseId", "id")
-        .field("sample.questionnaire", "questionnaire")
-        .field("sample.sampleUnitRef", "sampleUnitRef")
-        .field("sample.cohort", "cohort")
-        .field("sample.addressLine1", "address.addressLine1")
-        .field("sample.addressLine2", "address.addressLine2")
-        .field("sample.addressLine3", "address.addressLine3")
-        .field("sample.townName", "address.townName")
-        .field("sample.postcode", "address.postcode")
-        .field("sample.region", "address.region")
-        .field("sample.uprn", "address.uprn")
-        .field("sample.uprnLatitude", "address.uprnLatitude")
-        .field("sample.uprnLongitude", "address.uprnLongitude")
-        .field("sample.gor9d", "address.gor9d")
-        .field("sample.laCode", "address.laCode")
-        .field("sampleSensitive.phoneNumber", "contact.phoneNumber")
         .byDefault()
         .register();
 
@@ -118,12 +69,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .field("metadata.waveLength", "waveLength")
         .field("metadata.cohorts", "cohorts")
         .field("metadata.cohortSchedule", "cohortSchedule")
-        .byDefault()
-        .register();
-
-    factory
-        .classMap(EventDTO.class, CaseEventDTO.class)
-        .field("eventType", "category")
         .byDefault()
         .register();
 
@@ -148,23 +93,8 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .byDefault()
         .register();
 
-    factory.classMap(CaseContainerDTO.class, Address.class).byDefault().register();
-    factory.classMap(CaseContainerDTO.class, AddressCompact.class).byDefault().register();
+    factory.classMap(RmCaseDTO.class, Case.class).byDefault().register();
     factory.classMap(CaseDTO.class, Case.class).byDefault().register();
-  }
-
-  static class RegionConverter extends BidirectionalConverter<String, Region> {
-    public Region convertTo(String src, Type<Region> dstType, MappingContext context) {
-      return Region.valueOf(convert(src));
-    }
-
-    public String convertFrom(Region src, Type<String> dstType, MappingContext context) {
-      return src.name();
-    }
-
-    private String convert(String src) {
-      return StringUtils.isEmpty(src) ? src : src.substring(0, 1).toUpperCase();
-    }
   }
 
   static class UtcOffsetDateTimeConverter extends BidirectionalConverter<Date, OffsetDateTime> {

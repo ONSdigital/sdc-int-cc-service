@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +17,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
@@ -65,8 +64,8 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
     Case caze = caseRepo.getById(UUID.fromString(CASE_ID));
     assertNotNull(caze);
     assertEquals("10000000017", caze.getCaseRef());
-    assertEquals("AB1 2ZX", caze.getAddress().getPostcode());
-    assertEquals("CC3", caze.getCohort());
+    assertEquals("AB1 2ZX", caze.getSample().get(CaseUpdate.ATTRIBUTE_POSTCODE));
+    assertEquals("CC3", caze.getSample().get(CaseUpdate.ATTRIBUTE_COHORT));
   }
 
   @Test
@@ -117,10 +116,10 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
     Case caze = caseRepo.getById(UUID.fromString(CASE_ID));
     assertNotNull(caze);
     assertEquals("10000000017", caze.getCaseRef());
-    assertEquals("AB1 2ZX", caze.getAddress().getPostcode());
-    assertEquals("CC3", caze.getCohort());
+    assertEquals("AB1 2ZX", caze.getSample().get(CaseUpdate.ATTRIBUTE_POSTCODE));
+    assertEquals("CC3", caze.getSample().get(CaseUpdate.ATTRIBUTE_COHORT));
     assertEquals(CCStatus.READY, caze.getCcStatus());
-    assertNotNull(caze.getAddress());
+    assertNotNull(caze.getSampleSensitive());
   }
 
   /**
@@ -199,6 +198,7 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
     }
 
     public void createSkeletonCase(CollectionExercise collectionExercise, UUID id) {
+
       Case caze =
           Case.builder()
               .id(id)
@@ -207,14 +207,8 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
               .caseRef("")
               .lastUpdatedAt(LocalDateTime.parse("9999-01-01T00:00:00.000"))
               .createdAt(LocalDateTime.parse("9999-01-01T00:00:00.000"))
-              .address(
-                  CaseAddress.builder()
-                      .uprn("")
-                      .addressLine1("")
-                      .townName("")
-                      .postcode("")
-                      .region(Region.E)
-                      .build())
+              .sample(new HashMap<>())
+              .sampleSensitive(new HashMap<>())
               .build();
       caseRepo.save(caze);
     }
