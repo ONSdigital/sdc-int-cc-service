@@ -15,7 +15,6 @@ import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.Address;
-import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExercise;
@@ -47,19 +46,6 @@ public class CCSvcBeanMapperTest {
               assertEquals(
                   sourceEvent.getCreatedDateTime(), destinationEvent.getCreatedDateTime()));
     }
-  }
-
-  // TODO Fix Region mapping
-  @Test
-  public void shouldMapRmCaseDTO_CaseDTO() {
-    RmCaseDTO source = FixtureHelper.loadClassFixtures(RmCaseDTO[].class).get(0);
-    CaseDTO destination = mapperFacade.map(source, CaseDTO.class);
-    assertAll(
-        () -> assertEquals(source.getId(), destination.getId()),
-        () -> assertEquals(source.getCaseRef(), destination.getCaseRef()),
-        () -> assertEquals(source.getSample(), destination.getSample()));
-
-    verifyMapping(source.getCaseEvents(), destination.getCaseEvents());
   }
 
   @Test
@@ -120,50 +106,6 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(source.getCensusEstabType(), destAddr.getEstabType()),
         () -> assertEquals(source.getCountryCode(), destAddr.getRegion()),
         () -> assertEquals(source.getOrganisationName(), destination.getOrganisationName()));
-  }
-
-  private void verifyMapping(AddressCompact destination, RmCaseDTO source) {
-    assertAll(
-        () ->
-            assertEquals(
-                source.getSample().get(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_1),
-                destination.getAddressLine1()),
-        () ->
-            assertEquals(
-                source.getSample().get(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_2),
-                destination.getAddressLine2()),
-        () ->
-            assertEquals(
-                source.getSample().get(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_3),
-                destination.getAddressLine3()),
-        () ->
-            assertEquals(
-                source.getSample().get(CaseUpdate.ATTRIBUTE_TOWN_NAME), destination.getTownName()),
-        () ->
-            assertEquals(
-                source.getSample().get(CaseUpdate.ATTRIBUTE_POSTCODE), destination.getPostcode()),
-        () ->
-            assertEquals(
-                source.getSample().get(CaseUpdate.ATTRIBUTE_REGION), destination.getRegion()),
-        () ->
-            assertEquals(source.getSample().get(CaseUpdate.ATTRIBUTE_UPRN), destination.getUprn()));
-  }
-
-  @Test
-  public void shouldMapRmCaseDTO_Address() {
-    RmCaseDTO source = FixtureHelper.loadClassFixtures(RmCaseDTO[].class).get(0);
-    Address destination = mapperFacade.map(source, Address.class);
-    verifyMapping(destination, source);
-
-    assertAll(
-        () ->
-            assertEquals(
-                source.getSample().get(CaseUpdate.ATTRIBUTE_UPRN_LATITUDE),
-                destination.getLatitude()),
-        () ->
-            assertEquals(
-                source.getSample().get(CaseUpdate.ATTRIBUTE_UPRN_LATITUDE),
-                destination.getLongitude()));
   }
 
   @Test
@@ -241,13 +183,6 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(meta.getWaveLength(), destination.getWaveLength()),
         () -> assertEquals(meta.getCohorts(), destination.getCohorts()),
         () -> assertEquals(meta.getCohortSchedule(), destination.getCohortSchedule()));
-  }
-
-  @Test
-  public void shouldMapRmCaseDTO_AddressCompact() {
-    RmCaseDTO source = FixtureHelper.loadClassFixtures(RmCaseDTO[].class).get(0);
-    AddressCompact destination = mapperFacade.map(source, AddressCompact.class);
-    verifyMapping(destination, source);
   }
 
   @Test

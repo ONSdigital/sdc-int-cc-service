@@ -12,12 +12,8 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
 import org.springframework.stereotype.Component;
-import uk.gov.ons.ctp.common.domain.Region;
-import uk.gov.ons.ctp.common.event.model.Address;
-import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExercise;
@@ -25,14 +21,12 @@ import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 
 /** The bean mapper that maps to/from DTOs and JPA entity types. */
 @Component
@@ -79,12 +73,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .register();
 
     factory
-        .classMap(EventDTO.class, CaseEventDTO.class)
-        .field("eventType", "category")
-        .byDefault()
-        .register();
-
-    factory
         .classMap(AddressIndexAddressCompositeDTO.class, CollectionCaseNewAddress.class)
         .field("uprn", "address.uprn")
         .field("addressLine1", "address.addressLine1")
@@ -105,40 +93,8 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .byDefault()
         .register();
 
-    factory
-        .classMap(RmCaseDTO.class, Address.class)
-        .field("sample['uprnLatitude']", "latitude")
-        .field("sample['uprnlongitude']", "longitude")
-        .register();
-
-    factory
-        .classMap(RmCaseDTO.class, AddressCompact.class)
-        .byDefault()
-        .field("sample['addressLine1']", "addressLine1")
-        .field("sample['addressLine2']", "addressLine2")
-        .field("sample['addressLine3']", "addressLine3")
-        .field("sample['townName']", "townName")
-        .field("sample['postcode']", "postcode")
-        .field("sample['region']", "region")
-        .field("sample['uprn']", "uprn")
-        .register();
-
     factory.classMap(RmCaseDTO.class, Case.class).byDefault().register();
     factory.classMap(CaseDTO.class, Case.class).byDefault().register();
-  }
-
-  static class RegionConverter extends BidirectionalConverter<String, Region> {
-    public Region convertTo(String src, Type<Region> dstType, MappingContext context) {
-      return Region.valueOf(convert(src));
-    }
-
-    public String convertFrom(Region src, Type<String> dstType, MappingContext context) {
-      return src.name();
-    }
-
-    private String convert(String src) {
-      return StringUtils.isEmpty(src) ? src : src.substring(0, 1).toUpperCase();
-    }
   }
 
   static class UtcOffsetDateTimeConverter extends BidirectionalConverter<Date, OffsetDateTime> {
