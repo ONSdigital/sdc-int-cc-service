@@ -119,13 +119,13 @@
     <dependency>
       <groupId>ons.sdc.int.common</groupId>
       <artifactId>case-api-client</artifactId>
-      <version>${project.parent.version}</version>
+      <version>1.0.74-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>ons.sdc.int.common</groupId>
       <artifactId>eq-launcher</artifactId>
-      <version>${project.parent.version}</version>
+      <version>1.0.74-SNAPSHOT</version>
     </dependency>
 
     <!-- ONS END -->

@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
+package uk.gov.ons.ctp.integration.contactcentresvc.repository;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
@@ -13,10 +13,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 
 @Slf4j
 @Service
-public class CaseDataClient {
+public class CaseRepositoryClient {
   private CaseRepository caseRepo;
 
-  public CaseDataClient(CaseRepository caseRepo) {
+  public CaseRepositoryClient(CaseRepository caseRepo) {
     this.caseRepo = caseRepo;
   }
 

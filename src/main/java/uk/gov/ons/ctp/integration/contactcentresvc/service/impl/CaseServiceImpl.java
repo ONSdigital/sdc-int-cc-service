@@ -34,15 +34,16 @@ import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
+import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientServiceImpl;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientService;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
@@ -50,6 +51,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.CollectionExerciseRepositoryClient;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.SurveyRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
@@ -73,9 +79,13 @@ public class CaseServiceImpl implements CaseService {
 
   @Autowired private AppConfig appConfig;
 
-  @Autowired private CaseDataClient caseDataClient;
+  @Autowired private CaseRepositoryClient caseRepoClient;
 
-  @Autowired private CaseServiceClientServiceImpl caseServiceClient;
+  @Autowired private CollectionExerciseRepositoryClient collexRepoClient;
+
+  @Autowired private SurveyRepositoryClient surveyRepoClient;
+
+  @Autowired private CaseServiceClientService caseServiceClient;
 
   @Autowired private ProductReference productReference;
 
@@ -168,7 +178,7 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching case details by caseId: {}", caseId);
     }
 
-    CaseDTO caseServiceResponse = mapCaseToDto(getCaseFromDb(caseId));
+    CaseDTO caseServiceResponse = mapCaseToDto(caseRepoClient.getCaseById(caseId));
     caseServiceResponse.setCaseEvents(Collections.emptyList()); // for now there are no case events
 
     if (log.isDebugEnabled()) {
@@ -198,7 +208,7 @@ public class CaseServiceImpl implements CaseService {
 
     validateCaseRef(caseRef);
 
-    Case caseDetails = getCaseFromDb(caseRef);
+    Case caseDetails = caseRepoClient.getCaseByCaseRef(caseRef);
     CaseDTO caseServiceResponse = mapCaseToDto(caseDetails);
     caseServiceResponse.setCaseEvents(Collections.emptyList()); // no case events for now
     if (log.isDebugEnabled()) {
@@ -231,7 +241,7 @@ public class CaseServiceImpl implements CaseService {
     UUID originalCaseId = modifyRequestDTO.getCaseId();
     UUID caseId = originalCaseId;
 
-    Case caseDetails = getCaseFromDb(originalCaseId);
+    Case caseDetails = caseRepoClient.getCaseById(originalCaseId);
 
     CaseDTO response = mapper.map(caseDetails, CaseDTO.class);
     response.setCaseEvents(Collections.emptyList()); // for now there are no case events.
@@ -286,9 +296,8 @@ public class CaseServiceImpl implements CaseService {
         getNewQidForCase(caseDetails, requestParamsDTO.getIndividual());
 
     String questionnaireId = newQuestionnaireIdDto.getQuestionnaireId();
-    String formType = newQuestionnaireIdDto.getFormType();
 
-    String eqUrl = createLaunchUrl(formType, caseDetails, requestParamsDTO, questionnaireId);
+    String eqUrl = createLaunchUrl(caseDetails, requestParamsDTO, questionnaireId);
     publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;
   }
@@ -326,7 +335,7 @@ public class CaseServiceImpl implements CaseService {
           kv("fulfilmentCode", fulfilmentCode));
     }
 
-    Case caze = getCaseFromDb(caseId);
+    Case caze = caseRepoClient.getCaseById(caseId);
     Product product = findProduct(fulfilmentCode, deliveryChannel, convertRegion(caze));
 
     if (deliveryChannel == Product.DeliveryChannel.POST) {
@@ -393,17 +402,17 @@ public class CaseServiceImpl implements CaseService {
     return products.get(0);
   }
 
-  private Case getCaseFromDb(UUID caseId) throws CTPException {
-    return caseDataClient.getCaseById(caseId);
-  }
-
-  private Case getCaseFromDb(long caseRef) throws CTPException {
-    return caseDataClient.getCaseByCaseRef(caseRef);
-  }
-
-  private List<Case> getCasesFromDb(long uprn) throws CTPException {
-    return caseDataClient.getCaseByUprn(uprn);
-  }
+  //  private Case getCaseFromDb(UUID caseId) throws CTPException {
+  //    return caseDataClient.getCaseById(caseId);
+  //  }
+  //
+  //  private Case getCaseFromDb(long caseRef) throws CTPException {
+  //    return caseDataClient.getCaseByCaseRef(caseRef);
+  //  }
+  //
+  //  private List<Case> getCasesFromDb(long uprn) throws CTPException {
+  //    return caseDataClient.getCaseByUprn(uprn);
+  //  }
 
   /**
    * Create a case refusal event.
@@ -598,7 +607,24 @@ public class CaseServiceImpl implements CaseService {
    */
   private Case getLaunchCase(UUID caseId) throws CTPException {
     try {
-      return getCaseFromDb(caseId);
+      return caseRepoClient.getCaseById(caseId);
+    } catch (CTPException ex) {
+      log.error(
+          "Unable to provide launch URL/UAC, failed to find case in DB", kv("caseId", caseId), ex);
+      throw ex;
+    }
+  }
+
+  /**
+   * Get the Case for which the client has requested a launch URL/UAC
+   *
+   * @param caseId of case to get
+   * @return Case for case requested
+   * @throws CTPException if case not available to call (not in case service)
+   */
+  private Case getLaunchCollectionExercise(UUID collexId) throws CTPException {
+    try {
+      return caseRepoClient.getCaseById(caseId);
     } catch (CTPException ex) {
       log.error(
           "Unable to provide launch URL/UAC, failed to find case in DB", kv("caseId", caseId), ex);
@@ -607,27 +633,33 @@ public class CaseServiceImpl implements CaseService {
   }
 
   private String createLaunchUrl(
-      String formType, Case caze, LaunchRequestDTO requestParamsDTO, String questionnaireId)
-      throws CTPException {
+      Case caze, LaunchRequestDTO requestParamsDTO, String questionnaireId) throws CTPException {
+
     String encryptedPayload = "";
-    CaseContainerDTO caseDetails = mapper.map(caze, CaseContainerDTO.class);
-    caseDetails.setCaseType("HH"); // compatibility
-    caseDetails.setSurveyType("SOCIAL"); // compatibility
+    CollectionExercise collex = caze.getCollectionExercise();
+    Survey survey = collex.getSurvey();
+
+    CaseUpdate caseUpdate = mapper.map(caze, CaseUpdate.class);
+    uk.gov.ons.ctp.common.event.model.CollectionExercise collexUpdate =
+        mapper.map(
+            caze.getCollectionExercise(),
+            uk.gov.ons.ctp.common.event.model.CollectionExercise.class);
+    SurveyUpdate surveyUpdate =
+        mapper.map(caze.getCollectionExercise().getSurvey(), SurveyUpdate.class);
+
     try {
-      EqLaunchData eqLuanchCoreDate =
+      EqLaunchData eqLaunchCoreData =
           EqLaunchData.builder()
               .language(Language.ENGLISH)
               .source(Source.CONTACT_CENTRE_API)
               .channel(Channel.CC)
-              .questionnaireId(questionnaireId)
-              .formType(formType)
               .salt(appConfig.getEq().getResponseIdSalt())
               .caseContainer(caseDetails)
               .userId(Integer.toString(requestParamsDTO.getAgentId()))
               .accountServiceUrl(null)
               .accountServiceLogoutUrl(null)
               .build();
-      encryptedPayload = eqLaunchService.getEqLaunchJwe(eqLuanchCoreDate);
+      encryptedPayload = eqLaunchService.getEqLaunchJwe(eqLaunchCoreData);
 
     } catch (CTPException e) {
       log.error(

@@ -38,6 +38,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseAddress;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseAddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
@@ -51,7 +52,7 @@ public abstract class CaseServiceImplTestBase {
 
   @Mock CaseServiceClientServiceImpl caseServiceClient;
 
-  @Mock CaseDataClient caseDataClient;
+  @Mock CaseRepositoryClient caseDataClient;
 
   @Mock EqLaunchService eqLaunchService;
 
