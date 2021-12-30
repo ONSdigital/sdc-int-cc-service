@@ -39,7 +39,6 @@ import uk.gov.ons.ctp.common.rest.RestClientConfig;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientService;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
-import uk.gov.ons.ctp.integration.eqlaunch.service.impl.EqLaunchServiceImpl;
 
 /** The 'main' entry point for the ContactCentre Svc SpringBoot Application. */
 @Slf4j
@@ -170,7 +169,7 @@ public class ContactCentreSvcApplication {
    */
   @Bean
   public EqLaunchService eqLaunchService() throws CTPException {
-    return new EqLaunchServiceImpl(appConfig.getKeystore());
+    return new EqLaunchService(appConfig.getKeystore());
   }
 
   @Bean

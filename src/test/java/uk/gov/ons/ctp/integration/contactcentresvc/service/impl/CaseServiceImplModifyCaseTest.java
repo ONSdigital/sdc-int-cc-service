@@ -8,7 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
+import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,11 +67,11 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
   }
 
   private void mockDbHasCase() throws Exception {
-    mockGetCaseById(UUID_0, caze);
+    mockGetCaseById(CASE_ID_0, caze);
   }
 
   private void mockDbCannotFindCase() throws Exception {
-    mockGetCaseById(UUID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
+    mockGetCaseById(CASE_ID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
   }
 
   @Test

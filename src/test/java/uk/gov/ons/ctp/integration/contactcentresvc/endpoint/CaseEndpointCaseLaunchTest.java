@@ -60,8 +60,7 @@ public class CaseEndpointCaseLaunchTest {
     String fakeResponse = "{\"url\": \"https://www.google.co.uk/search?q=FAKE\"}";
     when(caseService.getLaunchURLForCaseId(any(), any())).thenReturn(fakeResponse);
 
-    ResultActions actions =
-        mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345&individual=false"));
+    ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345"));
     actions.andExpect(status().isOk());
 
     // Check that the url is as expected. Note that MockMvc (or some component in the chain) escapes
@@ -73,34 +72,19 @@ public class CaseEndpointCaseLaunchTest {
 
   @Test
   public void getLaunchURL_BadCaseId() throws Exception {
-    ResultActions actions =
-        mockMvc.perform(getJson("/cases/123456789/launch?agentId=12345&individual=true"));
+    ResultActions actions = mockMvc.perform(getJson("/cases/123456789/launch?agentId=12345"));
     actions.andExpect(status().isBadRequest());
   }
 
   @Test
   public void getLaunchURL_GoodCaseIdMissingAgentTest() throws Exception {
-    ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?individual=true"));
+    ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?"));
     actions.andExpect(status().isBadRequest());
   }
 
   @Test
   public void getLaunchURL_GoodCaseIdBadAgent() throws Exception {
-    ResultActions actions =
-        mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=ABC45&individual=true"));
-    actions.andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void getLaunchURL_GoodCaseIdGoodAgentMissingIndividual() throws Exception {
-    ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=123"));
-    actions.andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void getLaunchURL_GoodCaseIdGoodAgentBadIndividual() throws Exception {
-    ResultActions actions =
-        mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=123&individual=x"));
+    ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=ABC45"));
     actions.andExpect(status().isBadRequest());
   }
 
@@ -108,8 +92,7 @@ public class CaseEndpointCaseLaunchTest {
   public void shouldRejectServiceBadRequestException() throws Exception {
     CTPException ex = new CTPException(Fault.BAD_REQUEST, "a message");
     when(caseService.getLaunchURLForCaseId(any(), any())).thenThrow(ex);
-    ResultActions actions =
-        mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345&individual=false"));
+    ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345"));
     actions
         .andExpect(status().isBadRequest())
         .andExpect(content().string(containsString("a message")));
@@ -119,8 +102,7 @@ public class CaseEndpointCaseLaunchTest {
   public void shouldRejectServiceAcceptedUnableToProcessException() throws Exception {
     CTPException ex = new CTPException(Fault.ACCEPTED_UNABLE_TO_PROCESS, "a message");
     when(caseService.getLaunchURLForCaseId(any(), any())).thenThrow(ex);
-    ResultActions actions =
-        mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345&individual=false"));
+    ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345"));
     actions
         .andExpect(status().isAccepted())
         .andExpect(content().string(containsString("a message")));
@@ -130,8 +112,7 @@ public class CaseEndpointCaseLaunchTest {
   public void shouldRejectServiceResponseStatusException() throws Exception {
     ResponseStatusException ex = new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT);
     when(caseService.getLaunchURLForCaseId(any(), any())).thenThrow(ex);
-    ResultActions actions =
-        mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345&individual=false"));
+    ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345"));
     actions
         .andExpect(status().isIAmATeapot())
         .andExpect(content().string(containsString("SYSTEM_ERROR")));

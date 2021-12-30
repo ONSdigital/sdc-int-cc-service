@@ -16,8 +16,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LaunchRequestDTO {
-
   @NotNull private Integer agentId;
-
-  @NotNull private Boolean individual;
 }
