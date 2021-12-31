@@ -333,8 +333,10 @@ public class CaseServiceImpl implements CaseService {
       throw new CTPException(
           Fault.BAD_REQUEST, "Failed to find pre-existing UAC for the current wave num");
     }
-
-    String eqUrl = createLaunchUrl(caseDetails, requestParamsDTO, uacOpt.get());
+    Uac uac = uacOpt.get();
+    uac.setQuestionnaire(questionnaireId);
+    
+    String eqUrl = createLaunchUrl(caseDetails, requestParamsDTO, uac);
     publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;
   }
