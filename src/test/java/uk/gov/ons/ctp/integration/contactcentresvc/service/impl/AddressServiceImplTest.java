@@ -113,7 +113,7 @@ public class AddressServiceImplTest {
   }
 
   @Test
-  public void testPostcodeQueryProcessing() {
+  public void testPostcodeQueryProcessing() throws CTPException {
     // Build results to be returned from search
     AddressIndexSearchResultsDTO addressIndexResults =
         FixtureHelper.loadClassFixtures(AddressIndexSearchResultsDTO[].class, "current").get(0);

@@ -5,13 +5,16 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.ArrayList;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
+
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.EstabType;
+import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.util.StringUtils;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.AddressServiceClientServiceImpl;
@@ -22,8 +25,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.Add
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /**
  * A ContactCentreDataService implementation which encapsulates all business logic for getting
@@ -37,6 +43,8 @@ public class AddressServiceImpl implements AddressService {
 
   @Autowired private AddressServiceClientServiceImpl addressServiceClient;
 
+  @Autowired private CaseService caseService;
+  
   @Override
   public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest) {
     if (log.isDebugEnabled()) {
@@ -59,7 +67,7 @@ public class AddressServiceImpl implements AddressService {
   }
 
   @Override
-  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest) {
+  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest) throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Running search by postcode", kv("postcodeQueryRequest", postcodeQueryRequest));
     }
@@ -72,6 +80,15 @@ public class AddressServiceImpl implements AddressService {
     AddressQueryResponseDTO results =
         convertAddressIndexResultsToSummarisedAdresses(addressIndexResponse);
 
+    for (AddressDTO x : results.getAddresses()) {
+      CaseQueryRequestDTO request = new CaseQueryRequestDTO();
+      request.setCaseEvents(false);
+      List<CaseDTO> c = caseService.getCaseByUPRN(UniquePropertyReferenceNumber.create(x.getUprn()), request);
+      System.out.println("PMB: found case: " + c.size() + " " + c.get(0).getId());
+      //x.getUprn();
+      //PMB Copy key case data into results structure.
+    }
+    
     if (log.isDebugEnabled()) {
       log.debug(
           "Postcode search is returning addresses", kv("addresses", results.getAddresses().size()));

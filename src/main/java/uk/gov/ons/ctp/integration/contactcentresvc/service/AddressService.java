@@ -22,8 +22,9 @@ public interface AddressService {
    *
    * @param postcodeQueryRequest with postcode, offset and limit for pagination
    * @return result object containing list of addresses
+   * @throws CTPException if something goes wrong
    */
-  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest);
+  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest) throws CTPException;
 
   /**
    * Search for an address by Unique Property Reference No
