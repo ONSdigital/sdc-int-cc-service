@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,9 +26,9 @@ public class CaseDTO {
   @LoggingScope(scope = Scope.HASH)
   private String caseRef;
 
-  private List<DeliveryChannel> allowedDeliveryChannels;
+  private Map<String, Object> sample;
 
-  @Builder.Default private CaseAddressDTO address = new CaseAddressDTO();
+  private Map<String, String> sampleSensitive;
 
   private List<CaseEventDTO> caseEvents;
 }

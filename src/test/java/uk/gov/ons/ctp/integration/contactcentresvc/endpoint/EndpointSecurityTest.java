@@ -108,7 +108,8 @@ public class EndpointSecurityTest {
   @Test
   public void testOkAccessCasesByUPRN() {
     ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/ccsvc/cases/uprn/123456789012", String.class);
+        restTemplate.getForEntity(
+            base.toString() + "/ccsvc/cases/attribute/uprn/123456789012", String.class);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
   }
