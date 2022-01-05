@@ -14,8 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.EstabType;
-import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.util.StringUtils;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.AddressServiceClientServiceImpl;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
@@ -25,8 +25,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.Add
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -46,7 +46,7 @@ public class AddressServiceImpl implements AddressService {
   @Autowired private CaseService caseService;
   
   @Override
-  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest) {
+  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest) throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Running search by address", kv("addressQueryRequest", addressQueryRequest));
     }
@@ -67,7 +67,8 @@ public class AddressServiceImpl implements AddressService {
   }
 
   @Override
-  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest) throws CTPException {
+  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest)
+      throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Running search by postcode", kv("postcodeQueryRequest", postcodeQueryRequest));
     }
@@ -80,15 +81,6 @@ public class AddressServiceImpl implements AddressService {
     AddressQueryResponseDTO results =
         convertAddressIndexResultsToSummarisedAdresses(addressIndexResponse);
 
-    for (AddressDTO x : results.getAddresses()) {
-      CaseQueryRequestDTO request = new CaseQueryRequestDTO();
-      request.setCaseEvents(false);
-      List<CaseDTO> c = caseService.getCaseByUPRN(UniquePropertyReferenceNumber.create(x.getUprn()), request);
-      System.out.println("PMB: found case: " + c.size() + " " + c.get(0).getId());
-      //x.getUprn();
-      //PMB Copy key case data into results structure.
-    }
-    
     if (log.isDebugEnabled()) {
       log.debug(
           "Postcode search is returning addresses", kv("addresses", results.getAddresses().size()));
@@ -183,7 +175,7 @@ public class AddressServiceImpl implements AddressService {
   }
 
   private AddressQueryResponseDTO convertAddressIndexResultsToSummarisedAdresses(
-      AddressIndexSearchResultsDTO addressIndexResponse) {
+      AddressIndexSearchResultsDTO addressIndexResponse) throws CTPException {
     List<AddressDTO> summarisedAddresses =
         addressIndexResponse.getResponse().getAddresses().stream()
             .filter(a -> !isHistorical(a))
@@ -198,9 +190,19 @@ public class AddressServiceImpl implements AddressService {
         address.setAddressType(AddressType.HH.name());
         address.setEstabType(EstabType.HOUSEHOLD.name());
         address.setEstabDescription("Household");
+        
       }
     }
 
+    // Attach key information about any cases at each address
+    for (AddressDTO address : summarisedAddresses) {
+      // Find cases at this address
+      CaseQueryRequestDTO request = new CaseQueryRequestDTO();
+      request.setCaseEvents(false);
+      List<CaseSummaryDTO> casesAtUprn = caseService.getCaseSummaryBySampleAttribute(CaseUpdate.ATTRIBUTE_UPRN, address.getUprn(), request);
+      address.setCases(casesAtUprn);
+    }
+    
     // Complete construction of response objects
     AddressQueryResponseDTO queryResponse = new AddressQueryResponseDTO();
     queryResponse.setDataVersion(addressIndexResponse.getDataVersion());

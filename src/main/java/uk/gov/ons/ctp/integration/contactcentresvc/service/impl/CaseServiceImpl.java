@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +24,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
+
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.Language;
 import uk.gov.ons.ctp.common.domain.Source;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -51,8 +55,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -181,7 +187,7 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching latest case details by {}", key, kv("key", key), kv("value", value));
     }
 
-    List<Case> dbCases = new ArrayList<>();
+    List<Case> dbCases;
     try {
       dbCases = getCasesFromDb(key, value);
     } catch (CTPException ex) {
@@ -195,6 +201,47 @@ public class CaseServiceImpl implements CaseService {
       }
     }
     return mapCaseToDtoList(dbCases);
+  }
+
+  @Override
+  public List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(
+      String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException {
+    if (log.isDebugEnabled()) {
+      log.debug("Fetching latest case summary details by {}", key, kv("key", key), kv("value", value));
+    }
+
+    // Find matching cases
+    List<Case> dbCases;
+    try {
+      dbCases = getCasesFromDb(key, value);
+    } catch (CTPException ex) {
+      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
+        log.info(
+            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
+        return Collections.emptyList();
+      } else {
+        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
+        throw ex;
+      }
+    }
+    
+    // Summarise all found cases
+    List<CaseSummaryDTO> caseSummaries = new ArrayList<>();
+    for (Case dbCase: dbCases) {
+      CaseSummaryDTO caseSummary = new CaseSummaryDTO();
+      caseSummary.setId(dbCase.getId());
+      caseSummary.setCaseRef(dbCase.getCaseRef());
+      
+      Survey survey = dbCase.getCollectionExercise().getSurvey();
+      caseSummary.setSurveyName(survey.getName());
+      
+      SurveyType surveyType = SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl());
+      caseSummary.setSurveyType(surveyType.getBasename());
+      
+      caseSummaries.add(caseSummary);
+    }
+    
+    return caseSummaries;
   }
 
   @Override

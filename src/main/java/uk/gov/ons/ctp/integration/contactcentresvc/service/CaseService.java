@@ -2,10 +2,13 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service;
 
 import java.util.List;
 import java.util.UUID;
+
 import javax.validation.Valid;
+
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -19,6 +22,9 @@ public interface CaseService {
   CaseDTO getCaseById(final UUID caseId, CaseQueryRequestDTO requestParamsDTO) throws CTPException;
 
   List<CaseDTO> getCaseBySampleAttribute(
+      String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException;
+
+  List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(
       String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException;
 
   CaseDTO getCaseByCaseReference(final long caseRef, CaseQueryRequestDTO requestParamsDTO)

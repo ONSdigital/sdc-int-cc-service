@@ -14,8 +14,9 @@ public interface AddressService {
    *
    * @param addressQueryRequest with search string, offset and limit for pagination
    * @return result object containing list of addresses
+   * @throws CTPException if something goes wrong.
    */
-  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest);
+  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest) throws CTPException;
 
   /**
    * Search for an address by postcode
@@ -24,7 +25,8 @@ public interface AddressService {
    * @return result object containing list of addresses
    * @throws CTPException if something goes wrong
    */
-  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest) throws CTPException;
+  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest)
+      throws CTPException;
 
   /**
    * Search for an address by Unique Property Reference No
