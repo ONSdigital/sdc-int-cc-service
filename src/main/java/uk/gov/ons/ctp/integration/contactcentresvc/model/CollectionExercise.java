@@ -46,17 +46,18 @@ public class CollectionExercise {
   private int waveLength;
 
   /**
-   * Calculate if a given date is within the window of a wave within this exercise, and
-   * return its wave num, optionally taking into account the non operational days at the end of each wave 
-   * 
-   * This calculation applies a relaxed or strict test, as current requirements do not define if
-   * CC is to allow tele capture when today is within a wave but after its operational period. 
-   * We do not know at this stage which of the two tests will be used or if we need to be both strict and relaxed
-   * in different scenarios.
+   * Calculate if a given date is within the window of a wave within this exercise, and return its
+   * wave num, optionally taking into account the non operational days at the end of each wave
    *
-   * Currently only the CC needs to perform this calc - if this becomes a concern for RH also, this should be moved
-   * to the EventPublishers model object, CollectionExerciseUpdate, or a util class that takes that object as an arg.
-   * 
+   * <p>This calculation applies a relaxed or strict test, as current requirements do not define if
+   * CC is to allow tele capture when today is within a wave but after its operational period. We do
+   * not know at this stage which of the two tests will be used or if we need to be both strict and
+   * relaxed in different scenarios.
+   *
+   * <p>Currently only the CC needs to perform this calc - if this becomes a concern for RH also,
+   * this should be moved to the EventPublishers model object, CollectionExerciseUpdate, or a util
+   * class that takes that object as an arg.
+   *
    * @param date the given date
    * @param strict true if the date is not allowed within the non operational window of a wave
    * @return the wave num else empty

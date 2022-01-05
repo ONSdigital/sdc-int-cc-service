@@ -292,10 +292,11 @@ public class CaseServiceImpl implements CaseService {
   }
 
   /**
-   * We may want to consider how the calling code (CaseEndpoint) handles the BAD_REQUESTs that come from
-   * this method. Throwing exceptions in these scenarios obliges the caller (and perhaps the UI) to first consider
-   * the validity of its request, which may be onerous. Perhaps we consider providing the UI with an endpoint that pre
-   * validates the ability to launch which would enable it to disable the launch button in the first place.
+   * We may want to consider how the calling code (CaseEndpoint) handles the BAD_REQUESTs that come
+   * from this method. Throwing exceptions in these scenarios obliges the caller (and perhaps the
+   * UI) to first consider the validity of its request, which may be onerous. Perhaps we consider
+   * providing the UI with an endpoint that pre validates the ability to launch which would enable
+   * it to disable the launch button in the first place.
    */
   @Override
   public String getLaunchURLForCaseId(final UUID caseId, LaunchRequestDTO requestParamsDTO)
@@ -316,7 +317,8 @@ public class CaseServiceImpl implements CaseService {
     // But RM do not provide a collectionInstrumentUrl so we will use the collex
     // and calc the current wave
     CollectionExercise collex = caseDetails.getCollectionExercise();
-    // the assumption is that the calc should be strict and not allow launch if a wave is no longer operational
+    // the assumption is that the calc should be strict and not allow launch if a wave is no longer
+    // operational
     Optional<Integer> waveNumOpt = collex.calcWaveForDate(LocalDateTime.now(), true);
     if (waveNumOpt.isEmpty()) {
       throw new CTPException(
@@ -335,7 +337,7 @@ public class CaseServiceImpl implements CaseService {
     }
     Uac uac = uacOpt.get();
     uac.setQuestionnaire(questionnaireId);
-    
+
     String eqUrl = createLaunchUrl(caseDetails, requestParamsDTO, uac);
     publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;

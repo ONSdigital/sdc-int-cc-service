@@ -12,7 +12,6 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CAS
 
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +22,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.Language;
@@ -45,10 +43,8 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 @ExtendWith(MockitoExtension.class)
 public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
 
-  @Captor
-  private ArgumentCaptor<EqLaunchData> eqLaunchDataCaptor;
-  @Mock
-  private KeyStore keyStoreEncryption;
+  @Captor private ArgumentCaptor<EqLaunchData> eqLaunchDataCaptor;
+  @Mock private KeyStore keyStoreEncryption;
 
   @BeforeEach
   public void setup() {
@@ -80,12 +76,12 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
         .when(eqLaunchService.getEqLaunchJwe(any(EqLaunchData.class)))
         .thenReturn("simulated-encrypted-payload");
 
-    List<LaunchRequestDTO> requestsFromCCSvc = FixtureHelper.loadClassFixtures(LaunchRequestDTO[].class);
+    List<LaunchRequestDTO> requestsFromCCSvc =
+        FixtureHelper.loadClassFixtures(LaunchRequestDTO[].class);
     LaunchRequestDTO launchRequestDTO = requestsFromCCSvc.get(0);
 
     assertThrows(
-        CTPException.class,
-        () -> target.getLaunchURLForCaseId(CASE_ID_0, launchRequestDTO));
+        CTPException.class, () -> target.getLaunchURLForCaseId(CASE_ID_0, launchRequestDTO));
   }
 
   @Test
@@ -105,14 +101,14 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
         .when(eqLaunchService.getEqLaunchJwe(any(EqLaunchData.class)))
         .thenReturn("simulated-encrypted-payload");
 
-    List<LaunchRequestDTO> requestsFromCCSvc = FixtureHelper.loadClassFixtures(LaunchRequestDTO[].class);
+    List<LaunchRequestDTO> requestsFromCCSvc =
+        FixtureHelper.loadClassFixtures(LaunchRequestDTO[].class);
     LaunchRequestDTO launchRequestDTO = requestsFromCCSvc.get(0);
 
     assertThrows(
-        CTPException.class,
-        () -> target.getLaunchURLForCaseId(CASE_ID_0, launchRequestDTO));
+        CTPException.class, () -> target.getLaunchURLForCaseId(CASE_ID_0, launchRequestDTO));
   }
-  
+
   @Test
   public void testLaunchCase() throws Exception {
     // setup mocking
@@ -131,7 +127,8 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
         .when(eqLaunchService.getEqLaunchJwe(any(EqLaunchData.class)))
         .thenReturn("simulated-encrypted-payload");
 
-    List<LaunchRequestDTO> requestsFromCCSvc = FixtureHelper.loadClassFixtures(LaunchRequestDTO[].class);
+    List<LaunchRequestDTO> requestsFromCCSvc =
+        FixtureHelper.loadClassFixtures(LaunchRequestDTO[].class);
     LaunchRequestDTO launchRequestDTO = requestsFromCCSvc.get(0);
 
     // Invoke method under test, and check returned url
@@ -182,5 +179,4 @@ public class CaseServiceImplLaunchTest extends CaseServiceImplTestBase {
     EqLaunch payloadSent = verifyEventSent(TopicType.EQ_LAUNCH, EqLaunch.class);
     assertEquals(questionnaireId, payloadSent.getQid());
   }
-
 }
