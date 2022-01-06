@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +20,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.AddressServiceClientServiceImpl;
@@ -28,6 +30,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.Add
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 
@@ -38,6 +41,10 @@ public class AddressServiceImplTest {
   AddressServiceClientServiceImpl addressClientService = new AddressServiceClientServiceImpl();
 
   @InjectMocks AddressService addressService = new AddressServiceImpl();
+
+  @Mock
+  CaseServiceImpl caseServiceImpl = new CaseServiceImpl();
+
 
   private void mockSearchByAddress(String qualifier, int expectedNumAddresses) {
     AddressIndexSearchResultsDTO results =
@@ -119,6 +126,9 @@ public class AddressServiceImplTest {
         FixtureHelper.loadClassFixtures(AddressIndexSearchResultsDTO[].class, "current").get(0);
     when(addressClientService.searchByPostcode(any())).thenReturn(addressIndexResults);
 
+    List<CaseSummaryDTO> emptyCaseSummaries = new ArrayList<CaseSummaryDTO>();
+    when(caseServiceImpl.getCaseSummaryBySampleAttribute(any(), any())).thenReturn(emptyCaseSummaries);
+    
     // Run the request and verify results
     PostcodeQueryRequestDTO request = PostcodeQueryRequestDTO.create("EX2 8DD", 0, 100);
     AddressQueryResponseDTO results = addressService.postcodeQuery(request);

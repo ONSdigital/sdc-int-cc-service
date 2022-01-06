@@ -25,7 +25,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.Add
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
@@ -197,9 +196,7 @@ public class AddressServiceImpl implements AddressService {
     // Attach key information about any cases at each address
     for (AddressDTO address : summarisedAddresses) {
       // Find cases at this address
-      CaseQueryRequestDTO request = new CaseQueryRequestDTO();
-      request.setCaseEvents(false);
-      List<CaseSummaryDTO> casesAtUprn = caseService.getCaseSummaryBySampleAttribute(CaseUpdate.ATTRIBUTE_UPRN, address.getUprn(), request);
+      List<CaseSummaryDTO> casesAtUprn = caseService.getCaseSummaryBySampleAttribute(CaseUpdate.ATTRIBUTE_UPRN, address.getUprn());
       address.setCases(casesAtUprn);
     }
     

@@ -205,7 +205,7 @@ public class CaseServiceImpl implements CaseService {
 
   @Override
   public List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(
-      String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException {
+      String key, String value) throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Fetching latest case summary details by {}", key, kv("key", key), kv("value", value));
     }

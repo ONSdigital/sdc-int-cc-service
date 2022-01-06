@@ -25,7 +25,7 @@ public interface CaseService {
       String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException;
 
   List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(
-      String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException;
+      String key, String value) throws CTPException;
 
   CaseDTO getCaseByCaseReference(final long caseRef, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException;
