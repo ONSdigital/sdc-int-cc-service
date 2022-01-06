@@ -10,12 +10,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -63,9 +61,7 @@ public class CaseServiceImplGetCaseSummaryBySampleAttributeTest extends CaseServ
 
     assertThrows(
         IllegalArgumentException.class,
-        () ->
-            target.getCaseSummaryBySampleAttribute(
-                "uprn", String.valueOf(UPRN.getValue())));
+        () -> target.getCaseSummaryBySampleAttribute("uprn", String.valueOf(UPRN.getValue())));
   }
 
   // ---- helpers methods below ---
@@ -89,11 +85,10 @@ public class CaseServiceImplGetCaseSummaryBySampleAttributeTest extends CaseServ
     CaseSummaryDTO expectedCaseResult = createExpectedCaseSummaryDTO(casesFromDb.get(dataIndex));
     assertEquals(expectedCaseResult, results);
   }
-  
+
   private CaseSummaryDTO getCasesByUprn() throws CTPException {
     List<CaseSummaryDTO> results =
-        target.getCaseSummaryBySampleAttribute(
-            "uprn", String.valueOf(UPRN.getValue()));
+        target.getCaseSummaryBySampleAttribute("uprn", String.valueOf(UPRN.getValue()));
     return results.size() >= 1 ? results.get(0) : null;
   }
 }

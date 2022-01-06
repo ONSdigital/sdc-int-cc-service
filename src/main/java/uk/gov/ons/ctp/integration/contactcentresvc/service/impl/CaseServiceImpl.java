@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.inject.Inject;
-
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
-
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -204,10 +201,11 @@ public class CaseServiceImpl implements CaseService {
   }
 
   @Override
-  public List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(
-      String key, String value) throws CTPException {
+  public List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(String key, String value)
+      throws CTPException {
     if (log.isDebugEnabled()) {
-      log.debug("Fetching latest case summary details by {}", key, kv("key", key), kv("value", value));
+      log.debug(
+          "Fetching latest case summary details by {}", key, kv("key", key), kv("value", value));
     }
 
     // Find matching cases
@@ -224,23 +222,23 @@ public class CaseServiceImpl implements CaseService {
         throw ex;
       }
     }
-    
+
     // Summarise all found cases
     List<CaseSummaryDTO> caseSummaries = new ArrayList<>();
-    for (Case dbCase: dbCases) {
+    for (Case dbCase : dbCases) {
       CaseSummaryDTO caseSummary = new CaseSummaryDTO();
       caseSummary.setId(dbCase.getId());
       caseSummary.setCaseRef(dbCase.getCaseRef());
-      
+
       Survey survey = dbCase.getCollectionExercise().getSurvey();
       caseSummary.setSurveyName(survey.getName());
-      
+
       SurveyType surveyType = SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl());
       caseSummary.setSurveyType(surveyType.getBasename());
-      
+
       caseSummaries.add(caseSummary);
     }
-    
+
     return caseSummaries;
   }
 

@@ -5,13 +5,11 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
-
-import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -43,9 +41,10 @@ public class AddressServiceImpl implements AddressService {
   @Autowired private AddressServiceClientServiceImpl addressServiceClient;
 
   @Autowired private CaseService caseService;
-  
+
   @Override
-  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest) throws CTPException {
+  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest)
+      throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Running search by address", kv("addressQueryRequest", addressQueryRequest));
     }
@@ -189,17 +188,17 @@ public class AddressServiceImpl implements AddressService {
         address.setAddressType(AddressType.HH.name());
         address.setEstabType(EstabType.HOUSEHOLD.name());
         address.setEstabDescription("Household");
-        
       }
     }
 
     // Attach key information about any cases at each address
     for (AddressDTO address : summarisedAddresses) {
       // Find cases at this address
-      List<CaseSummaryDTO> casesAtUprn = caseService.getCaseSummaryBySampleAttribute(CaseUpdate.ATTRIBUTE_UPRN, address.getUprn());
+      List<CaseSummaryDTO> casesAtUprn =
+          caseService.getCaseSummaryBySampleAttribute(CaseUpdate.ATTRIBUTE_UPRN, address.getUprn());
       address.setCases(casesAtUprn);
     }
-    
+
     // Complete construction of response objects
     AddressQueryResponseDTO queryResponse = new AddressQueryResponseDTO();
     queryResponse.setDataVersion(addressIndexResponse.getDataVersion());

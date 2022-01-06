@@ -16,7 +16,8 @@ public interface AddressService {
    * @return result object containing list of addresses
    * @throws CTPException if something goes wrong.
    */
-  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest) throws CTPException;
+  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest)
+      throws CTPException;
 
   /**
    * Search for an address by postcode
