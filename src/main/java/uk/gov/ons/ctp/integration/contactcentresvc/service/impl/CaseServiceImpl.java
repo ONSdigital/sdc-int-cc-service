@@ -234,7 +234,7 @@ public class CaseServiceImpl implements CaseService {
       caseSummary.setSurveyName(survey.getName());
 
       SurveyType surveyType = SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl());
-      caseSummary.setSurveyType(surveyType.getBasename());
+      caseSummary.setSurveyType(surveyType.name());
 
       caseSummaries.add(caseSummary);
     }

@@ -114,7 +114,7 @@ public abstract class CaseServiceImplTestBase {
             .id(caseFromDb.getId())
             .caseRef(caseFromDb.getCaseRef())
             .surveyName(caseFromDb.getCollectionExercise().getSurvey().getName())
-            .surveyType("social")
+            .surveyType("SOCIAL")
             .build();
     return expectedCaseResult;
   }
