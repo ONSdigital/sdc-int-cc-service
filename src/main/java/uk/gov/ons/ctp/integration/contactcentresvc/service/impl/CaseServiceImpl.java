@@ -165,6 +165,8 @@ public class CaseServiceImpl implements CaseService {
     }
 
     CaseDTO caseServiceResponse = mapCaseToDto(getCaseFromDb(caseId));
+    
+    if (requestParamsDTO.getCaseEvents()) {
     caseServiceResponse.setCaseEvents(Collections.emptyList()); // for now there are no case events
 
     if (log.isDebugEnabled()) {
@@ -194,6 +196,7 @@ public class CaseServiceImpl implements CaseService {
         throw ex;
       }
     }
+    
     return mapCaseToDtoList(dbCases);
   }
 
@@ -470,9 +473,9 @@ public class CaseServiceImpl implements CaseService {
 
   private List<CaseDTO> mapCaseToDtoList(List<Case> casesToReturn) {
     List<CaseDTO> dtoList = mapper.mapAsList(casesToReturn, CaseDTO.class);
-    for (CaseDTO dto : dtoList) {
-      dto.setCaseEvents(Collections.emptyList());
-    }
+//PMB    for (CaseDTO dto : dtoList) {
+//      dto.setCaseEvents(Collections.emptyList());
+//    }
     return dtoList;
   }
 

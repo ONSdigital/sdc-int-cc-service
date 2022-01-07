@@ -35,7 +35,7 @@ public class InteractionServiceImpl implements InteractionService {
 
     try {
       repository.saveAndFlush(caseInteraction);
-    } catch(Exception e) {
+    } catch (Exception e) {
       log.error("Failed to save case interaction", kv("caseId", caseId), e);
       throw e;
     }
