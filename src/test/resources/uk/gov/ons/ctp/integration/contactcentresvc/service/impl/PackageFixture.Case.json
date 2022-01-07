@@ -3,17 +3,17 @@
   "collectionExercise": {
     "id": "22684ede-7d5f-4f53-9069-2398055c61b2",
     "name": "Test CollEx",
-		"reference": "MVP012021",
-		"startDate": "2021-09-17T23:59:59.999Z",
-		"endDate": "2021-09-27T23:59:59.999Z",
-		"numberOfWaves": "3",
-		"waveLength": "2",
-		"cohorts": "3",
-		"cohortSchedule": "7",
-		"survey": {
-			"id": "c550475f-6eaa-48ee-b3d6-574ae28f0151",
-			"sampleDefinitionUrl": "http://news.bbc.co.uk/social.json"
-		}
+    "reference": "MVP012021",
+    "startDate": "2021-09-17T23:59:59.999Z",
+    "endDate": "2021-09-27T23:59:59.999Z",
+    "numberOfWaves": "3",
+    "waveLength": "2",
+    "cohorts": "3",
+    "cohortSchedule": "7",
+    "survey": {
+      "id": "c550475f-6eaa-48ee-b3d6-574ae28f0151",
+      "sampleDefinitionUrl": "http://news.bbc.co.uk/social.json"
+    }
   },
   "caseRef": "1000000000000001",
   "invalid": false,
