@@ -14,8 +14,6 @@ import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CCStatus;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerciseRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 
 /**
  * Service implementation responsible for receipt of Case Events. See Spring Integration flow for
@@ -29,11 +27,7 @@ public class CaseUpdateEventReceiver {
   private EventFilter eventFilter;
 
   public CaseUpdateEventReceiver(
-      CaseRepository caseRepo,
-      SurveyRepository surveyRepo,
-      CollectionExerciseRepository collExRepo,
-      MapperFacade mapper,
-      EventFilter eventFilter) {
+      CaseRepository caseRepo, MapperFacade mapper, EventFilter eventFilter) {
     this.caseRepo = caseRepo;
     this.mapper = mapper;
     this.eventFilter = eventFilter;

@@ -9,7 +9,7 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_ESTAB_TYPE;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_CASE_TYPE;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.A_REQUEST_DATE_TIME;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
+import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
@@ -146,7 +146,7 @@ public class EndpointSecurityTest {
 
   @Test
   public void testOkPutCase() {
-    ModifyCaseRequestDTO requestBody = ModifyCaseRequestDTO.builder().caseId(UUID_0).build();
+    ModifyCaseRequestDTO requestBody = ModifyCaseRequestDTO.builder().caseId(CASE_ID_0).build();
 
     requestBody.setAddressLine1(AN_ADDRESS_LINE_1);
     requestBody.setAddressLine2(AN_ADDRESS_LINE_2);

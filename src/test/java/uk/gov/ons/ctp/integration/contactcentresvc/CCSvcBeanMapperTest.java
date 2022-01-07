@@ -17,7 +17,7 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
-import uk.gov.ons.ctp.common.event.model.CollectionExercise;
+import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
@@ -146,7 +146,8 @@ public class CCSvcBeanMapperTest {
 
   @Test
   public void shouldMapCollectionExerciseUpdateToCollectionExercise() {
-    CollectionExercise source = FixtureHelper.loadClassFixtures(CollectionExercise[].class).get(0);
+    CollectionExerciseUpdate source =
+        FixtureHelper.loadClassFixtures(CollectionExerciseUpdate[].class).get(0);
     var meta = source.getMetadata();
     var destination =
         mapperFacade.map(
