@@ -28,16 +28,15 @@ import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.Add
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 
 @ExtendWith(MockitoExtension.class)
 public class AddressServiceImplTest {
 
-  @Mock
-  AddressServiceClientServiceImpl addressClientService = new AddressServiceClientServiceImpl();
-
-  @InjectMocks AddressService addressService = new AddressServiceImpl();
+  @Mock AddressServiceClientServiceImpl addressClientService;
+  @InjectMocks AddressServiceImpl addressService;
+  @Mock CaseServiceImpl caseServiceImpl;
 
   private void mockSearchByAddress(String qualifier, int expectedNumAddresses) {
     AddressIndexSearchResultsDTO results =
@@ -113,11 +112,15 @@ public class AddressServiceImplTest {
   }
 
   @Test
-  public void testPostcodeQueryProcessing() {
+  public void testPostcodeQueryProcessing() throws CTPException {
     // Build results to be returned from search
     AddressIndexSearchResultsDTO addressIndexResults =
         FixtureHelper.loadClassFixtures(AddressIndexSearchResultsDTO[].class, "current").get(0);
     when(addressClientService.searchByPostcode(any())).thenReturn(addressIndexResults);
+
+    List<CaseSummaryDTO> emptyCaseSummaries = new ArrayList<CaseSummaryDTO>();
+    when(caseServiceImpl.getCaseSummaryBySampleAttribute(any(), any()))
+        .thenReturn(emptyCaseSummaries);
 
     // Run the request and verify results
     PostcodeQueryRequestDTO request = PostcodeQueryRequestDTO.create("EX2 8DD", 0, 100);

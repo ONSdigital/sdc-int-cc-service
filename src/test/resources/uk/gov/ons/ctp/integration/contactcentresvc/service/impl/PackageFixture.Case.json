@@ -12,6 +12,7 @@
     "cohortSchedule": "7",
     "survey": {
       "id": "c550475f-6eaa-48ee-b3d6-574ae28f0151",
+      "name": "Hat size survey",
       "sampleDefinitionUrl": "http://news.bbc.co.uk/social.json"
     }
   },

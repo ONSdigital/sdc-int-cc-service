@@ -43,6 +43,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
@@ -109,6 +110,18 @@ public abstract class CaseServiceImplTestBase {
             .sample(new HashMap<>(caseFromDb.getSample()))
             .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))
             .caseEvents(Collections.emptyList())
+            .build();
+    return expectedCaseResult;
+  }
+
+  CaseSummaryDTO createExpectedCaseSummaryDTO(Case caseFromDb) {
+
+    CaseSummaryDTO expectedCaseResult =
+        CaseSummaryDTO.builder()
+            .id(caseFromDb.getId())
+            .caseRef(caseFromDb.getCaseRef())
+            .surveyName(caseFromDb.getCollectionExercise().getSurvey().getName())
+            .surveyType("SOCIAL")
             .build();
     return expectedCaseResult;
   }

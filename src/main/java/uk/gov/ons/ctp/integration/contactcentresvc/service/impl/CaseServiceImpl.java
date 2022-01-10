@@ -61,6 +61,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClie
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -192,7 +193,7 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching latest case details by {}", key, kv("key", key), kv("value", value));
     }
 
-    List<Case> dbCases = new ArrayList<>();
+    List<Case> dbCases;
     try {
       dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
     } catch (CTPException ex) {
@@ -206,6 +207,48 @@ public class CaseServiceImpl implements CaseService {
       }
     }
     return mapCaseToDtoList(dbCases);
+  }
+
+  @Override
+  public List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(String key, String value)
+      throws CTPException {
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Fetching latest case summary details by {}", key, kv("key", key), kv("value", value));
+    }
+
+    // Find matching cases
+    List<Case> dbCases;
+    try {
+      dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
+    } catch (CTPException ex) {
+      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
+        log.info(
+            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
+        return Collections.emptyList();
+      } else {
+        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
+        throw ex;
+      }
+    }
+
+    // Summarise all found cases
+    List<CaseSummaryDTO> caseSummaries = new ArrayList<>();
+    for (Case dbCase : dbCases) {
+      CaseSummaryDTO caseSummary = new CaseSummaryDTO();
+      caseSummary.setId(dbCase.getId());
+      caseSummary.setCaseRef(dbCase.getCaseRef());
+
+      Survey survey = dbCase.getCollectionExercise().getSurvey();
+      caseSummary.setSurveyName(survey.getName());
+
+      SurveyType surveyType = SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl());
+      caseSummary.setSurveyType(surveyType.name());
+
+      caseSummaries.add(caseSummary);
+    }
+
+    return caseSummaries;
   }
 
   @Override
