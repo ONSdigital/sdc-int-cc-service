@@ -30,17 +30,13 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRe
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
 
 @ExtendWith(MockitoExtension.class)
 public class AddressServiceImplTest {
 
-  @Mock
-  AddressServiceClientServiceImpl addressClientService = new AddressServiceClientServiceImpl();
-
-  @InjectMocks AddressService addressService = new AddressServiceImpl();
-
-  @Mock CaseServiceImpl caseServiceImpl = new CaseServiceImpl();
+  @Mock AddressServiceClientServiceImpl addressClientService;
+  @InjectMocks AddressServiceImpl addressService;
+  @Mock CaseServiceImpl caseServiceImpl;
 
   private void mockSearchByAddress(String qualifier, int expectedNumAddresses) {
     AddressIndexSearchResultsDTO results =
