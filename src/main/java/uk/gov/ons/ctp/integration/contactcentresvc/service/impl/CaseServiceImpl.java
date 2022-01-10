@@ -52,6 +52,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDetailsDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
@@ -166,14 +167,32 @@ public class CaseServiceImpl implements CaseService {
 
     CaseDTO caseServiceResponse = mapCaseToDto(getCaseFromDb(caseId));
     
-    if (requestParamsDTO.getCaseEvents()) {
-    caseServiceResponse.setCaseEvents(Collections.emptyList()); // for now there are no case events
+    populateCaseEvents(caseServiceResponse, requestParamsDTO.getCaseEvents());
 
     if (log.isDebugEnabled()) {
       log.debug("Returning case details for caseId", kv("caseId", caseId));
     }
 
     return caseServiceResponse;
+  }
+
+  private void populateCaseEvents(CaseDTO caseDTO, Boolean getCaseEvents) {
+    if (!getCaseEvents) {
+      // Don't return any case events
+      caseDTO.setInteractions(Collections.emptyList());
+      return;
+    }
+    
+    RmCaseDTO caseEvents = caseServiceClient.getCaseById(caseDTO.getId(),  true);
+    
+    CaseInteractionDetailsDTO interaction = CaseInteractionDetailsDTO.builder()
+        .interactionSource("RM")
+        .interaction(caseEvents.getCaseEvents().get(0).getEventType())
+        .build();
+            eou
+    
+    System.out.println("PMB: " + caseEvents);
+    System.out.println("PMB: " + interaction);
   }
 
   @Override
@@ -211,7 +230,7 @@ public class CaseServiceImpl implements CaseService {
 
     Case caseDetails = getCaseFromDb(caseRef);
     CaseDTO caseServiceResponse = mapCaseToDto(caseDetails);
-    caseServiceResponse.setCaseEvents(Collections.emptyList()); // no case events for now
+    caseServiceResponse.setInteractions(Collections.emptyList()); // no case events for now
     if (log.isDebugEnabled()) {
       log.debug("Returning case details for case reference", kv("caseRef", caseRef));
     }
@@ -247,7 +266,7 @@ public class CaseServiceImpl implements CaseService {
     Case caseDetails = getCaseFromDb(originalCaseId);
 
     CaseDTO response = mapper.map(caseDetails, CaseDTO.class);
-    response.setCaseEvents(Collections.emptyList()); // for now there are no case events.
+    response.setInteractions(Collections.emptyList()); // for now there are no case events.
     String caseRef = caseDetails.getCaseRef();
 
     // removed most of the code from original Census code since it relies heavily
@@ -520,7 +539,7 @@ public class CaseServiceImpl implements CaseService {
     response
         .getSample()
         .put(CaseUpdate.ATTRIBUTE_ADDRESS_LINE_3, modifyRequestDTO.getAddressLine3());
-    response.setCaseEvents(Collections.emptyList());
+    response.setInteractions(Collections.emptyList());
   }
 
   /**
