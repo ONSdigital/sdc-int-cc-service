@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdateEvent;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
@@ -49,10 +50,9 @@ public class CollectionExerciseEventReceiverTest {
 
     verify(repo).saveAndFlush(collExCaptor.capture());
 
-    uk.gov.ons.ctp.common.event.model.CollectionExercise payload =
-        event.getPayload().getCollectionExerciseUpdate();
-    CollectionExercise collEx = collExCaptor.getValue();
-    verifyMapping(collEx, payload);
+    CollectionExerciseUpdate payload = event.getPayload().getCollectionExerciseUpdate();
+    CollectionExercise persistedCollEx = collExCaptor.getValue();
+    verifyMapping(persistedCollEx, payload);
   }
 
   @Test
@@ -62,23 +62,24 @@ public class CollectionExerciseEventReceiverTest {
   }
 
   private void verifyMapping(
-      CollectionExercise collEx,
-      uk.gov.ons.ctp.common.event.model.CollectionExercise collExUpdate) {
-    assertEquals(UUID.fromString(collExUpdate.getSurveyId()), collEx.getSurvey().getId());
-    assertEquals(UUID.fromString(collExUpdate.getCollectionExerciseId()), collEx.getId());
-    assertEquals(collExUpdate.getName(), collEx.getName());
-    assertEquals(collExUpdate.getReference(), collEx.getReference());
+      CollectionExercise persistedCollEx, CollectionExerciseUpdate collExPayload) {
+    assertEquals(UUID.fromString(collExPayload.getSurveyId()), persistedCollEx.getSurvey().getId());
+    assertEquals(UUID.fromString(collExPayload.getCollectionExerciseId()), persistedCollEx.getId());
+    assertEquals(collExPayload.getName(), persistedCollEx.getName());
+    assertEquals(collExPayload.getReference(), persistedCollEx.getReference());
 
     assertEquals(
-        collExUpdate.getStartDate().toInstant(), collEx.getStartDate().toInstant(ZoneOffset.UTC));
+        collExPayload.getStartDate().toInstant(),
+        persistedCollEx.getStartDate().toInstant(ZoneOffset.UTC));
     assertEquals(
-        collExUpdate.getEndDate().toInstant(), collEx.getEndDate().toInstant(ZoneOffset.UTC));
+        collExPayload.getEndDate().toInstant(),
+        persistedCollEx.getEndDate().toInstant(ZoneOffset.UTC));
 
-    var meta = collExUpdate.getMetadata();
+    var meta = collExPayload.getMetadata();
     assertAll(
-        () -> assertEquals(meta.getNumberOfWaves(), collEx.getNumberOfWaves()),
-        () -> assertEquals(meta.getWaveLength(), collEx.getWaveLength()),
-        () -> assertEquals(meta.getCohorts(), collEx.getCohorts()),
-        () -> assertEquals(meta.getCohortSchedule(), collEx.getCohortSchedule()));
+        () -> assertEquals(meta.getNumberOfWaves(), persistedCollEx.getNumberOfWaves()),
+        () -> assertEquals(meta.getWaveLength(), persistedCollEx.getWaveLength()),
+        () -> assertEquals(meta.getCohorts(), persistedCollEx.getCohorts()),
+        () -> assertEquals(meta.getCohortSchedule(), persistedCollEx.getCohortSchedule()));
   }
 }
