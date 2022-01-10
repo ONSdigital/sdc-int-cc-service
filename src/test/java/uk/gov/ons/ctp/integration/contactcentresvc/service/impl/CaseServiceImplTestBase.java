@@ -101,7 +101,7 @@ public abstract class CaseServiceImplTestBase {
             .caseRef(caseFromDb.getCaseRef())
             .sample(new HashMap<>(caseFromDb.getSample()))
             .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))
-            .caseEvents(Collections.emptyList())
+            .interactions(Collections.emptyList())
             .build();
     return expectedCaseResult;
   }
