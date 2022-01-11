@@ -7,6 +7,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,7 +36,8 @@ public class CaseInteraction {
 
   @ToString.Include private UUID caseId;
 
-  @ToString.Include private UUID ccuserId;
+  @ManyToOne(optional = false)
+  private User ccuser;
 
   private LocalDateTime createdDateTime;
 

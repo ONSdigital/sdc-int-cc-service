@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
@@ -28,14 +29,15 @@ public class InteractionServiceImpl implements InteractionService {
     caseInteraction.setCaseId(caseId);
     caseInteraction.setCreatedDateTime(LocalDateTime.now());
 
-    // TODO does this come from the UI?
-    caseInteraction.setCcuserId(UUID.fromString("382a8474-479c-11ec-a052-4c3275913db5"));
+    //Will eventually be replaced wit actual UserId
+    User user = User.builder().id(UUID.fromString("382a8474-479c-11ec-a052-4c3275913db5")).build();
+    caseInteraction.setCcuser(user);
 
     log.debug("Saving interaction for case", kv("caseId", caseId));
 
     try {
       repository.saveAndFlush(caseInteraction);
-    } catch(Exception e) {
+    } catch (Exception e) {
       log.error("Failed to save case interaction", kv("caseId", caseId), e);
       throw e;
     }
