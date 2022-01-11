@@ -29,7 +29,7 @@ public class InteractionServiceImpl implements InteractionService {
     caseInteraction.setCaseId(caseId);
     caseInteraction.setCreatedDateTime(LocalDateTime.now());
 
-    //Will eventually be replaced wit actual UserId
+    // Will eventually be replaced wit actual UserId
     User user = User.builder().id(UUID.fromString("382a8474-479c-11ec-a052-4c3275913db5")).build();
     caseInteraction.setCcuser(user);
 

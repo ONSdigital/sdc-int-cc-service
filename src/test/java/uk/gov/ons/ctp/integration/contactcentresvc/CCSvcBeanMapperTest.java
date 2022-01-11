@@ -11,16 +11,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import ma.glasnost.orika.MapperFacade;
+
 import org.junit.jupiter.api.Test;
+
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
-import uk.gov.ons.ctp.common.event.model.CollectionExercise;
 import uk.gov.ons.ctp.common.event.model.SurveyFulfilment;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
+import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
@@ -146,7 +148,8 @@ public class CCSvcBeanMapperTest {
 
   @Test
   public void shouldMapCollectionExerciseUpdateToCollectionExercise() {
-    CollectionExercise source = FixtureHelper.loadClassFixtures(CollectionExercise[].class).get(0);
+    CollectionExerciseUpdate source =
+        FixtureHelper.loadClassFixtures(CollectionExerciseUpdate[].class).get(0);
     var meta = source.getMetadata();
     var destination =
         mapperFacade.map(

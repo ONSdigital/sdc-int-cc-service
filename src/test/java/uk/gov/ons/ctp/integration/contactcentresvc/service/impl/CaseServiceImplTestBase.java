@@ -128,13 +128,13 @@ public abstract class CaseServiceImplTestBase {
 
   void mockRmGetCaseDTO(UUID id) {
     RmCaseDTO rmCaseDTO = FixtureHelper.loadPackageFixtures(RmCaseDTO[].class).get(0);
-    
+
     lenient().when(caseServiceClient.getCaseById(id, true)).thenReturn(rmCaseDTO);
   }
-  
+
   void mockCaseEventWhiteList() {
     CaseServiceSettings caseServiceSettings = new CaseServiceSettings();
-    Set<String> whitelistedSet = Set.of("CASE_UPDATE");  // PMB change
+    Set<String> whitelistedSet = Set.of("CASE_UPDATE"); // PMB change
     caseServiceSettings.setWhitelistedEventCategories(whitelistedSet);
     lenient().when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
   }

@@ -100,7 +100,8 @@ public class CaseEndpoint implements CTPEndpoint {
 
     List<CaseDTO> results = caseService.getCaseBySampleAttribute(key, value, requestParamsDTO);
 
-    //TODO Interactions will possibly be recorded once it's determined how this endpoint will be used
+    // TODO Interactions will possibly be recorded once it's determined how this endpoint will be
+    // used
 
     return ResponseEntity.ok(results);
   }

@@ -18,9 +18,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.inject.Inject;
-
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
-
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -95,7 +92,7 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private EventTransfer eventTransfer;
 
   @Autowired private BlacklistedUPRNBean blacklistedUPRNBean;
-  
+
   @Autowired private CaseInteractionRepository caseInteractionRepository;
 
   @Inject
@@ -180,8 +177,9 @@ public class CaseServiceImpl implements CaseService {
     }
 
     CaseDTO caseServiceResponse = mapCaseToDto(getCaseFromDb(caseId));
-    
-    List<CaseInteractionDetailsDTO> interactions = buildInteractionHistory(caseServiceResponse, requestParamsDTO.getCaseEvents());
+
+    List<CaseInteractionDetailsDTO> interactions =
+        buildInteractionHistory(caseServiceResponse, requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
 
     if (log.isDebugEnabled()) {
@@ -190,7 +188,7 @@ public class CaseServiceImpl implements CaseService {
 
     return caseServiceResponse;
   }
-  
+
   @Override
   public List<CaseDTO> getCaseBySampleAttribute(
       String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException {
@@ -201,7 +199,7 @@ public class CaseServiceImpl implements CaseService {
     List<Case> dbCases = new ArrayList<>();
     try {
       dbCases = getCasesFromDb(key, value);
-      
+
     } catch (CTPException ex) {
       if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
         log.info(
@@ -212,14 +210,15 @@ public class CaseServiceImpl implements CaseService {
         throw ex;
       }
     }
-    
+
     List<CaseDTO> cases = mapCaseToDtoList(dbCases);
 
-    for (CaseDTO caseDTO : cases) { 
-      List<CaseInteractionDetailsDTO> interactions = buildInteractionHistory(caseDTO, requestParamsDTO.getCaseEvents());
+    for (CaseDTO caseDTO : cases) {
+      List<CaseInteractionDetailsDTO> interactions =
+          buildInteractionHistory(caseDTO, requestParamsDTO.getCaseEvents());
       caseDTO.setInteractions(interactions);
     }
-    
+
     return cases;
   }
 
@@ -235,9 +234,10 @@ public class CaseServiceImpl implements CaseService {
     Case caseDetails = getCaseFromDb(caseRef);
     CaseDTO caseServiceResponse = mapCaseToDto(caseDetails);
 
-    List<CaseInteractionDetailsDTO> interactions = buildInteractionHistory(caseServiceResponse, requestParamsDTO.getCaseEvents());
+    List<CaseInteractionDetailsDTO> interactions =
+        buildInteractionHistory(caseServiceResponse, requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
-    
+
     if (log.isDebugEnabled()) {
       log.debug("Returning case details for case reference", kv("caseRef", caseRef));
     }
@@ -320,71 +320,99 @@ public class CaseServiceImpl implements CaseService {
 
     Case caseDetails = getLaunchCase(caseId);
 
-    SingleUseQuestionnaireIdDTO newQuestionnaireIdDto =
-        getNewQidForCase(caseDetails, requestParamsDTO.getIndividual());
+    // we call RM to get a new single use qid for the case
+    TelephoneCaptureDTO newQuestionnaireIdDto = getNewQidForCase(caseDetails);
+    String questionnaireId = newQuestionnaireIdDto.getQId();
 
-    String questionnaireId = newQuestionnaireIdDto.getQuestionnaireId();
-    String formType = newQuestionnaireIdDto.getFormType();
+    // But RM do not provide a collectionInstrumentUrl so we will use the collex
+    // and calc the current wave
+    CollectionExercise collex = caseDetails.getCollectionExercise();
+    // the assumption is that the calc should be strict and not allow launch if a wave is no longer
+    // operational
+    Optional<Integer> waveNumOpt = collex.calcWaveForDate(LocalDateTime.now(), true);
+    if (waveNumOpt.isEmpty()) {
+      throw new CTPException(
+          Fault.BAD_REQUEST, "The CollectionExercise for this Case has no current wave");
+    }
+    int waveNum = waveNumOpt.get();
 
-    String eqUrl = createLaunchUrl(formType, caseDetails, requestParamsDTO, questionnaireId);
+    // then we will find the UAC that should have been sent to the respondent and use its
+    // instrumentUrl along with the fresh qid obtained from RM.
+    List<Uac> uacList = uacRepo.findByCaseId(caseId);
+    Optional<Uac> uacOpt =
+        uacList.stream().filter(uac -> (uac.getWaveNum() == waveNum)).findFirst();
+    if (uacOpt.isEmpty()) {
+      throw new CTPException(
+          Fault.BAD_REQUEST, "Failed to find pre-existing UAC for the current wave num");
+    }
+    Uac uac = uacOpt.get();
+    uac.setQuestionnaire(questionnaireId);
+
+    String eqUrl = createLaunchUrl(caseDetails, requestParamsDTO, uac);
     publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;
   }
-  
-  /* 
+
+  /*
    * Build history for a case.
-   * 
+   *
    * If caller wants case events then the case history is constructed from the RM case
    * event history, which is amalgamated with the interactions recorded by CC itself.
-   * 
+   *
    * @param caseDTO the case for which we want the history.
    * @param getCaseEvents boolean to indicate if the caller wants the case history.
    * @return a List of case interactions, or an empty list if the caller doesn't want history.
    */
-  private List<CaseInteractionDetailsDTO> buildInteractionHistory(CaseDTO caseDTO, Boolean getCaseEvents) {
+  private List<CaseInteractionDetailsDTO> buildInteractionHistory(
+      CaseDTO caseDTO, Boolean getCaseEvents) {
     List<CaseInteractionDetailsDTO> interactions = new ArrayList<>();
 
     if (getCaseEvents) {
       // Get event history from RM, and convert to interactions
-      RmCaseDTO rmCase = caseServiceClient.getCaseById(caseDTO.getId(),  true);
+      RmCaseDTO rmCase = caseServiceClient.getCaseById(caseDTO.getId(), true);
       for (EventDTO rmCaseEvent : rmCase.getCaseEvents()) {
-        CaseInteractionDetailsDTO interaction = CaseInteractionDetailsDTO.builder()
-          .interactionSource("RM")
-          .interaction(rmCaseEvent.getEventType())
-          .subInteraction("")
-          .note(rmCaseEvent.getDescription())
-          .createdDateTime(convertDateToLocalDateTime(rmCaseEvent.getCreatedDateTime()))
-          .userName("")
-          .build();
+        CaseInteractionDetailsDTO interaction =
+            CaseInteractionDetailsDTO.builder()
+                .interactionSource("RM")
+                .interaction(rmCaseEvent.getEventType())
+                .subInteraction("")
+                .note(rmCaseEvent.getDescription())
+                .createdDateTime(convertDateToLocalDateTime(rmCaseEvent.getCreatedDateTime()))
+                .userName("")
+                .build();
         interactions.add(interaction);
       }
-      
+
       // Add in interactions recorded by CC
-      List<CaseInteraction> ccInteractions = caseInteractionRepository.findByCaseId(caseDTO.getId());
-      for (CaseInteraction ccInteraction : ccInteractions) { 
-        CaseInteractionDetailsDTO interaction = CaseInteractionDetailsDTO.builder()
-            .interactionSource("CC")
-            .interaction(ccInteraction.getType().name())
-            .subInteraction(ccInteraction.getSubtype() != null ? ccInteraction.getSubtype().name() : "")
-            .note(ccInteraction.getNote() != null ? ccInteraction.getNote() : "")
-            .createdDateTime(ccInteraction.getCreatedDateTime())
-            .userName(ccInteraction.getCcuserId().toString()) // PMB change to username
-            .build();
-          interactions.add(interaction);
+      List<CaseInteraction> ccInteractions =
+          caseInteractionRepository.findByCaseId(caseDTO.getId());
+      for (CaseInteraction ccInteraction : ccInteractions) {
+        CaseInteractionDetailsDTO interaction =
+            CaseInteractionDetailsDTO.builder()
+                .interactionSource("CC")
+                .interaction(ccInteraction.getType().name())
+                .subInteraction(
+                    ccInteraction.getSubtype() != null ? ccInteraction.getSubtype().name() : "")
+                .note(ccInteraction.getNote() != null ? ccInteraction.getNote() : "")
+                .createdDateTime(ccInteraction.getCreatedDateTime())
+                .userName(ccInteraction.getCcuser().getName())
+                .build();
+        interactions.add(interaction);
       }
 
       // Remove interactions non reportable interactions
       Set<String> whitelistedEventNames =
           appConfig.getCaseServiceSettings().getWhitelistedEventCategories();
-      interactions = 
+      interactions =
           interactions.stream()
-          .filter(i -> whitelistedEventNames.contains(i.getInteraction()))
-          .collect(Collectors.toList());
-      
+              .filter(i -> whitelistedEventNames.contains(i.getInteraction()))
+              .collect(Collectors.toList());
+
       // Sort from newest to oldest events
-      interactions.sort(Comparator.comparing(CaseInteractionDetailsDTO::getCreatedDateTime));
+      interactions.sort(
+          Comparator.comparing(CaseInteractionDetailsDTO::getCreatedDateTime).reversed());
     }
-    
+
     return interactions;
   }
 
@@ -559,9 +587,9 @@ public class CaseServiceImpl implements CaseService {
 
   private List<CaseDTO> mapCaseToDtoList(List<Case> casesToReturn) {
     List<CaseDTO> dtoList = mapper.mapAsList(casesToReturn, CaseDTO.class);
-//PMB    for (CaseDTO dto : dtoList) {
-//      dto.setCaseEvents(Collections.emptyList());
-//    }
+    // PMB    for (CaseDTO dto : dtoList) {
+    //      dto.setCaseEvents(Collections.emptyList());
+    //    }
     return dtoList;
   }
 
