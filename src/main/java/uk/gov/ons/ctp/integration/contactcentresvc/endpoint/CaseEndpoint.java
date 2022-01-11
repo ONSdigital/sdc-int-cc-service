@@ -100,6 +100,8 @@ public class CaseEndpoint implements CTPEndpoint {
 
     List<CaseDTO> results = caseService.getCaseBySampleAttribute(key, value, requestParamsDTO);
 
+    //TODO Interactions will possibly be recorded once it's determined how this endpoint will be used
+
     return ResponseEntity.ok(results);
   }
 
@@ -172,13 +174,14 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
+    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
+
     logCaseInteraction(
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED.name(),
         CaseSubInteractionType.FULFILMENT_PRINT.name(),
         null);
 
-    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
     ResponseDTO response = caseService.fulfilmentRequestByPost(requestBodyDTO);
     return ResponseEntity.ok(response);
   }
@@ -203,13 +206,14 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
+    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
+
     logCaseInteraction(
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED.name(),
         CaseSubInteractionType.FULFILMENT_SMS.name(),
         null);
 
-    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
     ResponseDTO response = caseService.fulfilmentRequestBySMS(requestBodyDTO);
 
     return ResponseEntity.ok(response);
