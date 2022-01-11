@@ -47,6 +47,8 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
 
     mockGetCaseById(UUID_0, caze);
     expectedCaseResult = createExpectedCaseDTO(caze);
+    
+    mockRmGetCaseDTO(UUID_0);
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);

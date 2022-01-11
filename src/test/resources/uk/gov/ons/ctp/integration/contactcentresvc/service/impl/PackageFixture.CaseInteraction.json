@@ -1,0 +1,17 @@
+[
+  {
+    "id": "b7565b5e-1396-4965-91a2-918c0d3642ed",
+    "caseId": "b7565b5e-1396-4965-91a2-918c0d3642ed",
+ 
+  @ToString.Include private UUID ccuserId;
+
+  private LocalDateTime createdDateTime;
+
+  @Enumerated(EnumType.STRING)
+  private CaseInteractionType type;
+
+  @Enumerated(EnumType.STRING)
+  private CaseSubInteractionType subtype;
+
+  private String note;
+}

@@ -122,6 +122,7 @@ case-service-settings:
     connectTimeoutMillis: 0
     connectionRequestTimeoutMillis: 0
     socketTimeoutMillis: 0
+  # PMB update whitelist
   whitelisted-event-categories:
       - FULFILMENT_REQUESTED
       - FULFILMENT_CONFIRMED
@@ -139,6 +140,37 @@ case-service-settings:
       - ADDRESS_TYPE_CHANGED
       - FIELD_CASE_UPDATED
       - SAMPLE_UNIT_VALIDATED
+      - PMB____delete_previous_entries
+      - NEW_CASE
+      - RECEIPT
+      - REFUSAL
+      - INVALID_CASE
+      - EQ_LAUNCH
+      - UAC_AUTHENTICATION
+      - PRINT_FULFILMENT
+      - EXPORT_FILE
+      - TELEPHONE_CAPTURE
+      - DEACTIVATE_UAC
+      - UPDATE_SAMPLE
+      - UPDATE_SAMPLE_SENSITIVE
+      - SMS_FULFILMENT
+      - ACTION_RULE_SMS_REQUEST
+      - EMAIL_FULFILMENT
+      - ACTION_RULE_EMAIL_REQUEST
+      - MANUAL_CASE_VIEW
+      - SCHEDULED_CASE_VIEW
+      - SOFT_APPOINTMENT_MADE
+      - HARD_APPOINTMENT_MADE
+      - REFUSAL_REQUESTED
+      - CASE_UPDATE_REQUESTED
+      - CONTACT_UPDATE_REQUESTED
+      - DATA_REMOVAL_REQUESTED
+      - TELEPHONE_CAPTURE_STARTED
+      - FULFILMENT_REQUESTED
+      - CASE_NOTE_ADDED
+      - OUTBOUND_APPOINTMENT_CALL
+      - OUTBOUND_PRIORITISED_CALL
+      - OUTBOUND_MANUAL_CALL
   
 fulfilments:
   blacklisted-codes:

@@ -331,24 +331,23 @@ public class CaseServiceImpl implements CaseService {
     return eqUrl;
   }
   
-
+  /* 
+   * Build history for a case.
+   * 
+   * If caller wants case events then the case history is constructed from the RM case
+   * event history, which is amalgamated with the interactions recorded by CC itself.
+   * 
+   * @param caseDTO the case for which we want the history.
+   * @param getCaseEvents boolean to indicate if the caller wants the case history.
+   * @return a List of case interactions, or an empty list if the caller doesn't want history.
+   */
   private List<CaseInteractionDetailsDTO> buildInteractionHistory(CaseDTO caseDTO, Boolean getCaseEvents) {
     List<CaseInteractionDetailsDTO> interactions = new ArrayList<>();
 
     if (getCaseEvents) {
-      // Get event history from RM 
+      // Get event history from RM, and convert to interactions
       RmCaseDTO rmCase = caseServiceClient.getCaseById(caseDTO.getId(),  true);
-      
-      // Extract white-listed events from RM event history
-      Set<String> whitelistedEventNames =
-          appConfig.getCaseServiceSettings().getWhitelistedEventCategories();
-      List<EventDTO> filteredRmEvents =
-          rmCase.getCaseEvents().stream()
-              .filter(e -> whitelistedEventNames.contains(e.getEventType()))
-              .collect(Collectors.toList());
-      
-      // Convert RM events to interactions
-      for (EventDTO rmCaseEvent : filteredRmEvents) {
+      for (EventDTO rmCaseEvent : rmCase.getCaseEvents()) {
         CaseInteractionDetailsDTO interaction = CaseInteractionDetailsDTO.builder()
           .interactionSource("RM")
           .interaction(rmCaseEvent.getEventType())
@@ -373,7 +372,16 @@ public class CaseServiceImpl implements CaseService {
             .build();
           interactions.add(interaction);
       }
+
+      // Remove interactions non reportable interactions
+      Set<String> whitelistedEventNames =
+          appConfig.getCaseServiceSettings().getWhitelistedEventCategories();
+      interactions = 
+          interactions.stream()
+          .filter(i -> whitelistedEventNames.contains(i.getInteraction()))
+          .collect(Collectors.toList());
       
+      // Sort from newest to oldest events
       interactions.sort(Comparator.comparing(CaseInteractionDetailsDTO::getCreatedDateTime));
     }
     
