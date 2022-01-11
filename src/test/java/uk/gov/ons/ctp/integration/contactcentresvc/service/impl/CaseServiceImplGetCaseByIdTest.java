@@ -3,7 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
+import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
 import java.util.List;
 import java.util.UUID;
@@ -45,24 +45,24 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     Case caze = casesFromDb().get(0);
     CaseDTO expectedCaseResult;
 
-    mockGetCaseById(UUID_0, caze);
+    mockGetCaseById(CASE_ID_0, caze);
     expectedCaseResult = createExpectedCaseDTO(caze);
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
-    CaseDTO results = target.getCaseById(UUID_0, requestParams);
+    CaseDTO results = target.getCaseById(CASE_ID_0, requestParams);
 
     verifyCase(results, expectedCaseResult);
   }
 
   @Test
   public void testCaseNotFound() throws Exception {
-    doGetCaseByIdNotFound(UUID_0);
+    doGetCaseByIdNotFound(CASE_ID_0);
   }
 
   @Test
   public void testHandleErrorFromRM() throws Exception {
-    doGetCaseByIdGetsError(UUID_0);
+    doGetCaseByIdGetsError(CASE_ID_0);
   }
 
   private List<Case> casesFromDb() {

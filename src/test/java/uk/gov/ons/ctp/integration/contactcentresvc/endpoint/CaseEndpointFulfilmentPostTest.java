@@ -87,8 +87,13 @@ public final class CaseEndpointFulfilmentPostTest {
     actions.andExpect(jsonPath("$.id", is(requestData.getCaseId().toString())));
     actions.andExpect(jsonPath("$.dateTime", is(RESPONSE_DATE_TIME)));
 
-    CaseInteractionDTO interactionDTO = CaseInteractionDTO.builder().type(CaseInteractionType.FULFILMENT_REQUESTED.name()).subtype(CaseSubInteractionType.FULFILMENT_PRINT.name()).build();
-    verify(interactionService, times(1)).saveCaseInteraction(requestData.getCaseId(), interactionDTO);
+    CaseInteractionDTO interactionDTO =
+        CaseInteractionDTO.builder()
+            .type(CaseInteractionType.FULFILMENT_REQUESTED.name())
+            .subtype(CaseSubInteractionType.FULFILMENT_PRINT.name())
+            .build();
+    verify(interactionService, times(1))
+        .saveCaseInteraction(requestData.getCaseId(), interactionDTO);
   }
 
   @Test
@@ -109,7 +114,6 @@ public final class CaseEndpointFulfilmentPostTest {
         mockMvc.perform(
             postJson("/cases/" + requestData.getCaseId() + "/fulfilment/post", json.toString()));
     actions.andExpect(status().isBadRequest());
-
   }
 
   @Test

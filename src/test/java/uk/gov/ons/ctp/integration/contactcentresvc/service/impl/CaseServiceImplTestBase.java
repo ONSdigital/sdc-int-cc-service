@@ -9,10 +9,11 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
+import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,7 +38,12 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
@@ -49,7 +55,9 @@ public abstract class CaseServiceImplTestBase {
 
   @Mock CaseServiceClientService caseServiceClient;
 
-  @Mock CaseDataClient caseDataClient;
+  @Mock CaseRepositoryClient caseDataClient;
+
+  @Mock UacRepository uacRepo;
 
   @Mock EqLaunchService eqLaunchService;
 
@@ -106,14 +114,62 @@ public abstract class CaseServiceImplTestBase {
     return expectedCaseResult;
   }
 
+  CaseSummaryDTO createExpectedCaseSummaryDTO(Case caseFromDb) {
+
+    CaseSummaryDTO expectedCaseResult =
+        CaseSummaryDTO.builder()
+            .id(caseFromDb.getId())
+            .caseRef(caseFromDb.getCaseRef())
+            .surveyName(caseFromDb.getCollectionExercise().getSurvey().getName())
+            .surveyType("SOCIAL")
+            .build();
+    return expectedCaseResult;
+  }
+
   UniquePropertyReferenceNumber createUprn(String uprn) {
     return uprn == null ? null : new UniquePropertyReferenceNumber(uprn);
+  }
+
+  void mockGetUacsForCase() throws Exception {
+    List<Uac> uacList = FixtureHelper.loadPackageFixtures(Uac[].class);
+    when(uacRepo.findByCaseId(any())).thenReturn(uacList);
   }
 
   Case mockGetCaseById(String region) throws Exception {
     Case caze = FixtureHelper.loadPackageFixtures(Case[].class).get(0);
     caze.getSample().put("region", region);
-    mockGetCaseById(UUID_0, caze);
+    CollectionExercise collex = caze.getCollectionExercise();
+    collex.setStartDate(LocalDateTime.now());
+    collex.setEndDate(LocalDateTime.now().plusDays(60));
+    collex.setWaveLength(10);
+    collex.setNumberOfWaves(3);
+    mockGetCaseById(CASE_ID_0, caze);
+    return caze;
+  }
+
+  Case mockGetCaseByIdInFutureCollection(String region) throws Exception {
+    Case caze = FixtureHelper.loadPackageFixtures(Case[].class).get(0);
+    caze.getSample().put("region", region);
+    CollectionExercise collex = caze.getCollectionExercise();
+    collex.setStartDate(LocalDateTime.now().plusDays(10));
+    collex.setEndDate(LocalDateTime.now().plusDays(60));
+    collex.setWaveLength(10);
+    collex.setNumberOfWaves(3);
+    mockGetCaseById(CASE_ID_0, caze);
+    return caze;
+  }
+
+  Case mockGetCaseByIdAtEndOfCollection(String region) throws Exception {
+    Case caze = FixtureHelper.loadPackageFixtures(Case[].class).get(0);
+    caze.getSample().put("region", region);
+    CollectionExercise collex = caze.getCollectionExercise();
+    // collex started some time ago
+    collex.setStartDate(LocalDateTime.now().minusDays(60));
+    collex.setEndDate(LocalDateTime.now().plusDays(1));
+    collex.setWaveLength(10);
+    // and the num of waves will put today in a wave for which we have no UAC
+    collex.setNumberOfWaves(20);
+    mockGetCaseById(CASE_ID_0, caze);
     return caze;
   }
 

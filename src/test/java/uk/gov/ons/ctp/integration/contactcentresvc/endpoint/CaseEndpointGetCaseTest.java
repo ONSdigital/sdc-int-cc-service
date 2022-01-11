@@ -35,7 +35,6 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
@@ -72,8 +71,8 @@ public final class CaseEndpointGetCaseTest {
 
   private UUID uuid = UUID.randomUUID();
 
-  private CaseInteractionDTO interactionDTO = CaseInteractionDTO.builder().type(CaseInteractionType.MANUAL_CASE_VIEW.name()).build();
-
+  private CaseInteractionDTO interactionDTO =
+      CaseInteractionDTO.builder().type(CaseInteractionType.MANUAL_CASE_VIEW.name()).build();
 
   /**
    * Set up of tests
@@ -106,7 +105,6 @@ public final class CaseEndpointGetCaseTest {
   public void getCaseById_BadId() throws Exception {
     ResultActions actions = mockMvc.perform(getJson("/cases/123456789"));
     actions.andExpect(status().isBadRequest());
-
   }
 
   @Test
@@ -120,14 +118,12 @@ public final class CaseEndpointGetCaseTest {
     verifyStructureOfResultsActions(actions);
 
     verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
-
   }
 
   @Test
   public void getCaseById_CaseEventsDuff() throws Exception {
     ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "?caseEvents=maybe"));
     actions.andExpect(status().isBadRequest());
-
   }
 
   @Test
@@ -140,15 +136,14 @@ public final class CaseEndpointGetCaseTest {
 
     verifyStructureOfResultsActions(actions);
 
-    verify(interactionService, times(1)).saveCaseInteraction(UUID.fromString(CASE_UUID_STRING), interactionDTO);
-
+    verify(interactionService, times(1))
+        .saveCaseInteraction(UUID.fromString(CASE_UUID_STRING), interactionDTO);
   }
 
   @Test
   public void getCaseByRef_BadRef() throws Exception {
     ResultActions actions = mockMvc.perform(getJson("/cases/ref/avg"));
     actions.andExpect(status().isBadRequest());
-
   }
 
   @Test
@@ -166,7 +161,6 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(status().isOk());
 
     verifyStructureOfMultiResultsActions(actions);
-
   }
 
   @Test
@@ -185,7 +179,6 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(status().isOk());
 
     verifyStructureOfMultiResultsActions(actions);
-
   }
 
   @Test
@@ -193,7 +186,6 @@ public final class CaseEndpointGetCaseTest {
     ResultActions actions =
         mockMvc.perform(getJson("/cases/attribute/uprn/12345678901234?caseEvents=maybe"));
     actions.andExpect(status().isBadRequest());
-
   }
 
   private CaseDTO createResponseCaseDTO() throws ParseException {

@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.List;
 import lombok.Data;
 import uk.gov.ons.ctp.common.log.LoggingScope;
 import uk.gov.ons.ctp.common.log.Scope;
@@ -23,4 +24,6 @@ public class AddressDTO {
 
   @LoggingScope(scope = Scope.MASK)
   private String welshFormattedAddress;
+
+  private List<CaseSummaryDTO> cases;
 }

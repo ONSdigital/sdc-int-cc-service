@@ -85,8 +85,13 @@ public final class CaseEndpointFulfilmentSMSTest {
     actions.andExpect(jsonPath("$.id", is(requestData.getCaseId().toString())));
     actions.andExpect(jsonPath("$.dateTime", is(RESPONSE_DATE_TIME)));
 
-    CaseInteractionDTO interactionDTO = CaseInteractionDTO.builder().type(CaseInteractionType.FULFILMENT_REQUESTED.name()).subtype(CaseSubInteractionType.FULFILMENT_SMS.name()).build();
-    verify(interactionService, times(1)).saveCaseInteraction(requestData.getCaseId(), interactionDTO);
+    CaseInteractionDTO interactionDTO =
+        CaseInteractionDTO.builder()
+            .type(CaseInteractionType.FULFILMENT_REQUESTED.name())
+            .subtype(CaseSubInteractionType.FULFILMENT_SMS.name())
+            .build();
+    verify(interactionService, times(1))
+        .saveCaseInteraction(requestData.getCaseId(), interactionDTO);
   }
 
   @Test

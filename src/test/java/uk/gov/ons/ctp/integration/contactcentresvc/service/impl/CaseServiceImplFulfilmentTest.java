@@ -8,9 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
+import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,10 +85,10 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     Case caze = casesFromDb().get(0);
 
-    mockGetCaseById(UUID_0, caze);
+    mockGetCaseById(CASE_ID_0, caze);
 
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_0, title, forename, surname);
+        getPostalFulfilmentRequestDTO(CASE_ID_0, title, forename, surname);
 
     Product expectedSearchCriteria =
         getExpectedSearchCriteria(
@@ -133,7 +131,6 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
     assertEquals(requestBodyDTOFixture.getForename(), actualContact.getForename());
     assertEquals(requestBodyDTOFixture.getSurname(), actualContact.getSurname());
     assertEquals(null, actualContact.getTelNo());
-
   }
 
   private static Stream<Arguments> dataForFailingValidation() {
@@ -150,10 +147,10 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
       String title, String forename, String surname, boolean individual) throws Exception {
     // Build results to be returned from search
     Case caze = casesFromDb().get(0);
-    mockGetCaseById(UUID_0, caze);
+    mockGetCaseById(CASE_ID_0, caze);
 
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_0, title, forename, surname);
+        getPostalFulfilmentRequestDTO(CASE_ID_0, title, forename, surname);
 
     Product expectedSearchCriteria =
         getExpectedSearchCriteria(
@@ -177,7 +174,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
   @Test
   public void testFulfilmentRequestByPost_blackListedFulfilmentCode() throws Exception {
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_0, "Mr", "Mickey", "Mouse");
+        getPostalFulfilmentRequestDTO(CASE_ID_0, "Mr", "Mickey", "Mouse");
     requestBodyDTOFixture.setFulfilmentCode(BLACK_LISTED_FULFILMENT_CODE);
 
     try {
@@ -194,10 +191,10 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     // Build results to be returned from search
     Case caze = casesFromDb().get(0);
-    mockGetCaseById(UUID_0, caze);
+    mockGetCaseById(CASE_ID_0, caze);
 
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_0, "Mr", "Mickey", "Mouse");
+        getPostalFulfilmentRequestDTO(CASE_ID_0, "Mr", "Mickey", "Mouse");
 
     Product expectedSearchCriteria =
         getExpectedSearchCriteria(
@@ -220,18 +217,18 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   @Test
   public void testFulfilmentRequestByPost_caseSvcNotFoundResponse() throws Exception {
-    mockGetCaseById(UUID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
+    mockGetCaseById(CASE_ID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_0, "Mrs", "Sally", "Smurf");
+        getPostalFulfilmentRequestDTO(CASE_ID_0, "Mrs", "Sally", "Smurf");
     assertThrows(CTPException.class, () -> target.fulfilmentRequestByPost(requestBodyDTOFixture));
   }
 
   @Test
   public void testFulfilmentRequestByPost_caseSvcRestClientException() throws Exception {
-    mockGetCaseById(UUID_0, new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT));
+    mockGetCaseById(CASE_ID_0, new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT));
 
     PostalFulfilmentRequestDTO requestBodyDTOFixture =
-        getPostalFulfilmentRequestDTO(UUID_0, "Mrs", "Sally", "Smurf");
+        getPostalFulfilmentRequestDTO(CASE_ID_0, "Mrs", "Sally", "Smurf");
 
     assertThrows(
         ResponseStatusException.class, () -> target.fulfilmentRequestByPost(requestBodyDTOFixture));
@@ -267,7 +264,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     // Build results to be returned from search
     Case caze = casesFromDb().get(0);
-    mockGetCaseById(UUID_0, caze);
+    mockGetCaseById(CASE_ID_0, caze);
 
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caze);
 
@@ -293,7 +290,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
   @Test
   public void testFulfilmentRequestBySMS_caseSvcNotFoundResponse() throws Exception {
     Case caseData = casesFromDb().get(0);
-    mockGetCaseById(UUID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
+    mockGetCaseById(CASE_ID_0, new CTPException(Fault.RESOURCE_NOT_FOUND));
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
     assertThrows(CTPException.class, () -> target.fulfilmentRequestBySMS(requestBodyDTOFixture));
   }
@@ -301,7 +298,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
   @Test
   public void testFulfilmentRequestBySMS_caseSvcRestClientException() throws Exception {
     Case caseData = casesFromDb().get(0);
-    mockGetCaseById(UUID_0, new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT));
+    mockGetCaseById(CASE_ID_0, new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT));
 
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseData);
 
@@ -361,7 +358,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
       throws Exception {
 
     Case caseFromCaseService = casesFromDb().get(0);
-    mockGetCaseById(UUID_0, caseFromCaseService);
+    mockGetCaseById(CASE_ID_0, caseFromCaseService);
 
     SMSFulfilmentRequestDTO requestBodyDTOFixture = getSMSFulfilmentRequestDTO(caseFromCaseService);
 

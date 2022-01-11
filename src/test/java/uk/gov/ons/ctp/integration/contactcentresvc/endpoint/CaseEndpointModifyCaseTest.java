@@ -29,7 +29,6 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
@@ -50,7 +49,8 @@ public final class CaseEndpointModifyCaseTest {
 
   private ObjectMapper mapper = new ObjectMapper();
 
-  private CaseInteractionDTO interactionDTO = CaseInteractionDTO.builder().type(CaseInteractionType.CASE_UPDATE_REQUESTED.name()).build();
+  private CaseInteractionDTO interactionDTO =
+      CaseInteractionDTO.builder().type(CaseInteractionType.CASE_UPDATE_REQUESTED.name()).build();
 
   private ObjectNode json;
   private CaseDTO responseDTO;
@@ -94,7 +94,8 @@ public final class CaseEndpointModifyCaseTest {
     doPut().andExpect(status().isOk()).andExpect(jsonPath("$.id", is(caseId)));
     verify(caseService).modifyCase(any());
 
-    verify(interactionService, times(1)).saveCaseInteraction(UUID.fromString(caseId), interactionDTO);
+    verify(interactionService, times(1))
+        .saveCaseInteraction(UUID.fromString(caseId), interactionDTO);
   }
 
   @Test

@@ -44,7 +44,8 @@ public final class CaseEndpointRefusalTest {
 
   private static final String RESPONSE_DATE_TIME = "2019-03-28T11:56:40.705Z";
 
-  private CaseInteractionDTO interactionDTO = CaseInteractionDTO.builder().type(CaseInteractionType.REFUSAL_REQUESTED.name()).build();
+  private CaseInteractionDTO interactionDTO =
+      CaseInteractionDTO.builder().type(CaseInteractionType.REFUSAL_REQUESTED.name()).build();
 
   @Mock private CaseService caseService;
 
@@ -168,7 +169,8 @@ public final class CaseEndpointRefusalTest {
     actions.andExpect(jsonPath("$.id", is(uuid.toString())));
     actions.andExpect(jsonPath("$.dateTime", is(RESPONSE_DATE_TIME)));
 
-    verify(interactionService, times(1)).saveCaseInteraction(UUID.fromString(UUID_STR), interactionDTO);
+    verify(interactionService, times(1))
+        .saveCaseInteraction(UUID.fromString(UUID_STR), interactionDTO);
   }
 
   private void assertBadRequest(String field, String value) throws Exception {
@@ -184,8 +186,8 @@ public final class CaseEndpointRefusalTest {
         mockMvc.perform(postJson("/cases/" + UUID_STR + "/refusal", json.toString()));
     actions.andExpect(status().isOk());
 
-    verify(interactionService, times(1)).saveCaseInteraction(UUID.fromString(UUID_STR), interactionDTO);
-
+    verify(interactionService, times(1))
+        .saveCaseInteraction(UUID.fromString(UUID_STR), interactionDTO);
   }
 
   private void assertBadRequest(ObjectNode json) throws Exception {

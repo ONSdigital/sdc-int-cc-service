@@ -16,7 +16,7 @@ import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
-import uk.gov.ons.ctp.common.event.model.CollectionExercise;
+import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
@@ -25,6 +25,7 @@ import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
@@ -62,9 +63,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .register();
 
     factory
-        .classMap(
-            CollectionExercise.class,
-            uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise.class)
+        .classMap(CollectionExerciseUpdate.class, CollectionExercise.class)
         .field("collectionExerciseId", "id")
         .field("surveyId", "survey.id")
         .field("metadata.numberOfWaves", "numberOfWaves")

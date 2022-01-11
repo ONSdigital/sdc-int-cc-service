@@ -4,6 +4,7 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.v;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -30,29 +31,37 @@ import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.Language;
 import uk.gov.ons.ctp.common.domain.Source;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
+import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
+import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientService;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.SingleUseQuestionnaireIdDTO;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.TelephoneCaptureDTO;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -67,9 +76,12 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 @Slf4j
 @Service
 public class CaseServiceImpl implements CaseService {
+
   @Autowired private AppConfig appConfig;
 
-  @Autowired private CaseDataClient caseDataClient;
+  @Autowired private CaseRepositoryClient caseRepoClient;
+
+  @Autowired private UacRepository uacRepo;
 
   @Autowired private CaseServiceClientService caseServiceClient;
 
@@ -164,7 +176,7 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching case details by caseId: {}", caseId);
     }
 
-    CaseDTO caseServiceResponse = mapCaseToDto(getCaseFromDb(caseId));
+    CaseDTO caseServiceResponse = mapCaseToDto(caseRepoClient.getCaseById(caseId));
     caseServiceResponse.setCaseEvents(Collections.emptyList()); // for now there are no case events
 
     if (log.isDebugEnabled()) {
@@ -181,9 +193,9 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching latest case details by {}", key, kv("key", key), kv("value", value));
     }
 
-    List<Case> dbCases = new ArrayList<>();
+    List<Case> dbCases;
     try {
-      dbCases = getCasesFromDb(key, value);
+      dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
     } catch (CTPException ex) {
       if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
         log.info(
@@ -198,6 +210,48 @@ public class CaseServiceImpl implements CaseService {
   }
 
   @Override
+  public List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(String key, String value)
+      throws CTPException {
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Fetching latest case summary details by {}", key, kv("key", key), kv("value", value));
+    }
+
+    // Find matching cases
+    List<Case> dbCases;
+    try {
+      dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
+    } catch (CTPException ex) {
+      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
+        log.info(
+            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
+        return Collections.emptyList();
+      } else {
+        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
+        throw ex;
+      }
+    }
+
+    // Summarise all found cases
+    List<CaseSummaryDTO> caseSummaries = new ArrayList<>();
+    for (Case dbCase : dbCases) {
+      CaseSummaryDTO caseSummary = new CaseSummaryDTO();
+      caseSummary.setId(dbCase.getId());
+      caseSummary.setCaseRef(dbCase.getCaseRef());
+
+      Survey survey = dbCase.getCollectionExercise().getSurvey();
+      caseSummary.setSurveyName(survey.getName());
+
+      SurveyType surveyType = SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl());
+      caseSummary.setSurveyType(surveyType.name());
+
+      caseSummaries.add(caseSummary);
+    }
+
+    return caseSummaries;
+  }
+
+  @Override
   public CaseDTO getCaseByCaseReference(final long caseRef, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
@@ -206,7 +260,7 @@ public class CaseServiceImpl implements CaseService {
 
     validateCaseRef(caseRef);
 
-    Case caseDetails = getCaseFromDb(caseRef);
+    Case caseDetails = caseRepoClient.getCaseByCaseRef(caseRef);
     CaseDTO caseServiceResponse = mapCaseToDto(caseDetails);
     caseServiceResponse.setCaseEvents(Collections.emptyList()); // no case events for now
     if (log.isDebugEnabled()) {
@@ -217,6 +271,9 @@ public class CaseServiceImpl implements CaseService {
     UniquePropertyReferenceNumber foundUprn =
         UniquePropertyReferenceNumber.create(
             caseServiceResponse.getSample().get(CaseUpdate.ATTRIBUTE_UPRN).toString());
+    // TODO : FLEXIBLE CASE - should the blacklisting be survey specific
+    // TODO : FLEXIBLE CASE - should we blacklist something other than UPRN for a
+    // non address survey
     if (blacklistedUPRNBean.isUPRNBlacklisted(foundUprn)) {
       log.info(
           "UPRN is blacklisted. Not returning case",
@@ -241,14 +298,11 @@ public class CaseServiceImpl implements CaseService {
     UUID originalCaseId = modifyRequestDTO.getCaseId();
     UUID caseId = originalCaseId;
 
-    Case caseDetails = getCaseFromDb(originalCaseId);
+    Case caseDetails = caseRepoClient.getCaseById(originalCaseId);
 
     CaseDTO response = mapper.map(caseDetails, CaseDTO.class);
     response.setCaseEvents(Collections.emptyList()); // for now there are no case events.
     String caseRef = caseDetails.getCaseRef();
-
-    // removed most of the code from original Census code since it relies heavily
-    // on CaseType/EstabType.
 
     prepareModificationResponse(response, modifyRequestDTO, caseId, caseRef);
     return response;
@@ -280,6 +334,13 @@ public class CaseServiceImpl implements CaseService {
     return response;
   }
 
+  /**
+   * We may want to consider how the calling code (CaseEndpoint) handles the BAD_REQUESTs that come
+   * from this method. Throwing exceptions in these scenarios obliges the caller (and perhaps the
+   * UI) to first consider the validity of its request, which may be onerous. Perhaps we consider
+   * providing the UI with an endpoint that pre validates the ability to launch which would enable
+   * it to disable the launch button in the first place.
+   */
   @Override
   public String getLaunchURLForCaseId(final UUID caseId, LaunchRequestDTO requestParamsDTO)
       throws CTPException {
@@ -292,13 +353,35 @@ public class CaseServiceImpl implements CaseService {
 
     Case caseDetails = getLaunchCase(caseId);
 
-    SingleUseQuestionnaireIdDTO newQuestionnaireIdDto =
-        getNewQidForCase(caseDetails, requestParamsDTO.getIndividual());
+    // we call RM to get a new single use qid for the case
+    TelephoneCaptureDTO newQuestionnaireIdDto = getNewQidForCase(caseDetails);
+    String questionnaireId = newQuestionnaireIdDto.getQId();
 
-    String questionnaireId = newQuestionnaireIdDto.getQuestionnaireId();
-    String formType = newQuestionnaireIdDto.getFormType();
+    // But RM do not provide a collectionInstrumentUrl so we will use the collex
+    // and calc the current wave
+    CollectionExercise collex = caseDetails.getCollectionExercise();
+    // the assumption is that the calc should be strict and not allow launch if a wave is no longer
+    // operational
+    Optional<Integer> waveNumOpt = collex.calcWaveForDate(LocalDateTime.now(), true);
+    if (waveNumOpt.isEmpty()) {
+      throw new CTPException(
+          Fault.BAD_REQUEST, "The CollectionExercise for this Case has no current wave");
+    }
+    int waveNum = waveNumOpt.get();
 
-    String eqUrl = createLaunchUrl(formType, caseDetails, requestParamsDTO, questionnaireId);
+    // then we will find the UAC that should have been sent to the respondent and use its
+    // instrumentUrl along with the fresh qid obtained from RM.
+    List<Uac> uacList = uacRepo.findByCaseId(caseId);
+    Optional<Uac> uacOpt =
+        uacList.stream().filter(uac -> (uac.getWaveNum() == waveNum)).findFirst();
+    if (uacOpt.isEmpty()) {
+      throw new CTPException(
+          Fault.BAD_REQUEST, "Failed to find pre-existing UAC for the current wave num");
+    }
+    Uac uac = uacOpt.get();
+    uac.setQuestionnaire(questionnaireId);
+
+    String eqUrl = createLaunchUrl(caseDetails, requestParamsDTO, uac);
     publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;
   }
@@ -314,6 +397,7 @@ public class CaseServiceImpl implements CaseService {
     sendEvent(TopicType.EQ_LAUNCH, eqLaunch, caseId);
   }
 
+  // TODO : FLEXIBLE CASE - what if the survey is not address based?
   private Product.Region convertRegion(Case caze) {
     return Product.Region.valueOf(caze.getSample().get(CaseUpdate.ATTRIBUTE_REGION));
   }
@@ -336,7 +420,7 @@ public class CaseServiceImpl implements CaseService {
           kv("fulfilmentCode", fulfilmentCode));
     }
 
-    Case caze = getCaseFromDb(caseId);
+    Case caze = caseRepoClient.getCaseById(caseId);
     Product product = findProduct(fulfilmentCode, deliveryChannel, convertRegion(caze));
 
     if (deliveryChannel == Product.DeliveryChannel.POST) {
@@ -403,18 +487,6 @@ public class CaseServiceImpl implements CaseService {
     return products.get(0);
   }
 
-  private Case getCaseFromDb(UUID caseId) throws CTPException {
-    return caseDataClient.getCaseById(caseId);
-  }
-
-  private Case getCaseFromDb(long caseRef) throws CTPException {
-    return caseDataClient.getCaseByCaseRef(caseRef);
-  }
-
-  private List<Case> getCasesFromDb(String key, String value) throws CTPException {
-    return caseDataClient.getCaseBySampleAttribute(key, value);
-  }
-
   /**
    * Create a case refusal event.
    *
@@ -431,10 +503,12 @@ public class CaseServiceImpl implements CaseService {
     refusal.setCaseId(caseId);
     refusal.setType(refusalRequest.getReason().name());
 
-    // This code is intentionally commented out. Reinstate to active encryption in outgoing events
+    // This code is intentionally commented out. Reinstate to active encryption in
+    // outgoing events
     // refusal.setName(encrypt("Jimmy McTavish"));
 
-    // The following code exists to prevent complaints about unused code. It's never called.
+    // The following code exists to prevent complaints about unused code. It's never
+    // called.
     // This can be deleted once a final decision is reached about ccsvc encryption
     if (System.currentTimeMillis() == 1) {
       encrypt("never-executed");
@@ -504,6 +578,7 @@ public class CaseServiceImpl implements CaseService {
     }
   }
 
+  // TODO : FLEXIBLE CASE - this assumes that modifications are address related
   private void prepareModificationResponse(
       CaseDTO response, ModifyCaseRequestDTO modifyRequestDTO, UUID caseId, String caseRef) {
     response.setId(caseId);
@@ -527,53 +602,35 @@ public class CaseServiceImpl implements CaseService {
    * @param individual whether request for individual questionnaire
    * @return
    */
-  private SingleUseQuestionnaireIdDTO getNewQidForCase(Case caseDetails, boolean individual)
-      throws CTPException {
+  private TelephoneCaptureDTO getNewQidForCase(Case caseDetails) throws CTPException {
 
-    UUID parentCaseId = caseDetails.getId();
-    UUID individualCaseId = null;
-    if (individual) {
-      caseDetails = createIndividualCase(caseDetails);
-    }
+    UUID caseId = caseDetails.getId();
 
     // Get RM to allocate a new questionnaire ID
     log.info("Before new QID");
-    SingleUseQuestionnaireIdDTO newQuestionnaireIdDto;
+    TelephoneCaptureDTO newQuestionnaireIdDto;
     try {
-      newQuestionnaireIdDto =
-          caseServiceClient.getSingleUseQuestionnaireId(parentCaseId, individual, individualCaseId);
+      newQuestionnaireIdDto = caseServiceClient.getSingleUseQuestionnaireId(caseId);
     } catch (ResponseStatusException ex) {
       if (ex.getCause() != null) {
         HttpStatusCodeException cause = (HttpStatusCodeException) ex.getCause();
         log.warn(
             "New QID, UAC Case service request failure.",
-            kv("caseid", parentCaseId),
+            kv("caseid", caseId),
             kv("status", cause.getStatusCode()),
             kv("message", cause.getMessage()));
         if (cause.getStatusCode() == HttpStatus.BAD_REQUEST) {
           throw new CTPException(
-              Fault.BAD_REQUEST, "Invalid request for case %s", parentCaseId.toString());
+              Fault.BAD_REQUEST, "Invalid request for case %s", caseId.toString());
         }
       }
       throw ex;
     }
 
-    String questionnaireId = newQuestionnaireIdDto.getQuestionnaireId();
-    String formType = newQuestionnaireIdDto.getFormType();
-    log.info(
-        "Have generated new questionnaireId",
-        kv("newQuestionnaireID", questionnaireId),
-        kv("formType", formType));
+    String questionnaireId = newQuestionnaireIdDto.getQId();
+    log.info("Have generated new questionnaireId", kv("newQuestionnaireID", questionnaireId));
 
     return newQuestionnaireIdDto;
-  }
-
-  // Create a new case for a HH individual
-  private Case createIndividualCase(Case caseDetails) {
-    UUID individualCaseId = UUID.randomUUID();
-    caseDetails.setId(individualCaseId);
-    log.info("Creating new individual case", kv("individualCaseId", individualCaseId));
-    return caseDetails;
   }
 
   /**
@@ -585,7 +642,7 @@ public class CaseServiceImpl implements CaseService {
    */
   private Case getLaunchCase(UUID caseId) throws CTPException {
     try {
-      return getCaseFromDb(caseId);
+      return caseRepoClient.getCaseById(caseId);
     } catch (CTPException ex) {
       log.error(
           "Unable to provide launch URL/UAC, failed to find case in DB", kv("caseId", caseId), ex);
@@ -593,32 +650,41 @@ public class CaseServiceImpl implements CaseService {
     }
   }
 
-  private String createLaunchUrl(
-      String formType, Case caze, LaunchRequestDTO requestParamsDTO, String questionnaireId)
+  private String createLaunchUrl(Case caze, LaunchRequestDTO requestParamsDTO, Uac uac)
       throws CTPException {
+
     String encryptedPayload = "";
-    RmCaseDTO caseDetails = mapper.map(caze, RmCaseDTO.class);
+    CollectionExercise collex = caze.getCollectionExercise();
+    Survey survey = collex.getSurvey();
+
+    CaseUpdate caseUpdate = mapper.map(caze, CaseUpdate.class);
+    UacUpdate uacUpdate = mapper.map(uac, UacUpdate.class);
+
+    CollectionExerciseUpdate collexUpdate =
+        mapper.map(caze.getCollectionExercise(), CollectionExerciseUpdate.class);
+
     try {
-      EqLaunchData eqLuanchCoreDate =
+      EqLaunchData eqLaunchData =
           EqLaunchData.builder()
               .language(Language.ENGLISH)
               .source(Source.CONTACT_CENTRE_API)
               .channel(Channel.CC)
-              .questionnaireId(questionnaireId)
-              .formType(formType)
               .salt(appConfig.getEq().getResponseIdSalt())
-              .caseContainer(caseDetails)
+              .surveyType(SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl()))
+              .collectionExerciseUpdate(collexUpdate)
+              .uacUpdate(uacUpdate)
+              .caseUpdate(caseUpdate)
               .userId(Integer.toString(requestParamsDTO.getAgentId()))
               .accountServiceUrl(null)
               .accountServiceLogoutUrl(null)
               .build();
-      encryptedPayload = eqLaunchService.getEqLaunchJwe(eqLuanchCoreDate);
+      encryptedPayload = eqLaunchService.getEqLaunchJwe(eqLaunchData);
 
     } catch (CTPException e) {
       log.error(
           "Failed to create JWE payload for eq launch",
           kv("caseId", caze.getId()),
-          kv("questionnaireId", questionnaireId),
+          kv("questionnaireId", uac.getQuestionnaire()),
           e);
       throw e;
     }

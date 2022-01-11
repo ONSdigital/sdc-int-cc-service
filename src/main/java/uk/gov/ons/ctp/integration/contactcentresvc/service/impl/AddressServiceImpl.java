@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.util.StringUtils;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.AddressServiceClientServiceImpl;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
@@ -22,8 +23,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.Add
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /**
  * A ContactCentreDataService implementation which encapsulates all business logic for getting
@@ -37,8 +40,11 @@ public class AddressServiceImpl implements AddressService {
 
   @Autowired private AddressServiceClientServiceImpl addressServiceClient;
 
+  @Autowired private CaseService caseService;
+
   @Override
-  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest) {
+  public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest)
+      throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Running search by address", kv("addressQueryRequest", addressQueryRequest));
     }
@@ -59,7 +65,8 @@ public class AddressServiceImpl implements AddressService {
   }
 
   @Override
-  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest) {
+  public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest)
+      throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Running search by postcode", kv("postcodeQueryRequest", postcodeQueryRequest));
     }
@@ -166,7 +173,7 @@ public class AddressServiceImpl implements AddressService {
   }
 
   private AddressQueryResponseDTO convertAddressIndexResultsToSummarisedAdresses(
-      AddressIndexSearchResultsDTO addressIndexResponse) {
+      AddressIndexSearchResultsDTO addressIndexResponse) throws CTPException {
     List<AddressDTO> summarisedAddresses =
         addressIndexResponse.getResponse().getAddresses().stream()
             .filter(a -> !isHistorical(a))
@@ -182,6 +189,14 @@ public class AddressServiceImpl implements AddressService {
         address.setEstabType(EstabType.HOUSEHOLD.name());
         address.setEstabDescription("Household");
       }
+    }
+
+    // Attach key information about any cases at each address
+    for (AddressDTO address : summarisedAddresses) {
+      // Find cases at this address
+      List<CaseSummaryDTO> casesAtUprn =
+          caseService.getCaseSummaryBySampleAttribute(CaseUpdate.ATTRIBUTE_UPRN, address.getUprn());
+      address.setCases(casesAtUprn);
     }
 
     // Complete construction of response objects
