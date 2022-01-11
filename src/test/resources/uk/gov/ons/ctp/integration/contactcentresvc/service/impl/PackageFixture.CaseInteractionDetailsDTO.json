@@ -1,0 +1,42 @@
+[
+  {
+    "interactionSource": "CC",
+    "interaction": "OUTBOUND_MANUAL_CALL",
+    "subInteraction": "CALL_ANSWERED",
+    "note": "Call back on Wednesday afternoon",
+    "createdDateTime": "2022-01-11T14:01:18.854080",
+    "userName": "Jimmy Jones"
+  },
+  {
+    "interactionSource": "CC",
+    "interaction": "MANUAL_CASE_VIEW",
+    "subInteraction": "",
+    "note": "",
+    "createdDateTime": "2022-01-07T14:01:18.854080",
+    "userName": "Sarah Chapman"
+  },
+  {
+    "interactionSource": "RM",
+    "interaction": "SMS_FULFILMENT",
+    "subInteraction": "",
+    "note": "Replacement UAC sent",
+    "createdDateTime": "2022-01-05T12:47:31.647080",
+    "userName": ""
+  },
+  {
+    "interactionSource": "RM",
+    "interaction": "PRINT_FULFILMENT",
+    "subInteraction": "",
+    "note": "Replacement UAC posted",
+    "createdDateTime": "2022-01-04T12:47:31.647080",
+    "userName": ""
+  },
+  {
+    "interactionSource": "RM",
+    "interaction": "NEW_CASE",
+    "subInteraction": "",
+    "note": "Initial creation of case",
+    "createdDateTime": "2022-01-03T12:47:31.647080",
+    "userName": ""
+  }
+]

@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CaseEventDTO {
+public class CaseEventDTO { // PMB - Delete?
 
   private String description;
 

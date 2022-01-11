@@ -11,8 +11,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseStatus;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CaseServiceFixture {
-  public static final UUID UUID_0 = UUID.fromString("b7565b5e-1396-4965-91a2-918c0d3642ed");
-  public static final UUID UUID_1 = UUID.fromString("b7565b5e-2222-2222-2222-918c0d3642ed");
+  public static final UUID CASE_ID_0 = UUID.fromString("b7565b5e-1396-4965-91a2-918c0d3642ed");
+  public static final UUID CASE_ID_1 = UUID.fromString("b7565b5e-2222-2222-2222-918c0d3642ed");
   public static final EstabType AN_ESTAB_TYPE = EstabType.HOUSEHOLD;
   public static final CaseType A_CASE_TYPE = CaseType.HH;
   public static final CaseStatus A_CASE_STATUS = CaseStatus.DEMOLISHED;

@@ -25,6 +25,7 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,7 +42,7 @@ public class CaseDataClientTest {
   @Mock private CaseRepository caseRepo;
   @Spy private MapperFacade mapper = new CCSvcBeanMapper();
 
-  @InjectMocks private CaseDataClient target;
+  @InjectMocks private CaseRepositoryClient target;
 
   @BeforeEach
   public void setup() {

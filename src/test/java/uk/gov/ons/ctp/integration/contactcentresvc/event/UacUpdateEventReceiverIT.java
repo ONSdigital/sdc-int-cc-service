@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,27 +68,35 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
     collectionExercise = txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
     txOps.createCase(collectionExercise, UUID.fromString(CASE_ID));
 
-    assertFalse(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isPresent());
+    assertTrue(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isEmpty());
 
     txOps.acceptEvent(uacEvent);
 
-    Uac uac = uacRepository.findByCaseId(UUID.fromString(CASE_ID)).orElse(null);
-    assertNotNull(uac);
-    assertEquals(CASE_ID, uac.getCaseId().toString());
-    assertEquals(uacUpdate.getUacHash(), uac.getUacHash());
-    assertEquals(COLLECTION_EX_ID, uac.getCollectionExerciseId().toString());
-    assertEquals(uacUpdate.getQid(), uac.getQuestionnaire());
-    assertEquals(SURVEY_ID, uac.getSurveyId().toString());
-    assertEquals(uacUpdate.getMetadata().getWave(), uac.getWaveNum());
-    assertEquals(uacUpdate.getCollectionInstrumentUrl(), uac.getCollectionInstrumentUrl());
-    assertNotNull(uac.getId());
+    List<Uac> uacList = uacRepository.findByCaseId(UUID.fromString(CASE_ID));
+    boolean matched = false;
+    for (Uac uac : uacList) {
+      if (uac.getUacHash().equals(uacEvent.getPayload().getUacUpdate().getUacHash())) {
+        assertNotNull(uac);
+        assertEquals(CASE_ID, uac.getCaseId().toString());
+        assertEquals(uacUpdate.getUacHash(), uac.getUacHash());
+        assertEquals(COLLECTION_EX_ID, uac.getCollectionExerciseId().toString());
+        assertEquals(uacUpdate.getQid(), uac.getQuestionnaire());
+        assertEquals(SURVEY_ID, uac.getSurveyId().toString());
+        assertEquals(uacUpdate.getMetadata().getWave(), uac.getWaveNum());
+        assertEquals(uacUpdate.getCollectionInstrumentUrl(), uac.getCollectionInstrumentUrl());
+        assertNotNull(uac.getId());
+        matched = true;
+        break;
+      }
+    }
+    assertTrue(matched, "Did not find the stored UAC");
   }
 
   @Test
   public void shouldDiscardUacForIgnoredSurveyType() throws CTPException {
     survey = txOps.createSurveyWeFilterOut(UUID.fromString(SURVEY_ID));
 
-    assertFalse(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isPresent());
+    assertTrue(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isEmpty());
 
     txOps.acceptEvent(uacEvent);
 
@@ -96,7 +105,7 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldRejectUacMessageForMissingSurvey() {
-    assertFalse(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isPresent());
+    assertTrue(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isEmpty());
 
     CTPException thrown = assertThrows(CTPException.class, () -> txOps.acceptEvent(uacEvent));
     assertEquals(CTPException.Fault.VALIDATION_FAILED, thrown.getFault());
@@ -108,7 +117,7 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
   public void shouldRejectUacMessageForMissingCollectionExercise() {
     survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
 
-    assertFalse(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isPresent());
+    assertTrue(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isEmpty());
 
     CTPException thrown = assertThrows(CTPException.class, () -> txOps.acceptEvent(uacEvent));
     assertEquals(CTPException.Fault.VALIDATION_FAILED, thrown.getFault());
@@ -121,21 +130,29 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
     survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
     collectionExercise = txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
 
-    assertFalse(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isPresent());
+    assertTrue(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isEmpty());
     assertFalse(caseRepo.findById(UUID.fromString(CASE_ID)).isPresent());
 
     txOps.acceptEvent(uacEvent);
 
-    Uac uac = uacRepository.findByCaseId(UUID.fromString(CASE_ID)).orElse(null);
-    assertNotNull(uac);
-    assertEquals(CASE_ID, uac.getCaseId().toString());
-    assertEquals(uacUpdate.getUacHash(), uac.getUacHash());
-    assertEquals(COLLECTION_EX_ID, uac.getCollectionExerciseId().toString());
-    assertEquals(uacUpdate.getQid(), uac.getQuestionnaire());
-    assertEquals(SURVEY_ID, uac.getSurveyId().toString());
-    assertEquals(uacUpdate.getMetadata().getWave(), uac.getWaveNum());
-    assertEquals(uacUpdate.getCollectionInstrumentUrl(), uac.getCollectionInstrumentUrl());
-    assertNotNull(uac.getId());
+    List<Uac> uacList = uacRepository.findByCaseId(UUID.fromString(CASE_ID));
+    boolean matched = false;
+    for (Uac uac : uacList) {
+      if (uac.getUacHash().equals(uacEvent.getPayload().getUacUpdate().getUacHash())) {
+        assertNotNull(uac);
+        assertEquals(CASE_ID, uac.getCaseId().toString());
+        assertEquals(uacUpdate.getUacHash(), uac.getUacHash());
+        assertEquals(COLLECTION_EX_ID, uac.getCollectionExerciseId().toString());
+        assertEquals(uacUpdate.getQid(), uac.getQuestionnaire());
+        assertEquals(SURVEY_ID, uac.getSurveyId().toString());
+        assertEquals(uacUpdate.getMetadata().getWave(), uac.getWaveNum());
+        assertEquals(uacUpdate.getCollectionInstrumentUrl(), uac.getCollectionInstrumentUrl());
+        assertNotNull(uac.getId());
+        matched = true;
+        break;
+      }
+    }
+    assertTrue(matched, "Did not find the stored UAC");
 
     Case caze = caseRepo.findById(UUID.fromString(CASE_ID)).orElse(null);
     assertNotNull(caze);
@@ -193,7 +210,7 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
 
     private void deleteUacIfExists(UacRepository repo, UUID id) {
       repo.findByCaseId(id)
-          .ifPresent(
+          .forEach(
               item -> {
                 repo.deleteById(item.getId());
               });

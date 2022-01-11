@@ -67,10 +67,11 @@ public final class AddressEndpoint implements CTPEndpoint {
    *
    * @param postcodeQueryRequest is a DTO specify details on the postcode to search for.
    * @return an object listing the addresses for the postcode.
+   * @throws CTPException if something goes wrong.
    */
   @RequestMapping(value = "/postcode", method = RequestMethod.GET)
   public AddressQueryResponseDTO getAddressesByPostcode(
-      @Valid PostcodeQueryRequestDTO postcodeQueryRequest) {
+      @Valid PostcodeQueryRequestDTO postcodeQueryRequest) throws CTPException {
     log.info("Entering GET getAddressesByPostcode", kv("requestParams", postcodeQueryRequest));
 
     return addressService.postcodeQuery(postcodeQueryRequest);

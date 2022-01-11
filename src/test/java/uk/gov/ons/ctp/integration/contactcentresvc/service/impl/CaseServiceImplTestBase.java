@@ -9,21 +9,24 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.UUID_0;
+import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import ma.glasnost.orika.MapperFacade;
+
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.event.TopicType;
@@ -38,7 +41,15 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDetailsDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
@@ -50,7 +61,11 @@ public abstract class CaseServiceImplTestBase {
 
   @Mock CaseServiceClientService caseServiceClient;
 
-  @Mock CaseDataClient caseDataClient;
+  @Mock CaseRepositoryClient caseDataClient;
+
+  @Mock UacRepository uacRepo;
+
+  @Mock CaseInteractionRepository caseInteractionRepo;
 
   @Mock EqLaunchService eqLaunchService;
 
@@ -59,7 +74,7 @@ public abstract class CaseServiceImplTestBase {
   @Spy MapperFacade mapperFacade = new CCSvcBeanMapper();
 
   @Mock BlacklistedUPRNBean blacklistedUPRNBean;
-
+  
   static final List<DeliveryChannel> ALL_DELIVERY_CHANNELS =
       List.of(DeliveryChannel.POST, DeliveryChannel.SMS);
 
@@ -90,9 +105,25 @@ public abstract class CaseServiceImplTestBase {
   void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
-    assertEquals(expectedCaseResult, results);
+    assertEquals(expectedCaseResult.getSample(), results.getSample());
+    assertEquals(expectedCaseResult.getSampleSensitive(), results.getSampleSensitive());
+
     verifyEventNotSent();
   }
+
+  void verifyInteractions(List<CaseInteractionDetailsDTO> expectedInteractions,
+      List<CaseInteractionDetailsDTO> actualInteractions) {
+    
+    assertEquals(expectedInteractions.size(), actualInteractions.size());
+    
+    for (int i=0; i<expectedInteractions.size(); i++) {
+      CaseInteractionDetailsDTO expected = expectedInteractions.get(0);
+      CaseInteractionDetailsDTO actual = actualInteractions.get(0);
+    
+      assertEquals(expected, actual, "Checking index: " + i);
+    }  
+  }
+
 
   CaseDTO createExpectedCaseDTO(Case caseFromDb) {
 
@@ -107,14 +138,62 @@ public abstract class CaseServiceImplTestBase {
     return expectedCaseResult;
   }
 
+  CaseSummaryDTO createExpectedCaseSummaryDTO(Case caseFromDb) {
+
+    CaseSummaryDTO expectedCaseResult =
+        CaseSummaryDTO.builder()
+            .id(caseFromDb.getId())
+            .caseRef(caseFromDb.getCaseRef())
+            .surveyName(caseFromDb.getCollectionExercise().getSurvey().getName())
+            .surveyType("SOCIAL")
+            .build();
+    return expectedCaseResult;
+  }
+
   UniquePropertyReferenceNumber createUprn(String uprn) {
     return uprn == null ? null : new UniquePropertyReferenceNumber(uprn);
+  }
+
+  void mockGetUacsForCase() throws Exception {
+    List<Uac> uacList = FixtureHelper.loadPackageFixtures(Uac[].class);
+    when(uacRepo.findByCaseId(any())).thenReturn(uacList);
   }
 
   Case mockGetCaseById(String region) throws Exception {
     Case caze = FixtureHelper.loadPackageFixtures(Case[].class).get(0);
     caze.getSample().put("region", region);
-    mockGetCaseById(UUID_0, caze);
+    CollectionExercise collex = caze.getCollectionExercise();
+    collex.setStartDate(LocalDateTime.now());
+    collex.setEndDate(LocalDateTime.now().plusDays(60));
+    collex.setWaveLength(10);
+    collex.setNumberOfWaves(3);
+    mockGetCaseById(CASE_ID_0, caze);
+    return caze;
+  }
+
+  Case mockGetCaseByIdInFutureCollection(String region) throws Exception {
+    Case caze = FixtureHelper.loadPackageFixtures(Case[].class).get(0);
+    caze.getSample().put("region", region);
+    CollectionExercise collex = caze.getCollectionExercise();
+    collex.setStartDate(LocalDateTime.now().plusDays(10));
+    collex.setEndDate(LocalDateTime.now().plusDays(60));
+    collex.setWaveLength(10);
+    collex.setNumberOfWaves(3);
+    mockGetCaseById(CASE_ID_0, caze);
+    return caze;
+  }
+
+  Case mockGetCaseByIdAtEndOfCollection(String region) throws Exception {
+    Case caze = FixtureHelper.loadPackageFixtures(Case[].class).get(0);
+    caze.getSample().put("region", region);
+    CollectionExercise collex = caze.getCollectionExercise();
+    // collex started some time ago
+    collex.setStartDate(LocalDateTime.now().minusDays(60));
+    collex.setEndDate(LocalDateTime.now().plusDays(1));
+    collex.setWaveLength(10);
+    // and the num of waves will put today in a wave for which we have no UAC
+    collex.setNumberOfWaves(20);
+    mockGetCaseById(CASE_ID_0, caze);
     return caze;
   }
 
@@ -132,9 +211,15 @@ public abstract class CaseServiceImplTestBase {
     lenient().when(caseServiceClient.getCaseById(id, true)).thenReturn(rmCaseDTO);
   }
 
+  void mockCaseInteractionRepoFindByCaseId(UUID id) {
+    List<CaseInteraction> caseInteractions = FixtureHelper.loadPackageFixtures(CaseInteraction[].class);
+
+    lenient().when(caseInteractionRepo.findByCaseId(id)).thenReturn(caseInteractions);
+  }
+
   void mockCaseEventWhiteList() {
     CaseServiceSettings caseServiceSettings = new CaseServiceSettings();
-    Set<String> whitelistedSet = Set.of("CASE_UPDATE"); // PMB change
+    Set<String> whitelistedSet = Set.of("NEW_CASE", "PRINT_FULFILMENT", "SMS_FULFILMENT", "MANUAL_CASE_VIEW", "OUTBOUND_MANUAL_CALL");
     caseServiceSettings.setWhitelistedEventCategories(whitelistedSet);
     lenient().when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
   }
