@@ -70,7 +70,7 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering GET getCaseById", kv("pathParam", caseId), kv("requestParams", requestParamsDTO));
 
-    logCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW.name(), null, null);
+    saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW.name(), null, null);
 
     CaseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
 
@@ -124,7 +124,7 @@ public class CaseEndpoint implements CTPEndpoint {
 
     CaseDTO result = caseService.getCaseByCaseReference(ref, requestParamsDTO);
 
-    logCaseInteraction(result.getId(), CaseInteractionType.MANUAL_CASE_VIEW.name(), null, null);
+    saveCaseInteraction(result.getId(), CaseInteractionType.MANUAL_CASE_VIEW.name(), null, null);
 
     return ResponseEntity.ok(result);
   }
@@ -147,7 +147,7 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestParams", requestParamsDTO));
 
-    logCaseInteraction(caseId, CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name(), null, null);
+    saveCaseInteraction(caseId, CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name(), null, null);
 
     String launchURL = caseService.getLaunchURLForCaseId(caseId, requestParamsDTO);
 
@@ -176,7 +176,7 @@ public class CaseEndpoint implements CTPEndpoint {
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
-    logCaseInteraction(
+    saveCaseInteraction(
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED.name(),
         CaseSubInteractionType.FULFILMENT_PRINT.name(),
@@ -208,7 +208,7 @@ public class CaseEndpoint implements CTPEndpoint {
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
-    logCaseInteraction(
+    saveCaseInteraction(
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED.name(),
         CaseSubInteractionType.FULFILMENT_SMS.name(),
@@ -243,7 +243,7 @@ public class CaseEndpoint implements CTPEndpoint {
           Fault.BAD_REQUEST, "reportRefusal caseId in path and body must be identical");
     }
 
-    logCaseInteraction(caseId, CaseInteractionType.REFUSAL_REQUESTED.name(), null, null);
+    saveCaseInteraction(caseId, CaseInteractionType.REFUSAL_REQUESTED.name(), null, null);
 
     ResponseDTO response = caseService.reportRefusal(caseId, requestBodyDTO);
 
@@ -272,7 +272,7 @@ public class CaseEndpoint implements CTPEndpoint {
       throws CTPException {
     log.info("Entering PUT modifyCase", kv("requestBody", requestBodyDTO));
 
-    logCaseInteraction(caseId, CaseInteractionType.CASE_UPDATE_REQUESTED.name(), null, null);
+    saveCaseInteraction(caseId, CaseInteractionType.CASE_UPDATE_REQUESTED.name(), null, null);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
     CaseDTO result = caseService.modifyCase(requestBodyDTO);
@@ -330,7 +330,7 @@ public class CaseEndpoint implements CTPEndpoint {
     return false;
   }
 
-  private void logCaseInteraction(UUID caseId, String type, String subtype, String note) {
+  private void saveCaseInteraction(UUID caseId, String type, String subtype, String note) {
     log.info("Saving case interaction", kv("caseId", caseId));
     CaseInteractionDTO dto =
         CaseInteractionDTO.builder().type(type).subtype(subtype).note(note).build();

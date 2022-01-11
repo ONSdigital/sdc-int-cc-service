@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -27,9 +28,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 
 /** Test the PUT endpoint to modify case details. */
 @ExtendWith(MockitoExtension.class)
@@ -37,11 +42,15 @@ public final class CaseEndpointModifyCaseTest {
 
   @Mock private CaseService caseService;
 
+  @Mock InteractionService interactionService;
+
   @InjectMocks private CaseEndpoint caseEndpoint;
 
   private MockMvc mockMvc;
 
   private ObjectMapper mapper = new ObjectMapper();
+
+  private CaseInteractionDTO interactionDTO = CaseInteractionDTO.builder().type(CaseInteractionType.CASE_UPDATE_REQUESTED.name()).build();
 
   private ObjectNode json;
   private CaseDTO responseDTO;
@@ -84,6 +93,8 @@ public final class CaseEndpointModifyCaseTest {
     when(caseService.modifyCase(any())).thenReturn(responseDTO);
     doPut().andExpect(status().isOk()).andExpect(jsonPath("$.id", is(caseId)));
     verify(caseService).modifyCase(any());
+
+    verify(interactionService, times(1)).saveCaseInteraction(UUID.fromString(caseId), interactionDTO);
   }
 
   @Test
