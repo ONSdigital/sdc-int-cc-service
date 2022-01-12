@@ -1,0 +1,5 @@
+{
+  "type": "OUTBOUND_APPOINTMENT_CALL",
+  "subtype": "CALL_NUMBER_ENGAGED",
+  "note": "A note"
+}

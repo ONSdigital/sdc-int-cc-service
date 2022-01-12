@@ -2,6 +2,8 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.postJson;
@@ -25,9 +27,13 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +42,8 @@ public final class CaseEndpointFulfilmentPostTest {
   private static final String RESPONSE_DATE_TIME = "2019-03-28T11:56:40.705Z";
 
   @Mock private CaseService caseService;
+
+  @Mock InteractionService interactionService;
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 
@@ -78,6 +86,15 @@ public final class CaseEndpointFulfilmentPostTest {
     actions.andExpect(status().isOk());
     actions.andExpect(jsonPath("$.id", is(requestData.getCaseId().toString())));
     actions.andExpect(jsonPath("$.dateTime", is(RESPONSE_DATE_TIME)));
+
+    CaseInteractionRequestDTO interactionDTO =
+        CaseInteractionRequestDTO.builder()
+            .type(CaseInteractionType.FULFILMENT_REQUESTED)
+            .subtype(CaseSubInteractionType.FULFILMENT_PRINT)
+            .note(requestData.getFulfilmentCode())
+            .build();
+    verify(interactionService, times(1))
+        .saveCaseInteraction(requestData.getCaseId(), interactionDTO);
   }
 
   @Test

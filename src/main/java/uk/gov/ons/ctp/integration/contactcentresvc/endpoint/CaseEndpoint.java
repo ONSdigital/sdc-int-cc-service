@@ -19,7 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
@@ -28,6 +31,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequest
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 
 /** The REST controller for ContactCentreSvc find cases end points */
 @Slf4j
@@ -36,6 +40,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 @RequestMapping(value = "/cases", produces = "application/json")
 public class CaseEndpoint implements CTPEndpoint {
   private CaseService caseService;
+  private InteractionService interactionService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
@@ -44,8 +49,9 @@ public class CaseEndpoint implements CTPEndpoint {
    *     endpoint.
    */
   @Autowired
-  public CaseEndpoint(final CaseService caseService) {
+  public CaseEndpoint(final CaseService caseService, final InteractionService interactionService) {
     this.caseService = caseService;
+    this.interactionService = interactionService;
   }
 
   /**
@@ -62,6 +68,8 @@ public class CaseEndpoint implements CTPEndpoint {
       throws CTPException {
     log.info(
         "Entering GET getCaseById", kv("pathParam", caseId), kv("requestParams", requestParamsDTO));
+
+    saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
     CaseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
 
@@ -91,6 +99,9 @@ public class CaseEndpoint implements CTPEndpoint {
 
     List<CaseDTO> results = caseService.getCaseBySampleAttribute(key, value, requestParamsDTO);
 
+    // TODO Interactions will possibly be recorded once it's determined how this endpoint will be
+    // used
+
     return ResponseEntity.ok(results);
   }
 
@@ -113,6 +124,10 @@ public class CaseEndpoint implements CTPEndpoint {
 
     CaseDTO result = caseService.getCaseByCaseReference(ref, requestParamsDTO);
 
+    if (result != null) {
+      saveCaseInteraction(result.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
+    }
+
     return ResponseEntity.ok(result);
   }
 
@@ -133,6 +148,8 @@ public class CaseEndpoint implements CTPEndpoint {
         "Entering GET getLaunchURLForCaseId",
         kv("pathParam", caseId),
         kv("requestParams", requestParamsDTO));
+
+    saveCaseInteraction(caseId, CaseInteractionType.TELEPHONE_CAPTURE_STARTED, null, null);
 
     String launchURL = caseService.getLaunchURLForCaseId(caseId, requestParamsDTO);
 
@@ -160,6 +177,14 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("requestBody", requestBodyDTO));
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
+
+    saveCaseInteraction(
+        caseId,
+        CaseInteractionType.FULFILMENT_REQUESTED,
+        CaseSubInteractionType.FULFILMENT_PRINT,
+        // TODO should be the fulfilment description when refactored to use new survey products
+        requestBodyDTO.getFulfilmentCode());
+
     ResponseDTO response = caseService.fulfilmentRequestByPost(requestBodyDTO);
     return ResponseEntity.ok(response);
   }
@@ -185,7 +210,16 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("requestBody", requestBodyDTO));
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
+
+    saveCaseInteraction(
+        caseId,
+        CaseInteractionType.FULFILMENT_REQUESTED,
+        CaseSubInteractionType.FULFILMENT_SMS,
+        // TODO should be the fulfilment description when refactored to use new survey products
+        requestBodyDTO.getFulfilmentCode());
+
     ResponseDTO response = caseService.fulfilmentRequestBySMS(requestBodyDTO);
+
     return ResponseEntity.ok(response);
   }
 
@@ -213,6 +247,12 @@ public class CaseEndpoint implements CTPEndpoint {
           Fault.BAD_REQUEST, "reportRefusal caseId in path and body must be identical");
     }
 
+    saveCaseInteraction(
+        caseId,
+        CaseInteractionType.REFUSAL_REQUESTED,
+        CaseSubInteractionType.valueOf("REFUSAL_" + requestBodyDTO.getReason().name()),
+        requestBodyDTO.getReason().name());
+
     ResponseDTO response = caseService.reportRefusal(caseId, requestBodyDTO);
 
     log.debug("Exiting reportRefusal", kv("caseId", caseId));
@@ -239,9 +279,41 @@ public class CaseEndpoint implements CTPEndpoint {
       @Valid @RequestBody ModifyCaseRequestDTO requestBodyDTO)
       throws CTPException {
     log.info("Entering PUT modifyCase", kv("requestBody", requestBodyDTO));
+
+    saveCaseInteraction(caseId, CaseInteractionType.CASE_UPDATE_REQUESTED, null, null);
+
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
     CaseDTO result = caseService.modifyCase(requestBodyDTO);
     return ResponseEntity.ok(result);
+  }
+
+  /**
+   * the POST end point to log a CaseInteraction
+   *
+   * @param caseId the id of the case
+   * @param requestBodyDTO contains request body
+   * @return response entity
+   * @throws CTPException something went wrong
+   */
+  @RequestMapping(value = "/{caseId}/interaction", method = RequestMethod.POST)
+  @ResponseStatus(value = HttpStatus.OK)
+  public ResponseEntity<ResponseDTO> acceptCaseInteraction(
+      @PathVariable(value = "caseId") final UUID caseId,
+      @Valid @RequestBody CaseInteractionRequestDTO requestBodyDTO)
+      throws CTPException {
+
+    log.info(
+        "Entering POST acceptCaseInteraction",
+        kv("pathParam", caseId),
+        kv("requestBody", requestBodyDTO));
+
+    if (!validateInteractionType(requestBodyDTO)) {
+      String message = "The Interaction type failed validation";
+      log.warn(message, kv("caseId", caseId));
+      throw new CTPException(Fault.VALIDATION_FAILED, message);
+    }
+    ResponseDTO response = interactionService.saveCaseInteraction(caseId, requestBodyDTO);
+    return ResponseEntity.ok(response);
   }
 
   private void validateMatchingCaseId(UUID caseId, UUID dtoCaseId) throws CTPException {
@@ -250,5 +322,26 @@ public class CaseEndpoint implements CTPEndpoint {
       log.warn(message, kv("caseId", caseId));
       throw new CTPException(Fault.BAD_REQUEST, message);
     }
+  }
+
+  private boolean validateInteractionType(CaseInteractionRequestDTO caseInteractionRequestDTO) {
+    CaseInteractionType type = caseInteractionRequestDTO.getType();
+    CaseSubInteractionType subtype = caseInteractionRequestDTO.getSubtype();
+    if (type.isExplicit()) {
+      if (!type.getValidSubInteractions().isEmpty()) {
+        return type.getValidSubInteractions().stream().anyMatch((t) -> t.equals(subtype));
+      } else {
+        return subtype == null;
+      }
+    }
+    return false;
+  }
+
+  private void saveCaseInteraction(
+      UUID caseId, CaseInteractionType type, CaseSubInteractionType subtype, String note) {
+    log.info("Saving case interaction", kv("caseId", caseId));
+    CaseInteractionRequestDTO dto =
+        CaseInteractionRequestDTO.builder().type(type).subtype(subtype).note(note).build();
+    interactionService.saveCaseInteraction(caseId, dto);
   }
 }
