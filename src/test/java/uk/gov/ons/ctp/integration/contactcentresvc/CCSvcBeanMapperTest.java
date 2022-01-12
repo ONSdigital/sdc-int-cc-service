@@ -26,10 +26,12 @@ import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.client.addressindex.model.AddressIndexAddressCompositeDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 
 public class CCSvcBeanMapperTest {
 
@@ -118,6 +120,17 @@ public class CCSvcBeanMapperTest {
         () -> assertEquals(source.getPackCode(), destination.getPackCode()),
         () -> assertEquals(source.getDescription(), destination.getDescription()),
         () -> assertEquals(source.getMetadata(), destination.getMetadata()));
+  }
+
+  @Test
+  public void shouldMapCaseInteractionDTOToCaseInteraction() {
+    CaseInteractionDTO source = FixtureHelper.loadClassFixtures(CaseInteractionDTO[].class).get(0);
+    CaseInteraction destination = mapperFacade.map(source, CaseInteraction.class);
+
+    assertAll(
+        () -> assertEquals(source.getType(), destination.getType().name()),
+        () -> assertEquals(source.getSubtype(), destination.getSubtype().name()),
+        () -> assertEquals(source.getNote(), destination.getNote()));
   }
 
   @Test

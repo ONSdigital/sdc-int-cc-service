@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -51,6 +52,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   private static final String BLACK_LISTED_FULFILMENT_CODE = "P_TB_TBBEN1";
+
+  @Mock private InteractionServiceImpl interactionService;
 
   @BeforeEach
   public void setup() {

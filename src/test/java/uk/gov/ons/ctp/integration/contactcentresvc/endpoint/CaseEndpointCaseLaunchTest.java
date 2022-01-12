@@ -3,6 +3,8 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,7 +29,10 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +41,8 @@ public class CaseEndpointCaseLaunchTest {
   @InjectMocks private CaseEndpoint caseEndpoint;
 
   @Mock CaseService caseService;
+
+  @Mock InteractionService interactionService;
 
   @Autowired private MockMvc mockMvc;
 
@@ -68,6 +75,12 @@ public class CaseEndpointCaseLaunchTest {
     String responseUrl = actions.andReturn().getResponse().getContentAsString();
     String expectedUrl = "\"{\\\"url\\\": \\\"https://www.google.co.uk/search?q=FAKE\\\"}\"";
     assertEquals(expectedUrl, responseUrl);
+
+    CaseInteractionDTO interactionDTO =
+        CaseInteractionDTO.builder()
+            .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name())
+            .build();
+    verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 
   @Test
@@ -96,6 +109,11 @@ public class CaseEndpointCaseLaunchTest {
     actions
         .andExpect(status().isBadRequest())
         .andExpect(content().string(containsString("a message")));
+    CaseInteractionDTO interactionDTO =
+        CaseInteractionDTO.builder()
+            .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name())
+            .build();
+    verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 
   @Test
@@ -106,6 +124,11 @@ public class CaseEndpointCaseLaunchTest {
     actions
         .andExpect(status().isAccepted())
         .andExpect(content().string(containsString("a message")));
+    CaseInteractionDTO interactionDTO =
+        CaseInteractionDTO.builder()
+            .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name())
+            .build();
+    verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 
   @Test
@@ -116,5 +139,10 @@ public class CaseEndpointCaseLaunchTest {
     actions
         .andExpect(status().isIAmATeapot())
         .andExpect(content().string(containsString("SYSTEM_ERROR")));
+    CaseInteractionDTO interactionDTO =
+        CaseInteractionDTO.builder()
+            .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name())
+            .build();
+    verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 }
