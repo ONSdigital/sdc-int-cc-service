@@ -187,7 +187,7 @@ public class CaseServiceImpl implements CaseService {
 
     CaseDTO caseServiceResponse = mapCaseToDto(caseRepoClient.getCaseById(caseId));
     List<CaseInteractionDetailsDTO> interactions =
-        buildInteractionHistory(caseServiceResponse, requestParamsDTO.getCaseEvents());
+        buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
 
     if (log.isDebugEnabled()) {
@@ -223,7 +223,7 @@ public class CaseServiceImpl implements CaseService {
     // Set interaction history for all cases
     for (CaseDTO caseDTO : cases) {
       List<CaseInteractionDetailsDTO> interactions =
-          buildInteractionHistory(caseDTO, requestParamsDTO.getCaseEvents());
+          buildInteractionHistory(caseDTO.getId(), requestParamsDTO.getCaseEvents());
       caseDTO.setInteractions(interactions);
     }
 
@@ -285,7 +285,7 @@ public class CaseServiceImpl implements CaseService {
     CaseDTO caseServiceResponse = mapCaseToDto(caseDetails);
 
     List<CaseInteractionDetailsDTO> interactions =
-        buildInteractionHistory(caseServiceResponse, requestParamsDTO.getCaseEvents());
+        buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
 
     if (log.isDebugEnabled()) {
@@ -426,43 +426,42 @@ public class CaseServiceImpl implements CaseService {
    * @return a List of case interactions, or an empty list if the caller doesn't want history.
    */
   private List<CaseInteractionDetailsDTO> buildInteractionHistory(
-      CaseDTO caseDTO, Boolean getCaseEvents) {
+      UUID caseId, Boolean getCaseEvents) throws CTPException {
     List<CaseInteractionDetailsDTO> interactions = new ArrayList<>();
 
     if (getCaseEvents) {
-      // Get event history from RM, and convert to interactions
-      RmCaseDTO rmCase = caseServiceClient.getCaseById(caseDTO.getId(), true);
+      // Get case and event history from RM
+      RmCaseDTO rmCase;
+      try {
+        rmCase = caseServiceClient.getCaseById(caseId, true);
+      } catch (ResponseStatusException ex) {
+        if (ex.getCause() != null) {
+          HttpStatusCodeException cause = (HttpStatusCodeException) ex.getCause();
+          log.warn(
+              "Failed to get case from RM.",
+              kv("caseid", caseId),
+              kv("status", cause.getStatusCode()),
+              kv("message", cause.getMessage()));
+          if (cause.getStatusCode() == HttpStatus.BAD_REQUEST) {
+            throw new CTPException(
+                Fault.BAD_REQUEST, "Invalid request for case %s", caseId.toString());
+          }
+        }
+        throw ex;
+      }
+
+      // Create history from RM events
       for (EventDTO rmCaseEvent : rmCase.getCaseEvents()) {
-        CaseInteractionDetailsDTO interaction =
-            CaseInteractionDetailsDTO.builder()
-                .interactionSource("RM")
-                .interaction(rmCaseEvent.getEventType())
-                .subInteraction("")
-                .note(rmCaseEvent.getDescription())
-                .createdDateTime(rmCaseEvent.getCreatedDateTime())
-                .userName("")
-                .build();
-        interactions.add(interaction);
+        interactions.add(createRmInteraction(rmCaseEvent));
       }
 
       // Add in interactions recorded by CC
-      List<CaseInteraction> ccInteractions =
-          caseInteractionRepository.findByCaseId(caseDTO.getId());
+      List<CaseInteraction> ccInteractions = caseInteractionRepository.findByCaseId(caseId);
       for (CaseInteraction ccInteraction : ccInteractions) {
-        CaseInteractionDetailsDTO interaction =
-            CaseInteractionDetailsDTO.builder()
-                .interactionSource("CC")
-                .interaction(ccInteraction.getType().name())
-                .subInteraction(
-                    ccInteraction.getSubtype() != null ? ccInteraction.getSubtype().name() : "")
-                .note(ccInteraction.getNote() != null ? ccInteraction.getNote() : "")
-                .createdDateTime(ccInteraction.getCreatedDateTime())
-                .userName(ccInteraction.getCcuser().getName())
-                .build();
-        interactions.add(interaction);
+        interactions.add(createCcInteraction(ccInteraction));
       }
 
-      // Remove interactions non reportable interactions
+      // Remove interactions that are not worth reporting
       Set<String> whitelistedEventNames =
           appConfig.getCaseServiceSettings().getWhitelistedEventCategories();
       interactions =
@@ -470,12 +469,34 @@ public class CaseServiceImpl implements CaseService {
               .filter(i -> whitelistedEventNames.contains(i.getInteraction()))
               .collect(Collectors.toList());
 
-      // Sort from newest to oldest events
+      // Sort, so that newest interactions appear first
       interactions.sort(
           Comparator.comparing(CaseInteractionDetailsDTO::getCreatedDateTime).reversed());
     }
 
     return interactions;
+  }
+
+  private CaseInteractionDetailsDTO createRmInteraction(EventDTO rmCaseEvent) {
+    return CaseInteractionDetailsDTO.builder()
+        .interactionSource("RM")
+        .interaction(rmCaseEvent.getEventType())
+        .subInteraction("")
+        .note(rmCaseEvent.getDescription())
+        .createdDateTime(rmCaseEvent.getCreatedDateTime())
+        .userName("")
+        .build();
+  }
+
+  private CaseInteractionDetailsDTO createCcInteraction(CaseInteraction ccInteraction) {
+    return CaseInteractionDetailsDTO.builder()
+        .interactionSource("CC")
+        .interaction(ccInteraction.getType().name())
+        .subInteraction(ccInteraction.getSubtype() != null ? ccInteraction.getSubtype().name() : "")
+        .note(ccInteraction.getNote() != null ? ccInteraction.getNote() : "")
+        .createdDateTime(ccInteraction.getCreatedDateTime())
+        .userName(ccInteraction.getCcuser().getName())
+        .build();
   }
 
   private void publishEqLaunchedEvent(UUID caseId, String questionnaireId) {
