@@ -12,7 +12,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 
@@ -24,12 +24,12 @@ public class InteractionServiceImpl implements InteractionService {
 
   @Autowired private CCSvcBeanMapper mapper;
 
-  public ResponseDTO saveCaseInteraction(UUID caseId, CaseInteractionDTO interaction) {
+  public ResponseDTO saveCaseInteraction(UUID caseId, CaseInteractionRequestDTO interaction) {
     CaseInteraction caseInteraction = mapper.map(interaction, CaseInteraction.class);
     caseInteraction.setCaseId(caseId);
     caseInteraction.setCreatedDateTime(LocalDateTime.now());
 
-    // Will eventually be replaced wit actual UserId
+    // Will eventually be replaced with actual UserId
     User user = User.builder().id(UUID.fromString("382a8474-479c-11ec-a052-4c3275913db5")).build();
     caseInteraction.setCcuser(user);
 

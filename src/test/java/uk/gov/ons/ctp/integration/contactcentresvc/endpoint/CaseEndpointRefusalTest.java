@@ -30,7 +30,7 @@ import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
@@ -45,8 +45,8 @@ public final class CaseEndpointRefusalTest {
 
   private static final String RESPONSE_DATE_TIME = "2019-03-28T11:56:40.705Z";
 
-  private CaseInteractionDTO interactionDTO =
-      CaseInteractionDTO.builder().type(CaseInteractionType.REFUSAL_REQUESTED).build();
+  private CaseInteractionRequestDTO interactionDTO =
+      CaseInteractionRequestDTO.builder().type(CaseInteractionType.REFUSAL_REQUESTED).build();
 
   @Mock private CaseService caseService;
 

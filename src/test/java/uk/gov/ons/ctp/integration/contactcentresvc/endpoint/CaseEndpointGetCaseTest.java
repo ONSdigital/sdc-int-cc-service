@@ -37,7 +37,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 
@@ -71,8 +71,8 @@ public final class CaseEndpointGetCaseTest {
 
   private UUID uuid = UUID.randomUUID();
 
-  private CaseInteractionDTO interactionDTO =
-      CaseInteractionDTO.builder().type(CaseInteractionType.MANUAL_CASE_VIEW).build();
+  private CaseInteractionRequestDTO interactionDTO =
+      CaseInteractionRequestDTO.builder().type(CaseInteractionType.MANUAL_CASE_VIEW).build();
 
   /**
    * Set up of tests

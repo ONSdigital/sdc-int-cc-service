@@ -13,7 +13,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CaseInteractionDTO {
+public class CaseInteractionRequestDTO {
 
   @NotNull CaseInteractionType type;
   CaseSubInteractionType subtype;
