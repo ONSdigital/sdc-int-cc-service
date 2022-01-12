@@ -126,8 +126,8 @@ public class CCSvcBeanMapperTest {
     CaseInteraction destination = mapperFacade.map(source, CaseInteraction.class);
 
     assertAll(
-        () -> assertEquals(source.getType(), destination.getType().name()),
-        () -> assertEquals(source.getSubtype(), destination.getSubtype().name()),
+        () -> assertEquals(source.getType(), destination.getType()),
+        () -> assertEquals(source.getSubtype(), destination.getSubtype()),
         () -> assertEquals(source.getNote(), destination.getNote()));
   }
 

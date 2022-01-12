@@ -72,7 +72,7 @@ public final class CaseEndpointGetCaseTest {
   private UUID uuid = UUID.randomUUID();
 
   private CaseInteractionDTO interactionDTO =
-      CaseInteractionDTO.builder().type(CaseInteractionType.MANUAL_CASE_VIEW.name()).build();
+      CaseInteractionDTO.builder().type(CaseInteractionType.MANUAL_CASE_VIEW).build();
 
   /**
    * Set up of tests

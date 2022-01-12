@@ -28,6 +28,7 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
@@ -45,7 +46,7 @@ public final class CaseEndpointRefusalTest {
   private static final String RESPONSE_DATE_TIME = "2019-03-28T11:56:40.705Z";
 
   private CaseInteractionDTO interactionDTO =
-      CaseInteractionDTO.builder().type(CaseInteractionType.REFUSAL_REQUESTED.name()).build();
+      CaseInteractionDTO.builder().type(CaseInteractionType.REFUSAL_REQUESTED).build();
 
   @Mock private CaseService caseService;
 
@@ -169,6 +170,9 @@ public final class CaseEndpointRefusalTest {
     actions.andExpect(jsonPath("$.id", is(uuid.toString())));
     actions.andExpect(jsonPath("$.dateTime", is(RESPONSE_DATE_TIME)));
 
+    interactionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_" + value));
+    interactionDTO.setNote(value);
+
     verify(interactionService, times(1))
         .saveCaseInteraction(UUID.fromString(UUID_STR), interactionDTO);
   }
@@ -185,6 +189,9 @@ public final class CaseEndpointRefusalTest {
     ResultActions actions =
         mockMvc.perform(postJson("/cases/" + UUID_STR + "/refusal", json.toString()));
     actions.andExpect(status().isOk());
+
+    interactionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_HARD_REFUSAL"));
+    interactionDTO.setNote("HARD_REFUSAL");
 
     verify(interactionService, times(1))
         .saveCaseInteraction(UUID.fromString(UUID_STR), interactionDTO);

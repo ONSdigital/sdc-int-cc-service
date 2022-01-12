@@ -50,7 +50,7 @@ public final class CaseEndpointModifyCaseTest {
   private ObjectMapper mapper = new ObjectMapper();
 
   private CaseInteractionDTO interactionDTO =
-      CaseInteractionDTO.builder().type(CaseInteractionType.CASE_UPDATE_REQUESTED.name()).build();
+      CaseInteractionDTO.builder().type(CaseInteractionType.CASE_UPDATE_REQUESTED).build();
 
   private ObjectNode json;
   private CaseDTO responseDTO;

@@ -89,8 +89,9 @@ public final class CaseEndpointFulfilmentPostTest {
 
     CaseInteractionDTO interactionDTO =
         CaseInteractionDTO.builder()
-            .type(CaseInteractionType.FULFILMENT_REQUESTED.name())
-            .subtype(CaseSubInteractionType.FULFILMENT_PRINT.name())
+            .type(CaseInteractionType.FULFILMENT_REQUESTED)
+            .subtype(CaseSubInteractionType.FULFILMENT_PRINT)
+            .note(requestData.getFulfilmentCode())
             .build();
     verify(interactionService, times(1))
         .saveCaseInteraction(requestData.getCaseId(), interactionDTO);
