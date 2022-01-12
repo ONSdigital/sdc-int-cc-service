@@ -210,7 +210,7 @@ public final class CaseEndpointGetCaseTest {
         .id(UUID.fromString(CASE_UUID_STRING))
         .caseRef(CASE_REF)
         .sample(fakeSample)
-        .caseEvents(Arrays.asList(caseEventDTO1))
+        .interactions(Arrays.asList(caseEventDTO1))
         .build();
   }
 

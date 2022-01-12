@@ -20,13 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
+import ma.glasnost.orika.MapperFacade;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.event.TopicType;
@@ -74,7 +72,7 @@ public abstract class CaseServiceImplTestBase {
   @Spy MapperFacade mapperFacade = new CCSvcBeanMapper();
 
   @Mock BlacklistedUPRNBean blacklistedUPRNBean;
-  
+
   static final List<DeliveryChannel> ALL_DELIVERY_CHANNELS =
       List.of(DeliveryChannel.POST, DeliveryChannel.SMS);
 
@@ -111,19 +109,19 @@ public abstract class CaseServiceImplTestBase {
     verifyEventNotSent();
   }
 
-  void verifyInteractions(List<CaseInteractionDetailsDTO> expectedInteractions,
+  void verifyInteractions(
+      List<CaseInteractionDetailsDTO> expectedInteractions,
       List<CaseInteractionDetailsDTO> actualInteractions) {
-    
+
     assertEquals(expectedInteractions.size(), actualInteractions.size());
-    
-    for (int i=0; i<expectedInteractions.size(); i++) {
+
+    for (int i = 0; i < expectedInteractions.size(); i++) {
       CaseInteractionDetailsDTO expected = expectedInteractions.get(0);
       CaseInteractionDetailsDTO actual = actualInteractions.get(0);
-    
-      assertEquals(expected, actual, "Checking index: " + i);
-    }  
-  }
 
+      assertEquals(expected, actual, "Checking index: " + i);
+    }
+  }
 
   CaseDTO createExpectedCaseDTO(Case caseFromDb) {
 
@@ -212,14 +210,21 @@ public abstract class CaseServiceImplTestBase {
   }
 
   void mockCaseInteractionRepoFindByCaseId(UUID id) {
-    List<CaseInteraction> caseInteractions = FixtureHelper.loadPackageFixtures(CaseInteraction[].class);
+    List<CaseInteraction> caseInteractions =
+        FixtureHelper.loadPackageFixtures(CaseInteraction[].class);
 
     lenient().when(caseInteractionRepo.findByCaseId(id)).thenReturn(caseInteractions);
   }
 
   void mockCaseEventWhiteList() {
     CaseServiceSettings caseServiceSettings = new CaseServiceSettings();
-    Set<String> whitelistedSet = Set.of("NEW_CASE", "PRINT_FULFILMENT", "SMS_FULFILMENT", "MANUAL_CASE_VIEW", "OUTBOUND_MANUAL_CALL");
+    Set<String> whitelistedSet =
+        Set.of(
+            "NEW_CASE",
+            "PRINT_FULFILMENT",
+            "SMS_FULFILMENT",
+            "MANUAL_CASE_VIEW",
+            "OUTBOUND_MANUAL_CALL");
     caseServiceSettings.setWhitelistedEventCategories(whitelistedSet);
     lenient().when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
   }

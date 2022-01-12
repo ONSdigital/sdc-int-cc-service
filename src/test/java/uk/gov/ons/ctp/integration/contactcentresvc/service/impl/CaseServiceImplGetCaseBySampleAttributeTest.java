@@ -11,12 +11,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -53,9 +51,9 @@ public class CaseServiceImplGetCaseBySampleAttributeTest extends CaseServiceImpl
   @Test
   public void testGetCaseByUprn_withNoInteractionHistory() throws Exception {
     mockCasesFromDb();
-    
+
     CaseDTO result = getCasesByUprn(false);
-    
+
     verifyDbCase(result, 0);
     assertEquals(0, result.getInteractions().size());
   }
@@ -67,11 +65,12 @@ public class CaseServiceImplGetCaseBySampleAttributeTest extends CaseServiceImpl
       mockRmGetCaseDTO(c.getId());
       mockCaseInteractionRepoFindByCaseId(c.getId());
     }
-    
+
     CaseDTO result = getCasesByUprn(true);
     verifyDbCase(result, 0);
-    
-    List<CaseInteractionDetailsDTO> expectedInteractions = FixtureHelper.loadPackageFixtures(CaseInteractionDetailsDTO[].class);
+
+    List<CaseInteractionDetailsDTO> expectedInteractions =
+        FixtureHelper.loadPackageFixtures(CaseInteractionDetailsDTO[].class);
     verifyInteractions(expectedInteractions, result.getInteractions());
   }
 

@@ -11,10 +11,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-import org.junit.jupiter.api.Test;
-
 import ma.glasnost.orika.MapperFacade;
+import org.junit.jupiter.api.Test;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;

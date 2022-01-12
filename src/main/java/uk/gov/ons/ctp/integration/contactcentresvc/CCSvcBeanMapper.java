@@ -6,16 +6,14 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
-import org.springframework.stereotype.Component;
-
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
+import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
+import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;

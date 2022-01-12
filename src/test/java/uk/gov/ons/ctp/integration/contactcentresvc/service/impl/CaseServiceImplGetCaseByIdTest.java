@@ -6,14 +6,12 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CAS
 
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -60,14 +58,15 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
 
     mockRmGetCaseDTO(CASE_ID_0);
     mockCaseInteractionRepoFindByCaseId(CASE_ID_0);
-    
+
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
     CaseDTO results = target.getCaseById(CASE_ID_0, requestParams);
 
     verifyCase(results, expectedCaseResult);
-    
-    List<CaseInteractionDetailsDTO> expectedInteractions = FixtureHelper.loadPackageFixtures(CaseInteractionDetailsDTO[].class);
+
+    List<CaseInteractionDetailsDTO> expectedInteractions =
+        FixtureHelper.loadPackageFixtures(CaseInteractionDetailsDTO[].class);
     verifyInteractions(expectedInteractions, results.getInteractions());
   }
 

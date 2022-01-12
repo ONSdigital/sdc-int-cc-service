@@ -8,13 +8,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -110,12 +108,13 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
     CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
     CaseDTO expectedCaseResult = createExpectedCaseDTO(caseFromDb);
     verifyCase(results, expectedCaseResult);
-    
+
     if (caseEvents) {
-      List<CaseInteractionDetailsDTO> expectedInteractions = FixtureHelper.loadPackageFixtures(CaseInteractionDetailsDTO[].class);
+      List<CaseInteractionDetailsDTO> expectedInteractions =
+          FixtureHelper.loadPackageFixtures(CaseInteractionDetailsDTO[].class);
       verifyInteractions(expectedInteractions, results.getInteractions());
     } else {
-      assertEquals(0, results.getInteractions().size());     
+      assertEquals(0, results.getInteractions().size());
     }
   }
 

@@ -15,9 +15,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.inject.Inject;
-
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
-
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
