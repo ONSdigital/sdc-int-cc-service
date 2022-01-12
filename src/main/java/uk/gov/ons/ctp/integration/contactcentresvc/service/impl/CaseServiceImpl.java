@@ -634,11 +634,6 @@ public class CaseServiceImpl implements CaseService {
     return caseServiceResponse;
   }
 
-  private List<CaseDTO> mapCaseToDtoList(List<Case> casesToReturn) {
-    List<CaseDTO> dtoList = mapper.mapAsList(casesToReturn, CaseDTO.class);
-    return dtoList;
-  }
-
   private void validateCaseRef(long caseRef) throws CTPException {
     if (!luhnChecker.isValid(Long.toString(caseRef))) {
       log.info("Luhn check failed for case Reference", kv("caseRef", caseRef));

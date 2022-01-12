@@ -29,7 +29,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 
 public class CCSvcBeanMapperTest {
 
@@ -121,8 +121,9 @@ public class CCSvcBeanMapperTest {
   }
 
   @Test
-  public void shouldMapCaseInteractionDTOToCaseInteraction() {
-    CaseInteractionDTO source = FixtureHelper.loadClassFixtures(CaseInteractionDTO[].class).get(0);
+  public void shouldMapCaseInteractionRequestDTOToCaseInteraction() {
+    CaseInteractionRequestDTO source =
+        FixtureHelper.loadClassFixtures(CaseInteractionRequestDTO[].class).get(0);
     CaseInteraction destination = mapperFacade.map(source, CaseInteraction.class);
 
     assertAll(

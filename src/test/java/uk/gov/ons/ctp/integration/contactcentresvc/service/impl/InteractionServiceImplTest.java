@@ -20,7 +20,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 
 @ExtendWith(MockitoExtension.class)
 public class InteractionServiceImplTest {
@@ -39,13 +39,13 @@ public class InteractionServiceImplTest {
 
   @Test
   public void saveInteraction() {
-    CaseInteractionDTO caseInteractionDTO =
-        FixtureHelper.loadClassFixtures(CaseInteractionDTO[].class).get(0);
+    CaseInteractionRequestDTO caseInteractionRequestDTO =
+        FixtureHelper.loadClassFixtures(CaseInteractionRequestDTO[].class).get(0);
 
-    interactionService.saveCaseInteraction(uuid, caseInteractionDTO);
+    interactionService.saveCaseInteraction(uuid, caseInteractionRequestDTO);
 
     CaseInteraction expectedInteraction =
-        mapperFacade.map(caseInteractionDTO, CaseInteraction.class);
+        mapperFacade.map(caseInteractionRequestDTO, CaseInteraction.class);
     expectedInteraction.setCcuser(User.builder().id(uuid).build());
     expectedInteraction.setCaseId(uuid);
 

@@ -22,7 +22,7 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
@@ -299,7 +299,7 @@ public class CaseEndpoint implements CTPEndpoint {
   @ResponseStatus(value = HttpStatus.OK)
   public ResponseEntity<ResponseDTO> acceptCaseInteraction(
       @PathVariable(value = "caseId") final UUID caseId,
-      @Valid @RequestBody CaseInteractionDTO requestBodyDTO)
+      @Valid @RequestBody CaseInteractionRequestDTO requestBodyDTO)
       throws CTPException {
 
     log.info(
@@ -324,13 +324,14 @@ public class CaseEndpoint implements CTPEndpoint {
     }
   }
 
-  private boolean validateInteractionType(CaseInteractionDTO caseInteractionDTO) {
-    if (caseInteractionDTO.getType().isExplicit()) {
-      if (!caseInteractionDTO.getType().getValidSubInteractions().isEmpty()) {
-        return caseInteractionDTO.getType().getValidSubInteractions().stream()
-            .anyMatch((t) -> t.equals(caseInteractionDTO.getSubtype()));
+  private boolean validateInteractionType(CaseInteractionRequestDTO caseInteractionRequestDTO) {
+    CaseInteractionType type = caseInteractionRequestDTO.getType();
+    CaseSubInteractionType subtype = caseInteractionRequestDTO.getSubtype();
+    if (type.isExplicit()) {
+      if (!type.getValidSubInteractions().isEmpty()) {
+        return type.getValidSubInteractions().stream().anyMatch((t) -> t.equals(subtype));
       } else {
-        return caseInteractionDTO.getSubtype() == null;
+        return subtype == null;
       }
     }
     return false;
@@ -339,8 +340,8 @@ public class CaseEndpoint implements CTPEndpoint {
   private void saveCaseInteraction(
       UUID caseId, CaseInteractionType type, CaseSubInteractionType subtype, String note) {
     log.info("Saving case interaction", kv("caseId", caseId));
-    CaseInteractionDTO dto =
-        CaseInteractionDTO.builder().type(type).subtype(subtype).note(note).build();
+    CaseInteractionRequestDTO dto =
+        CaseInteractionRequestDTO.builder().type(type).subtype(subtype).note(note).build();
     interactionService.saveCaseInteraction(caseId, dto);
   }
 }

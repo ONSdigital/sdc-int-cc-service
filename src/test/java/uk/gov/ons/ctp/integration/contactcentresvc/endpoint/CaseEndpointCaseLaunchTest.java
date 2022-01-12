@@ -30,7 +30,7 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 
@@ -48,8 +48,10 @@ public class CaseEndpointCaseLaunchTest {
 
   private UUID uuid = UUID.randomUUID();
 
-  private CaseInteractionDTO interactionDTO =
-      CaseInteractionDTO.builder().type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED).build();
+  private CaseInteractionRequestDTO interactionDTO =
+      CaseInteractionRequestDTO.builder()
+          .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED)
+          .build();
 
   /**
    * Set up of tests

@@ -29,7 +29,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -85,8 +85,8 @@ public final class CaseEndpointFulfilmentSMSTest {
     actions.andExpect(jsonPath("$.id", is(requestData.getCaseId().toString())));
     actions.andExpect(jsonPath("$.dateTime", is(RESPONSE_DATE_TIME)));
 
-    CaseInteractionDTO interactionDTO =
-        CaseInteractionDTO.builder()
+    CaseInteractionRequestDTO interactionDTO =
+        CaseInteractionRequestDTO.builder()
             .type(CaseInteractionType.FULFILMENT_REQUESTED)
             .subtype(CaseSubInteractionType.FULFILMENT_SMS)
             .note(requestData.getFulfilmentCode())
