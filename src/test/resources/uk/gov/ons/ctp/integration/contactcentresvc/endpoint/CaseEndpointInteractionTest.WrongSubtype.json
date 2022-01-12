@@ -1,0 +1,4 @@
+{
+  "type": "OUTBOUND_APPOINTMENT_CALL",
+  "subtype": "FULFILMENT_PRINT"
+}

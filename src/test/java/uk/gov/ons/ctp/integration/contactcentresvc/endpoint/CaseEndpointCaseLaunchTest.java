@@ -48,6 +48,9 @@ public class CaseEndpointCaseLaunchTest {
 
   private UUID uuid = UUID.randomUUID();
 
+  private CaseInteractionDTO interactionDTO =
+      CaseInteractionDTO.builder().type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED).build();
+
   /**
    * Set up of tests
    *
@@ -76,10 +79,6 @@ public class CaseEndpointCaseLaunchTest {
     String expectedUrl = "\"{\\\"url\\\": \\\"https://www.google.co.uk/search?q=FAKE\\\"}\"";
     assertEquals(expectedUrl, responseUrl);
 
-    CaseInteractionDTO interactionDTO =
-        CaseInteractionDTO.builder()
-            .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name())
-            .build();
     verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 
@@ -109,10 +108,7 @@ public class CaseEndpointCaseLaunchTest {
     actions
         .andExpect(status().isBadRequest())
         .andExpect(content().string(containsString("a message")));
-    CaseInteractionDTO interactionDTO =
-        CaseInteractionDTO.builder()
-            .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name())
-            .build();
+
     verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 
@@ -124,10 +120,6 @@ public class CaseEndpointCaseLaunchTest {
     actions
         .andExpect(status().isAccepted())
         .andExpect(content().string(containsString("a message")));
-    CaseInteractionDTO interactionDTO =
-        CaseInteractionDTO.builder()
-            .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name())
-            .build();
     verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 
@@ -139,10 +131,6 @@ public class CaseEndpointCaseLaunchTest {
     actions
         .andExpect(status().isIAmATeapot())
         .andExpect(content().string(containsString("SYSTEM_ERROR")));
-    CaseInteractionDTO interactionDTO =
-        CaseInteractionDTO.builder()
-            .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED.name())
-            .build();
     verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 }
