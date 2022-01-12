@@ -217,7 +217,7 @@ public class CaseServiceImpl implements CaseService {
         throw ex;
       }
     }
-    
+
     List<CaseDTO> cases = mapper.mapAsList(dbCases, CaseDTO.class);
 
     // Set interaction history for all cases
