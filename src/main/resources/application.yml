@@ -122,25 +122,7 @@ case-service-settings:
     connectTimeoutMillis: 0
     connectionRequestTimeoutMillis: 0
     socketTimeoutMillis: 0
-  # PMB update whitelist
   whitelisted-event-categories:
-      - FULFILMENT_REQUESTED
-      - FULFILMENT_CONFIRMED
-      - UNDELIVERED_MAIL_REPORTED
-      - RESPONDENT_AUTHENTICATED
-      - EQ_LAUNCHED
-      - RESPONSE_RECEIVED
-      - REFUSAL_RECEIVED
-      - UAC_UPDATED
-      - QUESTIONNAIRE_LINKED
-      - CASE_UPDATED
-      - CASE_CREATED
-      - ADDRESS_MODIFIED
-      - ADDRESS_NOT_VALID
-      - ADDRESS_TYPE_CHANGED
-      - FIELD_CASE_UPDATED
-      - SAMPLE_UNIT_VALIDATED
-      - PMB____delete_previous_entries
       - NEW_CASE
       - RECEIPT
       - REFUSAL

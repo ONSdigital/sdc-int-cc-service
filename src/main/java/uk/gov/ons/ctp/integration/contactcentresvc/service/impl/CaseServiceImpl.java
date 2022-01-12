@@ -217,9 +217,10 @@ public class CaseServiceImpl implements CaseService {
         throw ex;
       }
     }
+    
+    List<CaseDTO> cases = mapper.mapAsList(dbCases, CaseDTO.class);
 
-    List<CaseDTO> cases = mapCaseToDtoList(dbCases);
-
+    // Set interaction history for all cases
     for (CaseDTO caseDTO : cases) {
       List<CaseInteractionDetailsDTO> interactions =
           buildInteractionHistory(caseDTO, requestParamsDTO.getCaseEvents());
@@ -635,9 +636,6 @@ public class CaseServiceImpl implements CaseService {
 
   private List<CaseDTO> mapCaseToDtoList(List<Case> casesToReturn) {
     List<CaseDTO> dtoList = mapper.mapAsList(casesToReturn, CaseDTO.class);
-    // PMB    for (CaseDTO dto : dtoList) {
-    //      dto.setCaseEvents(Collections.emptyList());
-    //    }
     return dtoList;
   }
 

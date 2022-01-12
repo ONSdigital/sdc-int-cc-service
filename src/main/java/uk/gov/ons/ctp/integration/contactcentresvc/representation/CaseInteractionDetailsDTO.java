@@ -22,8 +22,7 @@ public class CaseInteractionDetailsDTO {
   public String note;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
-  LocalDateTime
-      createdDateTime; // PMB - check format with Rob. Also can this annotation be centralised
+  LocalDateTime createdDateTime;
 
   public String userName;
 }
