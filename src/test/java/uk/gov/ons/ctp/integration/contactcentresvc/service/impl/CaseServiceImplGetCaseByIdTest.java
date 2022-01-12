@@ -46,6 +46,7 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     CaseDTO results = target.getCaseById(CASE_ID_0, requestParams);
 
     verifyCase(results, expectedCaseResult);
+    assertEquals(0, results.getInteractions().size());
   }
 
   @Test

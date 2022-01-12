@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -10,16 +11,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDetailsDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
@@ -47,17 +51,28 @@ public class CaseServiceImplGetCaseBySampleAttributeTest extends CaseServiceImpl
   }
 
   @Test
-  public void testGetCaseByUprn_withCaseDetails() throws Exception {
+  public void testGetCaseByUprn_withNoInteractionHistory() throws Exception {
     mockCasesFromDb();
-    CaseDTO result = getCasesByUprn(true);
+    
+    CaseDTO result = getCasesByUprn(false);
+    
     verifyDbCase(result, 0);
+    assertEquals(0, result.getInteractions().size());
   }
 
   @Test
-  public void testGetCaseByUprn_withNoCaseDetails() throws Exception {
-    mockCasesFromDb();
-    CaseDTO result = getCasesByUprn(false);
+  public void testGetCaseByUprn_withInteractionHistory() throws Exception {
+    List<Case> cases = mockCasesFromDb();
+    for (Case c : cases) {
+      mockRmGetCaseDTO(c.getId());
+      mockCaseInteractionRepoFindByCaseId(c.getId());
+    }
+    
+    CaseDTO result = getCasesByUprn(true);
     verifyDbCase(result, 0);
+    
+    List<CaseInteractionDetailsDTO> expectedInteractions = FixtureHelper.loadPackageFixtures(CaseInteractionDetailsDTO[].class);
+    verifyInteractions(expectedInteractions, result.getInteractions());
   }
 
   @Test
@@ -80,18 +95,12 @@ public class CaseServiceImplGetCaseBySampleAttributeTest extends CaseServiceImpl
                 "uprn", String.valueOf(UPRN.getValue()), new CaseQueryRequestDTO(false)));
   }
 
-  @Test
-  public void testGetCaseByUprn() throws Exception {
-    mockCasesFromDb();
-    CaseDTO result = getCasesByUprn(true);
-    verifyDbCase(result, 0);
-  }
-
   // ---- helpers methods below ---
 
-  private void mockCasesFromDb() throws Exception {
+  private List<Case> mockCasesFromDb() throws Exception {
     when(caseDataClient.getCaseBySampleAttribute("uprn", String.valueOf(UPRN.getValue())))
         .thenReturn(casesFromDb);
+    return casesFromDb;
   }
 
   private void mockNothingInDb() throws Exception {

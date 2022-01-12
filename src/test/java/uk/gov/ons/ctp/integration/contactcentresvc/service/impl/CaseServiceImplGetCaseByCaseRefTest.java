@@ -8,16 +8,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDetailsDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
@@ -38,12 +41,12 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
   }
 
   @Test
-  public void testGetHouseholdCaseByCaseRef_withCaseDetails() throws Exception {
+  public void testGetHouseholdCaseByCaseRef_withInteractionHistory() throws Exception {
     doTestGetCaseByCaseRef(CASE_EVENTS_TRUE);
   }
 
   @Test
-  public void testGetHouseholdCaseByCaseRef_withNoCaseDetails() throws Exception {
+  public void testGetHouseholdCaseByCaseRef_withNoInteractionHistory() throws Exception {
     doTestGetCaseByCaseRef(CASE_EVENTS_FALSE);
   }
 
@@ -80,6 +83,8 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
   public void shouldReport404ForBlacklistedUPRN() throws Exception {
     Case caseFromDb = casesFromDatabase().get(0);
     mockGetCaseByRef(caseFromDb);
+    mockRmGetCaseDTO(caseFromDb.getId());
+    mockCaseInteractionRepoFindByCaseId(caseFromDb.getId());
 
     when(blacklistedUPRNBean.isUPRNBlacklisted(any())).thenReturn(true);
 
@@ -97,12 +102,21 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
     // Build results to be returned from search
     Case caseFromDb = casesFromDatabase().get(0);
     mockGetCaseByRef(caseFromDb);
+    mockRmGetCaseDTO(caseFromDb.getId());
+    mockCaseInteractionRepoFindByCaseId(caseFromDb.getId());
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
     CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
     CaseDTO expectedCaseResult = createExpectedCaseDTO(caseFromDb);
     verifyCase(results, expectedCaseResult);
+    
+    if (caseEvents) {
+      List<CaseInteractionDetailsDTO> expectedInteractions = FixtureHelper.loadPackageFixtures(CaseInteractionDetailsDTO[].class);
+      verifyInteractions(expectedInteractions, results.getInteractions());
+    } else {
+      assertEquals(0, results.getInteractions().size());     
+    }
   }
 
   private void mockGetCaseByRef(Case result) throws Exception {
