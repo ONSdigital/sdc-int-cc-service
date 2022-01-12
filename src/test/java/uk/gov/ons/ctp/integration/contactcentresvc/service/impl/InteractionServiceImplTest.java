@@ -18,11 +18,9 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 
 @ExtendWith(MockitoExtension.class)
 public class InteractionServiceImplTest {
@@ -59,6 +57,5 @@ public class InteractionServiceImplTest {
     assertEquals(expectedInteraction.getNote(), actualInteraction.getNote());
     assertEquals(expectedInteraction.getCaseId(), actualInteraction.getCaseId());
     assertEquals(expectedInteraction.getCcuser().getId(), actualInteraction.getCcuser().getId());
-
   }
 }

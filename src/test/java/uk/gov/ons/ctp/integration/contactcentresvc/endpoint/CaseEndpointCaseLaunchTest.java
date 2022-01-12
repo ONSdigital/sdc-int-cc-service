@@ -49,9 +49,7 @@ public class CaseEndpointCaseLaunchTest {
   private UUID uuid = UUID.randomUUID();
 
   private CaseInteractionDTO interactionDTO =
-      CaseInteractionDTO.builder()
-          .type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED)
-          .build();
+      CaseInteractionDTO.builder().type(CaseInteractionType.TELEPHONE_CAPTURE_STARTED).build();
 
   /**
    * Set up of tests
