@@ -30,5 +30,5 @@ public class CaseDTO {
 
   private Map<String, String> sampleSensitive;
 
-  private List<CaseInteractionDetailsDTO> interactions;
+  private List<CaseInteractionDTO> interactions;
 }

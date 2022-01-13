@@ -36,7 +36,7 @@ import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDetailsDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
@@ -188,8 +188,8 @@ public final class CaseEndpointGetCaseTest {
   }
 
   private CaseDTO createResponseCaseDTO() throws ParseException {
-    CaseInteractionDetailsDTO interactionDTO1 =
-        CaseInteractionDetailsDTO.builder()
+    CaseInteractionDTO interactionDTO1 =
+        CaseInteractionDTO.builder()
             .interaction(EVENT_CATEGORY)
             .note(EVENT_DESCRIPTION)
             .createdDateTime(LocalDateTime.now())

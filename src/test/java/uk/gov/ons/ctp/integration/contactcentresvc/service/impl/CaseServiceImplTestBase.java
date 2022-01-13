@@ -49,7 +49,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClie
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDetailsDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -113,14 +113,13 @@ public abstract class CaseServiceImplTestBase {
   }
 
   void verifyInteractions(
-      List<CaseInteractionDetailsDTO> expectedInteractions,
-      List<CaseInteractionDetailsDTO> actualInteractions) {
+      List<CaseInteractionDTO> expectedInteractions, List<CaseInteractionDTO> actualInteractions) {
 
     assertEquals(expectedInteractions.size(), actualInteractions.size());
 
     for (int i = 0; i < expectedInteractions.size(); i++) {
-      CaseInteractionDetailsDTO expected = expectedInteractions.get(0);
-      CaseInteractionDetailsDTO actual = actualInteractions.get(0);
+      CaseInteractionDTO expected = expectedInteractions.get(0);
+      CaseInteractionDTO actual = actualInteractions.get(0);
 
       assertEquals(expected, actual, "Checking index: " + i);
     }

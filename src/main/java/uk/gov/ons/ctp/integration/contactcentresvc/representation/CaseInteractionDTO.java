@@ -11,18 +11,18 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CaseInteractionDetailsDTO {
+public class CaseInteractionDTO {
 
-  public String interactionSource;
+  private String interactionSource;
 
-  public String interaction;
+  private String interaction;
 
-  public String subInteraction;
+  private String subInteraction;
 
-  public String note;
+  private String note;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
-  LocalDateTime createdDateTime;
+  private LocalDateTime createdDateTime;
 
-  public String userName;
+  private String userName;
 }

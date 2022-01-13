@@ -66,7 +66,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClie
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDetailsDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
@@ -187,7 +187,7 @@ public class CaseServiceImpl implements CaseService {
 
     CaseDTO caseServiceResponse = mapCaseToDto(caseRepoClient.getCaseById(caseId));
 
-    List<CaseInteractionDetailsDTO> interactions =
+    List<CaseInteractionDTO> interactions =
         buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
 
@@ -223,7 +223,7 @@ public class CaseServiceImpl implements CaseService {
 
     // Set interaction history for all cases
     for (CaseDTO caseDTO : cases) {
-      List<CaseInteractionDetailsDTO> interactions =
+      List<CaseInteractionDTO> interactions =
           buildInteractionHistory(caseDTO.getId(), requestParamsDTO.getCaseEvents());
       caseDTO.setInteractions(interactions);
     }
@@ -285,7 +285,7 @@ public class CaseServiceImpl implements CaseService {
     Case caseDetails = caseRepoClient.getCaseByCaseRef(caseRef);
     CaseDTO caseServiceResponse = mapCaseToDto(caseDetails);
 
-    List<CaseInteractionDetailsDTO> interactions =
+    List<CaseInteractionDTO> interactions =
         buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
 
@@ -426,9 +426,9 @@ public class CaseServiceImpl implements CaseService {
    * @param getCaseEvents boolean to indicate if the caller wants the case history.
    * @return a List of case interactions, or an empty list if the caller doesn't want history.
    */
-  private List<CaseInteractionDetailsDTO> buildInteractionHistory(
-      UUID caseId, Boolean getCaseEvents) throws CTPException {
-    List<CaseInteractionDetailsDTO> interactions = new ArrayList<>();
+  private List<CaseInteractionDTO> buildInteractionHistory(UUID caseId, Boolean getCaseEvents)
+      throws CTPException {
+    List<CaseInteractionDTO> interactions = new ArrayList<>();
 
     if (getCaseEvents) {
       // Get case and event history from RM
@@ -469,15 +469,14 @@ public class CaseServiceImpl implements CaseService {
               .collect(Collectors.toList());
 
       // Sort, so that newest interactions appear first
-      interactions.sort(
-          Comparator.comparing(CaseInteractionDetailsDTO::getCreatedDateTime).reversed());
+      interactions.sort(Comparator.comparing(CaseInteractionDTO::getCreatedDateTime).reversed());
     }
 
     return interactions;
   }
 
-  private CaseInteractionDetailsDTO createRmInteraction(EventDTO rmCaseEvent) {
-    return CaseInteractionDetailsDTO.builder()
+  private CaseInteractionDTO createRmInteraction(EventDTO rmCaseEvent) {
+    return CaseInteractionDTO.builder()
         .interactionSource("RM")
         .interaction(rmCaseEvent.getEventType())
         .subInteraction("")
@@ -487,8 +486,8 @@ public class CaseServiceImpl implements CaseService {
         .build();
   }
 
-  private CaseInteractionDetailsDTO createCcInteraction(CaseInteraction ccInteraction) {
-    return CaseInteractionDetailsDTO.builder()
+  private CaseInteractionDTO createCcInteraction(CaseInteraction ccInteraction) {
+    return CaseInteractionDTO.builder()
         .interactionSource("CC")
         .interaction(ccInteraction.getType().name())
         .subInteraction(ccInteraction.getSubtype() != null ? ccInteraction.getSubtype().name() : "")

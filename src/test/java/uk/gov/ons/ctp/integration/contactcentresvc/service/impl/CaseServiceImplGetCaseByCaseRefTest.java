@@ -20,7 +20,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDetailsDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
@@ -131,8 +131,8 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
     verifyCase(results, expectedCaseResult);
 
     if (caseEvents) {
-      List<CaseInteractionDetailsDTO> expectedInteractions =
-          FixtureHelper.loadPackageFixtures(CaseInteractionDetailsDTO[].class);
+      List<CaseInteractionDTO> expectedInteractions =
+          FixtureHelper.loadPackageFixtures(CaseInteractionDTO[].class);
       verifyInteractions(expectedInteractions, results.getInteractions());
     } else {
       assertEquals(0, results.getInteractions().size());
