@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
-<!-- quiet tests -->
-<configuration/>
+<configuration>
+
+  <appender name="TEMPFILE" class="ch.qos.logback.core.FileAppender">
+    <file>/tmp/unit-tests.log</file>
+    <append>false</append>
+    <encoder>
+      <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="TEMPFILE" />
+  </root>
+</configuration>
