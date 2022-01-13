@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -46,6 +48,25 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
   @Test
   public void testGetHouseholdCaseByCaseRef_withNoInteractionHistory() throws Exception {
     doTestGetCaseByCaseRef(CASE_EVENTS_FALSE);
+  }
+
+  @Test
+  public void testHandleErrorFromRM() throws Exception {
+    // Mock db case lookup
+    Case caseFromDb = casesFromDatabase().get(0);
+    mockGetCaseByRef(caseFromDb);
+
+    // Fetching case from RM is going to fail
+    mockRmGetCaseDTOFailure(CASE_ID_0, HttpStatus.NOT_FOUND);
+
+    // Run the request
+    CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
+    try {
+      target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
+      fail();
+    } catch (CTPException e) {
+      assertTrue(e.getMessage().contains("when calling RM"), e.getMessage());
+    }
   }
 
   private void rejectNonLuhn(long caseRef) {

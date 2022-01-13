@@ -25,6 +25,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.event.TopicType;
@@ -207,6 +210,14 @@ public abstract class CaseServiceImplTestBase {
     RmCaseDTO rmCaseDTO = FixtureHelper.loadPackageFixtures(RmCaseDTO[].class).get(0);
 
     lenient().when(caseServiceClient.getCaseById(id, true)).thenReturn(rmCaseDTO);
+  }
+
+  void mockRmGetCaseDTOFailure(UUID id, HttpStatus httpStatus) {
+    Exception causeRmFailure = new HttpServerErrorException(httpStatus, "It's gone wrong");
+    Exception rmException =
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown case", causeRmFailure);
+
+    when(caseServiceClient.getCaseById(id, true)).thenThrow(rmException);
   }
 
   void mockCaseInteractionRepoFindByCaseId(UUID id) {

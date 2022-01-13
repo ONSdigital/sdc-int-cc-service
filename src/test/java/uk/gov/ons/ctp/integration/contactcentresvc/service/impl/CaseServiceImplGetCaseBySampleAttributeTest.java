@@ -3,6 +3,8 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -92,6 +95,23 @@ public class CaseServiceImplGetCaseBySampleAttributeTest extends CaseServiceImpl
         () ->
             target.getCaseBySampleAttribute(
                 "uprn", String.valueOf(UPRN.getValue()), new CaseQueryRequestDTO(false)));
+  }
+
+  @Test
+  public void testGetCaseByUprn_rmFailure() throws Exception {
+    // Fetching case from RM is going to fail
+    List<Case> cases = mockCasesFromDb();
+    for (Case c : cases) {
+      mockRmGetCaseDTOFailure(c.getId(), HttpStatus.NOT_FOUND);
+    }
+
+    try {
+      target.getCaseBySampleAttribute(
+          "uprn", String.valueOf(UPRN.getValue()), new CaseQueryRequestDTO(true));
+      fail();
+    } catch (CTPException e) {
+      assertTrue(e.getMessage().contains("when calling RM"), e.getMessage());
+    }
   }
 
   // ---- helpers methods below ---

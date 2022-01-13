@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
 import java.util.List;
@@ -76,8 +77,27 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testHandleErrorFromRM() throws Exception {
+  public void testHandleErrorFromDatabase() throws Exception {
     doGetCaseByIdGetsError(CASE_ID_0);
+  }
+
+  @Test
+  public void testHandleErrorFromRM() throws Exception {
+    // Mock db case lookup
+    Case caze = casesFromDb().get(0);
+    mockGetCaseById(CASE_ID_0, caze);
+
+    // Fetching case from RM is going to fail
+    mockRmGetCaseDTOFailure(CASE_ID_0, HttpStatus.NOT_FOUND);
+
+    // Run the request
+    CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
+    try {
+      target.getCaseById(CASE_ID_0, requestParams);
+      fail();
+    } catch (CTPException e) {
+      assertTrue(e.getMessage().contains("when calling RM"), e.getMessage());
+    }
   }
 
   private List<Case> casesFromDb() {

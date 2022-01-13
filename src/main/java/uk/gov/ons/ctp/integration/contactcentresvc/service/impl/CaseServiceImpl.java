@@ -186,6 +186,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     CaseDTO caseServiceResponse = mapCaseToDto(caseRepoClient.getCaseById(caseId));
+
     List<CaseInteractionDetailsDTO> interactions =
         buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
@@ -442,10 +443,8 @@ public class CaseServiceImpl implements CaseService {
               kv("caseid", caseId),
               kv("status", cause.getStatusCode()),
               kv("message", cause.getMessage()));
-          if (cause.getStatusCode() == HttpStatus.BAD_REQUEST) {
-            throw new CTPException(
-                Fault.BAD_REQUEST, "Invalid request for case %s", caseId.toString());
-          }
+          throw new CTPException(
+              Fault.SYSTEM_ERROR, "Error detected when calling RM for case %s", caseId.toString());
         }
         throw ex;
       }
