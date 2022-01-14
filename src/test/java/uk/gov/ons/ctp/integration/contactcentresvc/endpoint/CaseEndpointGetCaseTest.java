@@ -11,7 +11,7 @@ import static uk.gov.ons.ctp.common.MvcHelper.getJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +36,7 @@ import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseEventDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
@@ -59,7 +59,6 @@ public final class CaseEndpointGetCaseTest {
 
   private static final String EVENT_CATEGORY = "REFUSAL";
   private static final String EVENT_DESCRIPTION = "Event for testcase";
-  private static final String EVENT_DATE_TIME = "2017-02-11T16:32:11.863Z";
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 
@@ -189,13 +188,11 @@ public final class CaseEndpointGetCaseTest {
   }
 
   private CaseDTO createResponseCaseDTO() throws ParseException {
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-
-    CaseEventDTO caseEventDTO1 =
-        CaseEventDTO.builder()
-            .description(EVENT_DESCRIPTION)
-            .category(EVENT_CATEGORY)
-            .createdDateTime(formatter.parse(EVENT_DATE_TIME))
+    CaseInteractionDTO interactionDTO1 =
+        CaseInteractionDTO.builder()
+            .interaction(EVENT_CATEGORY)
+            .note(EVENT_DESCRIPTION)
+            .createdDateTime(LocalDateTime.now())
             .build();
 
     Map<String, Object> fakeSample = new HashMap<>();
@@ -210,7 +207,7 @@ public final class CaseEndpointGetCaseTest {
         .id(UUID.fromString(CASE_UUID_STRING))
         .caseRef(CASE_REF)
         .sample(fakeSample)
-        .caseEvents(Arrays.asList(caseEventDTO1))
+        .interactions(Arrays.asList(interactionDTO1))
         .build();
   }
 
@@ -224,9 +221,8 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(jsonPath("$.sample.region", is(REGION.name())));
     actions.andExpect(jsonPath("$.sample.postcode", is(POSTCODE)));
 
-    actions.andExpect(jsonPath("$.caseEvents[0].category", is(EVENT_CATEGORY)));
-    actions.andExpect(jsonPath("$.caseEvents[0].description", is(EVENT_DESCRIPTION)));
-    actions.andExpect(jsonPath("$.caseEvents[0].createdDateTime", is(EVENT_DATE_TIME)));
+    actions.andExpect(jsonPath("$.interactions[0].interaction", is(EVENT_CATEGORY)));
+    actions.andExpect(jsonPath("$.interactions[0].note", is(EVENT_DESCRIPTION)));
   }
 
   private void verifyStructureOfMultiResultsActions(ResultActions actions) throws Exception {
@@ -241,9 +237,8 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(jsonPath("$[0].sample.region", is(REGION.name())));
     actions.andExpect(jsonPath("$[0].sample.postcode", is(POSTCODE)));
 
-    actions.andExpect(jsonPath("$[0].caseEvents[0].category", is(EVENT_CATEGORY)));
-    actions.andExpect(jsonPath("$[0].caseEvents[0].description", is(EVENT_DESCRIPTION)));
-    actions.andExpect(jsonPath("$[0].caseEvents[0].createdDateTime", is(EVENT_DATE_TIME)));
+    actions.andExpect(jsonPath("$[0].interactions[0].interaction", is(EVENT_CATEGORY)));
+    actions.andExpect(jsonPath("$[0].interactions[0].note", is(EVENT_DESCRIPTION)));
 
     actions.andExpect(jsonPath("$[1].id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$[1].caseRef", is(CASE_REF)));
@@ -254,8 +249,7 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(jsonPath("$[1].sample.region", is(REGION.name())));
     actions.andExpect(jsonPath("$[1].sample.postcode", is(POSTCODE)));
 
-    actions.andExpect(jsonPath("$[1].caseEvents[0].category", is(EVENT_CATEGORY)));
-    actions.andExpect(jsonPath("$[1].caseEvents[0].description", is(EVENT_DESCRIPTION)));
-    actions.andExpect(jsonPath("$[1].caseEvents[0].createdDateTime", is(EVENT_DATE_TIME)));
+    actions.andExpect(jsonPath("$[1].interactions[0].interaction", is(EVENT_CATEGORY)));
+    actions.andExpect(jsonPath("$[1].interactions[0].note", is(EVENT_DESCRIPTION)));
   }
 }

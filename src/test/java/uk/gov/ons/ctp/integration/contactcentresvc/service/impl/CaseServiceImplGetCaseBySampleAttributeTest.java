@@ -1,7 +1,10 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -14,12 +17,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
@@ -47,17 +52,29 @@ public class CaseServiceImplGetCaseBySampleAttributeTest extends CaseServiceImpl
   }
 
   @Test
-  public void testGetCaseByUprn_withCaseDetails() throws Exception {
+  public void testGetCaseByUprn_withNoInteractionHistory() throws Exception {
     mockCasesFromDb();
-    CaseDTO result = getCasesByUprn(true);
+
+    CaseDTO result = getCasesByUprn(false);
+
     verifyDbCase(result, 0);
+    assertEquals(0, result.getInteractions().size());
   }
 
   @Test
-  public void testGetCaseByUprn_withNoCaseDetails() throws Exception {
-    mockCasesFromDb();
-    CaseDTO result = getCasesByUprn(false);
+  public void testGetCaseByUprn_withInteractionHistory() throws Exception {
+    List<Case> cases = mockCasesFromDb();
+    for (Case c : cases) {
+      mockRmGetCaseDTO(c.getId());
+      mockCaseInteractionRepoFindByCaseId(c.getId());
+    }
+
+    CaseDTO result = getCasesByUprn(true);
     verifyDbCase(result, 0);
+
+    List<CaseInteractionDTO> expectedInteractions =
+        FixtureHelper.loadPackageFixtures(CaseInteractionDTO[].class);
+    verifyInteractions(expectedInteractions, result.getInteractions());
   }
 
   @Test
@@ -81,17 +98,28 @@ public class CaseServiceImplGetCaseBySampleAttributeTest extends CaseServiceImpl
   }
 
   @Test
-  public void testGetCaseByUprn() throws Exception {
-    mockCasesFromDb();
-    CaseDTO result = getCasesByUprn(true);
-    verifyDbCase(result, 0);
+  public void testGetCaseByUprn_rmFailure() throws Exception {
+    // Fetching case from RM is going to fail
+    List<Case> cases = mockCasesFromDb();
+    for (Case c : cases) {
+      mockRmGetCaseDTOFailure(c.getId(), HttpStatus.NOT_FOUND);
+    }
+
+    try {
+      target.getCaseBySampleAttribute(
+          "uprn", String.valueOf(UPRN.getValue()), new CaseQueryRequestDTO(true));
+      fail();
+    } catch (CTPException e) {
+      assertTrue(e.getMessage().contains("when calling RM"), e.getMessage());
+    }
   }
 
   // ---- helpers methods below ---
 
-  private void mockCasesFromDb() throws Exception {
+  private List<Case> mockCasesFromDb() throws Exception {
     when(caseDataClient.getCaseBySampleAttribute("uprn", String.valueOf(UPRN.getValue())))
         .thenReturn(casesFromDb);
+    return casesFromDb;
   }
 
   private void mockNothingInDb() throws Exception {

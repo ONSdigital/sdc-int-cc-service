@@ -1,0 +1,24 @@
+[
+  {
+    "id": "d6cd8c4b-77d6-48b5-a20b-35ed6bbfb24a",
+    "caseId": "b7565b5e-1396-4965-91a2-918c0d3642ed",
+    "ccuser": {
+      "name": "Sarah Chapman"
+    },
+    "createdDateTime": "2022-01-07T14:01:18.85408Z",
+    "type": "MANUAL_CASE_VIEW",
+    "subtype": null,
+    "note": null
+  },
+  {
+    "id": "ba05bd67-b64b-4dea-8059-109ed97688d7",
+    "caseId": "b7565b5e-1396-4965-91a2-918c0d3642ed",
+    "ccuser": {
+      "name": "Jimmy Jones"
+    },
+    "createdDateTime": "2022-01-11T14:01:18.85408Z",
+    "type": "OUTBOUND_MANUAL_CALL",
+    "subtype": "CALL_ANSWERED",
+    "note": "Call back on Wednesday afternoon"
+  }
+]
