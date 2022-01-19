@@ -7,5 +7,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
+
   User findByName(String name);
 }

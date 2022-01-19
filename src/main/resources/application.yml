@@ -21,6 +21,8 @@ surveyName: CENSUS
 public-pgp-key-1 : classpath:pgp/key1.asc
 public-pgp-key-2 : classpath:pgp/key2.asc
 
+
+
 management:
   endpoints:
     enabled-by-default: false
@@ -39,11 +41,12 @@ management:
     tags:
       application: ContactCentreService
       pod: ${HOSTNAME}
-    export:
-      stackdriver:
-        project-id: ${GOOGLE_CLOUD_PROJECT}
-        enabled: true
-        step: PT2M
+# TODO PJW
+#    export:
+#      stackdriver:
+#        project-id: ${GOOGLE_CLOUD_PROJECT}
+#        enabled: true
+#        step: PT2M
 
 server:
   port: 8171

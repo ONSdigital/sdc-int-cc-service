@@ -9,3 +9,7 @@ case-service-settings:
   rest-client-config:
     port: 8162        
 
+dummy-user:
+  allowed: false
+  identity: Fred
+  super-user-identity: Marge
