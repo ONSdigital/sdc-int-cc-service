@@ -1,1 +1,1 @@
-ALTER TABLE collection_case DROP CONSTRAINT case_ref;
+ALTER TABLE collection_case DROP CONSTRAINT collection_case_case_ref_key;
