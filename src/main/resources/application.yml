@@ -41,12 +41,11 @@ management:
     tags:
       application: ContactCentreService
       pod: ${HOSTNAME}
-# TODO PJW
-#    export:
-#      stackdriver:
-#        project-id: ${GOOGLE_CLOUD_PROJECT}
-#        enabled: true
-#        step: PT2M
+    export:
+      stackdriver:
+        project-id: ${GOOGLE_CLOUD_PROJECT}
+        enabled: true
+        step: PT2M
 
 server:
   port: 8171
@@ -126,22 +125,36 @@ case-service-settings:
     connectionRequestTimeoutMillis: 0
     socketTimeoutMillis: 0
   whitelisted-event-categories:
+      - NEW_CASE
+      - RECEIPT
+      - REFUSAL
+      - INVALID_CASE
+      - EQ_LAUNCH
+      - UAC_AUTHENTICATION
+      - PRINT_FULFILMENT
+      - EXPORT_FILE
+      - TELEPHONE_CAPTURE
+      - DEACTIVATE_UAC
+      - UPDATE_SAMPLE
+      - UPDATE_SAMPLE_SENSITIVE
+      - SMS_FULFILMENT
+      - ACTION_RULE_SMS_REQUEST
+      - EMAIL_FULFILMENT
+      - ACTION_RULE_EMAIL_REQUEST
+      - MANUAL_CASE_VIEW
+      - SCHEDULED_CASE_VIEW
+      - SOFT_APPOINTMENT_MADE
+      - HARD_APPOINTMENT_MADE
+      - REFUSAL_REQUESTED
+      - CASE_UPDATE_REQUESTED
+      - CONTACT_UPDATE_REQUESTED
+      - DATA_REMOVAL_REQUESTED
+      - TELEPHONE_CAPTURE_STARTED
       - FULFILMENT_REQUESTED
-      - FULFILMENT_CONFIRMED
-      - UNDELIVERED_MAIL_REPORTED
-      - RESPONDENT_AUTHENTICATED
-      - EQ_LAUNCHED
-      - RESPONSE_RECEIVED
-      - REFUSAL_RECEIVED
-      - UAC_UPDATED
-      - QUESTIONNAIRE_LINKED
-      - CASE_UPDATED
-      - CASE_CREATED
-      - ADDRESS_MODIFIED
-      - ADDRESS_NOT_VALID
-      - ADDRESS_TYPE_CHANGED
-      - FIELD_CASE_UPDATED
-      - SAMPLE_UNIT_VALIDATED
+      - CASE_NOTE_ADDED
+      - OUTBOUND_APPOINTMENT_CALL
+      - OUTBOUND_PRIORITISED_CALL
+      - OUTBOUND_MANUAL_CALL
   
 fulfilments:
   blacklisted-codes:

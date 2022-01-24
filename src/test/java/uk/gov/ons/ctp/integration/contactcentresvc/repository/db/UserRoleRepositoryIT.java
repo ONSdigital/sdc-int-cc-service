@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -9,13 +8,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
@@ -50,7 +53,9 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   public void shouldFindUser() {
     txOps.createUser("Fred", FRED_UUID);
 
-    User fred = userRepo.findByName("Fred");
+    Optional<User> fredOpt = userRepo.findByName("Fred");
+    assert(fredOpt.isPresent());
+    User fred = fredOpt.get();
     assertEquals("Fred", fred.getName());
     assertEquals(FRED_UUID, fred.getId());
     assertTrue(fred.isActive());
@@ -59,16 +64,16 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   @Test
   public void shouldCreateUser() {
     txOps.createUser("Joe", JOE_UUID);
-    assertEquals("Joe", userRepo.findByName("Joe").getName());
+    assertEquals("Joe", userRepo.findByName("Joe").get().getName());
     assertEquals("Joe", userRepo.getById(JOE_UUID).getName());
   }
 
   @Test
   public void shouldDeleteUser() {
     txOps.createUser("Joe", JOE_UUID);
-    User joe = userRepo.findByName("Joe");
-    assertNotNull(joe);
-    userRepo.delete(joe);
+    Optional<User> joe = userRepo.findByName("Joe");
+    assert(joe.isPresent());
+    userRepo.delete(joe.get());
     assertNull(userRepo.findByName("Joe"));
   }
 
@@ -201,9 +206,9 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     }
 
     public void verifyJoeTheShopkeeper() {
-      User joe = userRepo.findByName("Joe");
+      Optional<User> joe = userRepo.findByName("Joe");
       Role shopkeeper = roleRepo.findByName("shopkeeper");
-      assertEquals(shopkeeper, joe.getUserRoles().get(0));
+      assertEquals(shopkeeper, joe.get().getUserRoles().get(0));
       assertEquals(joe, shopkeeper.getUsers().get(0));
     }
 
@@ -215,9 +220,9 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     }
 
     public void verifyJoeTheShopkeeperAdmin() {
-      User joe = userRepo.findByName("Joe");
+      Optional<User> joe = userRepo.findByName("Joe");
       Role shopkeeper = roleRepo.findByName("shopkeeper");
-      assertEquals(shopkeeper, joe.getAdminRoles().get(0));
+      assertEquals(shopkeeper, joe.get().getAdminRoles().get(0));
       assertEquals(joe, shopkeeper.getAdmins().get(0));
     }
   }

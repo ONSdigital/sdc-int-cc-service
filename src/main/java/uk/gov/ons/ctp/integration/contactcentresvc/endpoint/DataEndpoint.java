@@ -27,32 +27,9 @@ public class DataEndpoint {
   @Autowired RoleRepository roleRepo;
   @Autowired PermissionRepository permRepo;
 
-  //  @GetMapping("/case")
-  //  public ResponseEntity<List<Case>> findCases() {
-  //    List<Case> result = caseRepo.findAll();
-  //    return ResponseEntity.ok(result);
-  //  }
-  //
-  //  @GetMapping("/user")
-  //  public ResponseEntity<List<User>> findUsers() {
-  //    List<User> result = userRepo.findAll();
-  //    return ResponseEntity.ok(result);
-  //  }
-  //
-  //  @PostMapping("/user/{user}")
-  //  public ResponseEntity<String> addUser(@PathVariable("user") String userName) {
-  //    User user = User.builder().name(userName).id(UUID.randomUUID()).build();
-  //    userRepo.save(user);
-  //    return ResponseEntity.ok("Added user: " + userName);
-  //  }
-  //
-  //  @DeleteMapping("/user/{user}")
-  //  public ResponseEntity<String> deleteUser(@PathVariable("user") String userName) {
-  //    User user = userRepo.findByName(userName);
-  //    userRepo.delete(user);
-  //    return ResponseEntity.ok("Deleted user: " + userName);
-  //  }
-  //
+  
+
+  
   //  @Transactional
   //  @GetMapping("/user/{user}/role")
   //  public ResponseEntity<List<String>> findUserRole(@PathVariable("user") String userName) {

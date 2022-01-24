@@ -25,12 +25,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientService;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
@@ -38,11 +42,14 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.CaseServiceSettings;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
@@ -58,6 +65,8 @@ public abstract class CaseServiceImplTestBase {
   @Mock CaseRepositoryClient caseDataClient;
 
   @Mock UacRepository uacRepo;
+
+  @Mock CaseInteractionRepository caseInteractionRepo;
 
   @Mock EqLaunchService eqLaunchService;
 
@@ -97,8 +106,23 @@ public abstract class CaseServiceImplTestBase {
   void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
-    assertEquals(expectedCaseResult, results);
+    assertEquals(expectedCaseResult.getSample(), results.getSample());
+    assertEquals(expectedCaseResult.getSampleSensitive(), results.getSampleSensitive());
+
     verifyEventNotSent();
+  }
+
+  void verifyInteractions(
+      List<CaseInteractionDTO> expectedInteractions, List<CaseInteractionDTO> actualInteractions) {
+
+    assertEquals(expectedInteractions.size(), actualInteractions.size());
+
+    for (int i = 0; i < expectedInteractions.size(); i++) {
+      CaseInteractionDTO expected = expectedInteractions.get(0);
+      CaseInteractionDTO actual = actualInteractions.get(0);
+
+      assertEquals(expected, actual, "Checking index: " + i);
+    }
   }
 
   CaseDTO createExpectedCaseDTO(Case caseFromDb) {
@@ -109,7 +133,7 @@ public abstract class CaseServiceImplTestBase {
             .caseRef(caseFromDb.getCaseRef())
             .sample(new HashMap<>(caseFromDb.getSample()))
             .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))
-            .caseEvents(Collections.emptyList())
+            .interactions(Collections.emptyList())
             .build();
     return expectedCaseResult;
   }
@@ -181,9 +205,36 @@ public abstract class CaseServiceImplTestBase {
     doThrow(ex).when(caseDataClient).getCaseById(eq(id));
   }
 
+  void mockRmGetCaseDTO(UUID id) {
+    RmCaseDTO rmCaseDTO = FixtureHelper.loadPackageFixtures(RmCaseDTO[].class).get(0);
+
+    lenient().when(caseServiceClient.getCaseById(id, true)).thenReturn(rmCaseDTO);
+  }
+
+  void mockRmGetCaseDTOFailure(UUID id, HttpStatus httpStatus) {
+    Exception causeRmFailure = new HttpServerErrorException(httpStatus, "It's gone wrong");
+    Exception rmException =
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown case", causeRmFailure);
+
+    when(caseServiceClient.getCaseById(id, true)).thenThrow(rmException);
+  }
+
+  void mockCaseInteractionRepoFindByCaseId(UUID id) {
+    List<CaseInteraction> caseInteractions =
+        FixtureHelper.loadPackageFixtures(CaseInteraction[].class);
+
+    lenient().when(caseInteractionRepo.findByCaseId(id)).thenReturn(caseInteractions);
+  }
+
   void mockCaseEventWhiteList() {
     CaseServiceSettings caseServiceSettings = new CaseServiceSettings();
-    Set<String> whitelistedSet = Set.of("CASE_UPDATE");
+    Set<String> whitelistedSet =
+        Set.of(
+            "NEW_CASE",
+            "PRINT_FULFILMENT",
+            "SMS_FULFILMENT",
+            "MANUAL_CASE_VIEW",
+            "OUTBOUND_MANUAL_CALL");
     caseServiceSettings.setWhitelistedEventCategories(whitelistedSet);
     lenient().when(appConfig.getCaseServiceSettings()).thenReturn(caseServiceSettings);
   }
