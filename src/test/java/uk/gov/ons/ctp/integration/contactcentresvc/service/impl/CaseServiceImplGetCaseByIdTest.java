@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,6 +99,39 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
     } catch (CTPException e) {
       assertTrue(e.getMessage().contains("when calling RM"), e.getMessage());
     }
+  }
+
+  @Test
+  public void testNotLaunchableBeforeFirstWave() throws Exception {
+    checkCanLaunchFlag(2088, 2089, 100, false);
+  }
+
+  @Test
+  public void testCanLaunchableCase() throws Exception {
+    checkCanLaunchFlag(1970, 2189, 999999, true);
+  }
+
+  @Test
+  public void testNotLaunchableAfterLastWave() throws Exception {
+    checkCanLaunchFlag(2000, 2001, 122, false);
+  }
+
+  private void checkCanLaunchFlag(
+      int startYear, int endYear, int waveLength, boolean expectedCanLaunch)
+      throws Exception, CTPException {
+    // Build results to be returned from search
+    Case caze = casesFromDb().get(0);
+    caze.getCollectionExercise().setStartDate(LocalDateTime.of(startYear, 1, 1, 1, 1, 1));
+    caze.getCollectionExercise().setEndDate(LocalDateTime.of(endYear, 1, 1, 1, 1, 1));
+    caze.getCollectionExercise().setWaveLength(waveLength);
+
+    mockGetCaseById(CASE_ID_0, caze);
+
+    // Run the request
+    CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(false);
+    CaseDTO results = target.getCaseById(CASE_ID_0, requestParams);
+
+    assertEquals(expectedCanLaunch, results.isCanLaunch());
   }
 
   private List<Case> casesFromDb() {

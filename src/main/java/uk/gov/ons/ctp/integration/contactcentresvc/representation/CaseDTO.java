@@ -31,4 +31,7 @@ public class CaseDTO {
   private Map<String, String> sampleSensitive;
 
   private List<CaseInteractionDTO> interactions;
+
+  // Set to true if this can be lauched. ie. the current date is within a wave
+  private boolean canLaunch;
 }

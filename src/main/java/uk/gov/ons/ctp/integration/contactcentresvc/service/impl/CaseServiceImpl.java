@@ -185,8 +185,11 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Fetching case details by caseId: {}", caseId);
     }
 
-    CaseDTO caseServiceResponse = mapCaseToDto(caseRepoClient.getCaseById(caseId));
+    // Find the case
+    Case caseDb = caseRepoClient.getCaseById(caseId);
+    CaseDTO caseServiceResponse = mapCaseToDto(caseDb);
 
+    // Attach history of case interactions
     List<CaseInteractionDTO> interactions =
         buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
@@ -194,6 +197,10 @@ public class CaseServiceImpl implements CaseService {
     if (log.isDebugEnabled()) {
       log.debug("Returning case details for caseId", kv("caseId", caseId));
     }
+
+    // Indicate to UI if this case can be launched
+    Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDb);
+    caseServiceResponse.setCanLaunch(waveNumOpt.isPresent());
 
     return caseServiceResponse;
   }
@@ -282,16 +289,18 @@ public class CaseServiceImpl implements CaseService {
 
     validateCaseRef(caseRef);
 
+    // Find the case
     Case caseDetails = caseRepoClient.getCaseByCaseRef(caseRef);
     CaseDTO caseServiceResponse = mapCaseToDto(caseDetails);
 
+    // Attach history of case interactions
     List<CaseInteractionDTO> interactions =
         buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
 
-    if (log.isDebugEnabled()) {
-      log.debug("Returning case details for case reference", kv("caseRef", caseRef));
-    }
+    // Indicate to UI if this case can be launched
+    Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDetails);
+    caseServiceResponse.setCanLaunch(waveNumOpt.isPresent());
 
     // Return a 404 if the UPRN is blacklisted
     UniquePropertyReferenceNumber foundUprn =
@@ -312,6 +321,10 @@ public class CaseServiceImpl implements CaseService {
               + " with UPRN "
               + foundUprn.getValue()
               + " is IVR restricted");
+    }
+
+    if (log.isDebugEnabled()) {
+      log.debug("Returning case details for case reference", kv("caseRef", caseRef));
     }
 
     return caseServiceResponse;
@@ -387,12 +400,8 @@ public class CaseServiceImpl implements CaseService {
     TelephoneCaptureDTO newQuestionnaireIdDto = getNewQidForCase(caseDetails);
     String questionnaireId = newQuestionnaireIdDto.getQId();
 
-    // But RM do not provide a collectionInstrumentUrl so we will use the collex
-    // and calc the current wave
-    CollectionExercise collex = caseDetails.getCollectionExercise();
-    // the assumption is that the calc should be strict and not allow launch if a wave is no longer
-    // operational
-    Optional<Integer> waveNumOpt = collex.calcWaveForDate(LocalDateTime.now(), true);
+    // Calculate current wave
+    Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDetails);
     if (waveNumOpt.isEmpty()) {
       throw new CTPException(
           Fault.BAD_REQUEST, "The CollectionExercise for this Case has no current wave");
@@ -414,6 +423,16 @@ public class CaseServiceImpl implements CaseService {
     String eqUrl = createLaunchUrl(caseDetails, requestParamsDTO, uac);
     publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;
+  }
+
+  private Optional<Integer> getWaveNumberForCase(Case caseDetails) {
+
+    CollectionExercise collex = caseDetails.getCollectionExercise();
+
+    // Assume 'strict' date range for wave calculation
+    Optional<Integer> waveNumber = collex.calcWaveForDate(LocalDateTime.now(), true);
+
+    return waveNumber;
   }
 
   /*
