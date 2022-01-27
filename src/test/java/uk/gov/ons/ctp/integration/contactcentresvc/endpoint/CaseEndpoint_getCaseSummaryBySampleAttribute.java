@@ -11,7 +11,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +22,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
@@ -91,11 +89,11 @@ public final class CaseEndpoint_getCaseSummaryBySampleAttribute {
 
   private CaseSummaryDTO createCaseSummaryDTO() throws ParseException {
     return CaseSummaryDTO.builder()
-            .id(UUID.fromString(CASE_UUID_STRING))
-            .caseRef(CASE_REF)
-            .surveyName(SURVEY_NAME)
-            .surveyType(SURVEY_TYPE)
-            .build();
+        .id(UUID.fromString(CASE_UUID_STRING))
+        .caseRef(CASE_REF)
+        .surveyName(SURVEY_NAME)
+        .surveyType(SURVEY_TYPE)
+        .build();
   }
 
   private void verifyStructureOfMultiResultsActions(ResultActions actions) throws Exception {
@@ -105,7 +103,7 @@ public final class CaseEndpoint_getCaseSummaryBySampleAttribute {
     actions.andExpect(jsonPath("$[0].caseRef", is(CASE_REF)));
     actions.andExpect(jsonPath("$[0].surveyName", is(SURVEY_NAME)));
     actions.andExpect(jsonPath("$[0].surveyType", is(SURVEY_TYPE)));
-    
+
     actions.andExpect(jsonPath("$[1].id", is(CASE_UUID_STRING)));
     actions.andExpect(jsonPath("$[1].caseRef", is(CASE_REF)));
     actions.andExpect(jsonPath("$[1].surveyName", is(SURVEY_NAME)));

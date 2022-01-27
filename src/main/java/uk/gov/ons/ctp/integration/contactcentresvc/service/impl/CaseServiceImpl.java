@@ -206,8 +206,7 @@ public class CaseServiceImpl {
   public List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(String key, String value)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.debug(
-          "Fetching latest case summary details", kv("key", key), kv("value", value));
+      log.debug("Fetching latest case summary details", kv("key", key), kv("value", value));
     }
 
     // Find matching cases
