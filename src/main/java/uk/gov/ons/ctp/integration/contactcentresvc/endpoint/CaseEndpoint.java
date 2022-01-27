@@ -2,11 +2,11 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
-import io.micrometer.core.annotation.Timed;
 import java.util.List;
 import java.util.UUID;
+
 import javax.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.micrometer.core.annotation.Timed;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -24,14 +27,15 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
 
 /** The REST controller for ContactCentreSvc find cases end points */
 @Slf4j
@@ -39,7 +43,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 @RestController
 @RequestMapping(value = "/cases", produces = "application/json")
 public class CaseEndpoint implements CTPEndpoint {
-  private CaseService caseService;
+  private CaseServiceImpl caseService;
   private InteractionService interactionService;
 
   /**
@@ -49,7 +53,7 @@ public class CaseEndpoint implements CTPEndpoint {
    *     endpoint.
    */
   @Autowired
-  public CaseEndpoint(final CaseService caseService, final InteractionService interactionService) {
+  public CaseEndpoint(final CaseServiceImpl caseService, final InteractionService interactionService) {
     this.caseService = caseService;
     this.interactionService = interactionService;
   }
@@ -77,30 +81,24 @@ public class CaseEndpoint implements CTPEndpoint {
   }
 
   /**
-   * the GET end point to get a Case by a Sample attribute
+   * the GET end point to search for cases by a Sample attribute.
    *
-   * @param key the attribute key to search
-   * @param value the attribute value to search
-   * @param requestParamsDTO contains request params
-   * @return the case
-   * @throws CTPException something went wrong
+   * @param key the attribute key to search.
+   * @param value the attribute value to search.
+   * @return a summary of matching cases.
+   * @throws CTPException something went wrong.
    */
   @RequestMapping(value = "/attribute/{key}/{value}", method = RequestMethod.GET)
-  public ResponseEntity<List<CaseDTO>> getCaseByAttribute(
+  public ResponseEntity<List<CaseSummaryDTO>> getCaseBySampleAttribute(
       @PathVariable("key") String key,
-      @PathVariable("value") String value,
-      @Valid CaseQueryRequestDTO requestParamsDTO)
+      @PathVariable("value") String value)
       throws CTPException {
     log.info(
         "Entering GET getCaseBySampleAttribute",
         kv("key", key),
-        kv("value", value),
-        kv("requestParams", requestParamsDTO));
+        kv("value", value));
 
-    List<CaseDTO> results = caseService.getCaseBySampleAttribute(key, value, requestParamsDTO);
-
-    // TODO Interactions will possibly be recorded once it's determined how this endpoint will be
-    // used
+    List<CaseSummaryDTO> results = caseService.getCaseSummaryBySampleAttribute(key, value);
 
     return ResponseEntity.ok(results);
   }
