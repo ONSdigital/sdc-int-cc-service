@@ -426,10 +426,12 @@ public class CaseServiceImpl implements CaseService {
   }
 
   private Optional<Integer> getWaveNumberForCase(Case caseDetails) {
-
+    // But RM do not provide a collectionInstrumentUrl so we will use the collex
+    // and calc the current wave
     CollectionExercise collex = caseDetails.getCollectionExercise();
 
-    // Assume 'strict' date range for wave calculation
+    // The assumption is that the calc should be strict and not allow launch if a wave is no longer
+    // operational
     Optional<Integer> waveNumber = collex.calcWaveForDate(LocalDateTime.now(), true);
 
     return waveNumber;
