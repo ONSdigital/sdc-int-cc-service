@@ -23,8 +23,8 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
 
 /** Contact Centre Endpoint Unit tests. This class tests the POST case interaction endpoint */
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +34,7 @@ public class CaseEndpointInteractionTest {
 
   @Mock CaseServiceImpl caseService;
 
-  @Mock InteractionService interactionService;
+  @Mock InteractionServiceImpl interactionService;
 
   private MockMvc mockMvc;
 

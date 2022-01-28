@@ -27,8 +27,8 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
 
 /**
  * Contact Centre Data Endpoint Unit tests. This class tests the get case endpoints, covering gets
@@ -46,7 +46,7 @@ public final class CaseEndpoint_getCaseSummaryBySampleAttribute {
 
   @Mock CaseServiceImpl caseService;
 
-  @Mock InteractionService interactionService;
+  @Mock InteractionServiceImpl interactionService;
 
   private MockMvc mockMvc;
 

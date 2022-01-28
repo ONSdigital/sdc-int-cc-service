@@ -31,8 +31,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
 
 /** The REST controller for ContactCentreSvc find cases end points */
 @Slf4j
@@ -41,7 +41,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
 @RequestMapping(value = "/cases", produces = "application/json")
 public class CaseEndpoint implements CTPEndpoint {
   private CaseServiceImpl caseService;
-  private InteractionService interactionService;
+  private InteractionServiceImpl interactionService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
@@ -51,7 +51,7 @@ public class CaseEndpoint implements CTPEndpoint {
    */
   @Autowired
   public CaseEndpoint(
-      final CaseServiceImpl caseService, final InteractionService interactionService) {
+      final CaseServiceImpl caseService, final InteractionServiceImpl interactionService) {
     this.caseService = caseService;
     this.interactionService = interactionService;
   }

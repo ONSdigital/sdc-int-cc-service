@@ -15,7 +15,7 @@ import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentsRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.FulfilmentsServiceImpl;
 
 /** The REST controller for ContactCentreSvc Fulfilments end points */
 @Slf4j
@@ -23,7 +23,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
 @RestController
 @RequestMapping(value = "/", produces = "application/json")
 public final class FulfilmentsEndpoint implements CTPEndpoint {
-  private FulfilmentsService fulfilmentsService;
+  private FulfilmentsServiceImpl fulfilmentsService;
 
   /**
    * Constructor for ContactCentre Fulfilment endpoint
@@ -32,7 +32,7 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
    *     endpoint.
    */
   @Autowired
-  public FulfilmentsEndpoint(final FulfilmentsService fulfilmentsService) {
+  public FulfilmentsEndpoint(final FulfilmentsServiceImpl fulfilmentsService) {
     this.fulfilmentsService = fulfilmentsService;
   }
 

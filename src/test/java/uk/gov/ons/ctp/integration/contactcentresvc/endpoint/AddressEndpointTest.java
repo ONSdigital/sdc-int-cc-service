@@ -29,7 +29,7 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressServiceImpl;
 
 /** Contact Centre Data endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -52,7 +52,7 @@ public final class AddressEndpointTest {
 
   @InjectMocks private AddressEndpoint addressEndpoint;
 
-  @Mock AddressService addressService;
+  @Mock AddressServiceImpl addressService;
 
   private MockMvc mockMvc;
 
