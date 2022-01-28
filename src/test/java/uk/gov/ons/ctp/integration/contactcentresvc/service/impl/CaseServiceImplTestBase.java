@@ -108,6 +108,7 @@ public abstract class CaseServiceImplTestBase {
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
     assertEquals(expectedCaseResult.getSample(), results.getSample());
     assertEquals(expectedCaseResult.getSampleSensitive(), results.getSampleSensitive());
+    assertEquals(expectedCaseResult.isCanLaunch(), results.isCanLaunch());
 
     verifyEventNotSent();
   }
@@ -134,6 +135,7 @@ public abstract class CaseServiceImplTestBase {
             .sample(new HashMap<>(caseFromDb.getSample()))
             .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))
             .interactions(Collections.emptyList())
+            .canLaunch(false)
             .build();
     return expectedCaseResult;
   }
