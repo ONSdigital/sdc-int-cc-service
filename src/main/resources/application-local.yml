@@ -5,6 +5,11 @@ spring:
         project-id: local
         emulator-host: localhost:9808
 
+logging:
+  level:
+    uk.gov.ons.ctp: INFO
+    org.springframework: INFO
+
 case-service-settings:
   rest-client-config:
     port: 8162        

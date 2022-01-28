@@ -74,7 +74,7 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     Optional<User> joe = userRepo.findByName("Joe");
     assert(joe.isPresent());
     userRepo.delete(joe.get());
-    assertNull(userRepo.findByName("Joe"));
+    assert(userRepo.findByName("Joe").isEmpty());
   }
 
   @Test
@@ -209,7 +209,7 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
       Optional<User> joe = userRepo.findByName("Joe");
       Role shopkeeper = roleRepo.findByName("shopkeeper");
       assertEquals(shopkeeper, joe.get().getUserRoles().get(0));
-      assertEquals(joe, shopkeeper.getUsers().get(0));
+      assertEquals(joe.get(), shopkeeper.getUsers().get(0));
     }
 
     public void createJoeTheShopkeeperAdmin() {
@@ -223,7 +223,7 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
       Optional<User> joe = userRepo.findByName("Joe");
       Role shopkeeper = roleRepo.findByName("shopkeeper");
       assertEquals(shopkeeper, joe.get().getAdminRoles().get(0));
-      assertEquals(joe, shopkeeper.getAdmins().get(0));
+      assertEquals(joe.get(), shopkeeper.getAdmins().get(0));
     }
   }
 }
