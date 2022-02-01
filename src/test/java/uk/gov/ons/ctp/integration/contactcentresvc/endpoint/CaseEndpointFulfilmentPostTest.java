@@ -32,8 +32,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -41,9 +41,9 @@ public final class CaseEndpointFulfilmentPostTest {
 
   private static final String RESPONSE_DATE_TIME = "2019-03-28T11:56:40.705Z";
 
-  @Mock private CaseServiceImpl caseService;
+  @Mock private CaseService caseService;
 
-  @Mock InteractionServiceImpl interactionService;
+  @Mock InteractionService interactionService;
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 

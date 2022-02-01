@@ -15,7 +15,7 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
 
 /** The REST endpoint controller for ContactCentreSvc Details */
 @Slf4j
@@ -23,7 +23,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressServiceIm
 @RestController
 @RequestMapping(value = "/addresses", produces = "application/json")
 public final class AddressEndpoint implements CTPEndpoint {
-  private AddressServiceImpl addressService;
+  private AddressService addressService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
@@ -32,7 +32,7 @@ public final class AddressEndpoint implements CTPEndpoint {
    *     searches.
    */
   @Autowired
-  public AddressEndpoint(final AddressServiceImpl addressService) {
+  public AddressEndpoint(final AddressService addressService) {
     this.addressService = addressService;
   }
 

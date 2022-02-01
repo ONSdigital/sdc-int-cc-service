@@ -22,7 +22,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ProductGroup;
 
 @Service
 @Validated()
-public class FulfilmentsServiceImpl {
+public class FulfilmentsService {
   @Autowired ProductReference productReference;
 
   @Autowired private MapperFacade mapperFacade;

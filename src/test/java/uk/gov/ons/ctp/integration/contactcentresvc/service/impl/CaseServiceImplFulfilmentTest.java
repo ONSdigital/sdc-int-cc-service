@@ -52,7 +52,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
   private static final String BLACK_LISTED_FULFILMENT_CODE = "P_TB_TBBEN1";
 
-  @Mock private InteractionServiceImpl interactionService;
+  @Mock private InteractionService interactionService;
 
   @BeforeEach
   public void setup() {

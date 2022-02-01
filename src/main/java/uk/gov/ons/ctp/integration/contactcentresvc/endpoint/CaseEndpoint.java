@@ -2,11 +2,11 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
-import io.micrometer.core.annotation.Timed;
 import java.util.List;
 import java.util.UUID;
+
 import javax.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.micrometer.core.annotation.Timed;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -32,8 +35,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
 /** The REST controller for ContactCentreSvc find cases end points */
 @Slf4j
@@ -41,8 +44,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServi
 @RestController
 @RequestMapping(value = "/cases", produces = "application/json")
 public class CaseEndpoint implements CTPEndpoint {
-  private CaseServiceImpl caseService;
-  private InteractionServiceImpl interactionService;
+  private CaseService caseService;
+  private InteractionService interactionService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
@@ -52,7 +55,7 @@ public class CaseEndpoint implements CTPEndpoint {
    */
   @Autowired
   public CaseEndpoint(
-      final CaseServiceImpl caseService, final InteractionServiceImpl interactionService) {
+      final CaseService caseService, final InteractionService interactionService) {
     this.caseService = caseService;
     this.interactionService = interactionService;
   }

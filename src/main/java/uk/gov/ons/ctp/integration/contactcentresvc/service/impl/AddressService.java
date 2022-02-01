@@ -33,12 +33,12 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryR
 @Slf4j
 @Service
 @Validated
-public class AddressServiceImpl {
+public class AddressService {
   private static final String HISTORICAL_ADDRESS_STATUS = "8";
 
   @Autowired private AddressServiceClientServiceImpl addressServiceClient;
 
-  @Autowired private CaseServiceImpl caseService;
+  @Autowired private CaseService caseService;
 
   public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest)
       throws CTPException {

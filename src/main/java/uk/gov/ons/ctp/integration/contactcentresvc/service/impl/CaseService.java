@@ -84,7 +84,7 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 @Slf4j
 @Service
-public class CaseServiceImpl {
+public class CaseService {
 
   @Autowired private AppConfig appConfig;
 

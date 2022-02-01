@@ -35,8 +35,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryR
 public class AddressServiceImplTest {
 
   @Mock AddressServiceClientServiceImpl addressClientService;
-  @InjectMocks AddressServiceImpl addressService;
-  @Mock CaseServiceImpl caseServiceImpl;
+  @InjectMocks AddressService addressService;
+  @Mock CaseService caseServiceImpl;
 
   private void mockSearchByAddress(String qualifier, int expectedNumAddresses) {
     AddressIndexSearchResultsDTO results =
