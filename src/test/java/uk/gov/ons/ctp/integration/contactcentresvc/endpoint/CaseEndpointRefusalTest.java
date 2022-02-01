@@ -32,8 +32,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -48,9 +48,9 @@ public final class CaseEndpointRefusalTest {
   private CaseInteractionRequestDTO interactionDTO =
       CaseInteractionRequestDTO.builder().type(CaseInteractionType.REFUSAL_REQUESTED).build();
 
-  @Mock private CaseService caseService;
+  @Mock private CaseServiceImpl caseService;
 
-  @Mock private InteractionService interactionService;
+  @Mock private InteractionServiceImpl interactionService;
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 

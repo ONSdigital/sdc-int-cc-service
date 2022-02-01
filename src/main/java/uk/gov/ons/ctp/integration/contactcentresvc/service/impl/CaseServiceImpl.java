@@ -75,14 +75,13 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 @Slf4j
 @Service
-public class CaseServiceImpl implements CaseService {
+public class CaseServiceImpl {
 
   @Autowired private AppConfig appConfig;
 
@@ -178,7 +177,6 @@ public class CaseServiceImpl implements CaseService {
     return response;
   }
 
-  @Override
   public CaseDTO getCaseById(final UUID caseId, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
@@ -205,45 +203,10 @@ public class CaseServiceImpl implements CaseService {
     return caseServiceResponse;
   }
 
-  @Override
-  public List<CaseDTO> getCaseBySampleAttribute(
-      String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException {
-    if (log.isDebugEnabled()) {
-      log.debug("Fetching latest case details by {}", key, kv("key", key), kv("value", value));
-    }
-
-    List<Case> dbCases;
-    try {
-      dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
-    } catch (CTPException ex) {
-      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
-        log.info(
-            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
-        return Collections.emptyList();
-      } else {
-        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
-        throw ex;
-      }
-    }
-
-    List<CaseDTO> cases = mapper.mapAsList(dbCases, CaseDTO.class);
-
-    // Set interaction history for all cases
-    for (CaseDTO caseDTO : cases) {
-      List<CaseInteractionDTO> interactions =
-          buildInteractionHistory(caseDTO.getId(), requestParamsDTO.getCaseEvents());
-      caseDTO.setInteractions(interactions);
-    }
-
-    return cases;
-  }
-
-  @Override
   public List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(String key, String value)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.debug(
-          "Fetching latest case summary details by {}", key, kv("key", key), kv("value", value));
+      log.debug("Fetching latest case summary details", kv("key", key), kv("value", value));
     }
 
     // Find matching cases
@@ -280,7 +243,6 @@ public class CaseServiceImpl implements CaseService {
     return caseSummaries;
   }
 
-  @Override
   public CaseDTO getCaseByCaseReference(final long caseRef, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
@@ -330,7 +292,6 @@ public class CaseServiceImpl implements CaseService {
     return caseServiceResponse;
   }
 
-  @Override
   public CaseDTO modifyCase(ModifyCaseRequestDTO modifyRequestDTO) throws CTPException {
     validateCompatibleEstabAndCaseType(
         modifyRequestDTO.getCaseType(), modifyRequestDTO.getEstabType());
@@ -351,7 +312,6 @@ public class CaseServiceImpl implements CaseService {
     return response;
   }
 
-  @Override
   public ResponseDTO reportRefusal(UUID caseId, RefusalRequestDTO requestBodyDTO)
       throws CTPException {
     String reportedDateTime = "null";
@@ -384,7 +344,6 @@ public class CaseServiceImpl implements CaseService {
    * providing the UI with an endpoint that pre validates the ability to launch which would enable
    * it to disable the launch button in the first place.
    */
-  @Override
   public String getLaunchURLForCaseId(final UUID caseId, LaunchRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {

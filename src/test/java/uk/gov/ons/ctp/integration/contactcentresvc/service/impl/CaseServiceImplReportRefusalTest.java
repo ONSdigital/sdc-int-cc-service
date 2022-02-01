@@ -20,7 +20,6 @@ import uk.gov.ons.ctp.common.event.model.RefusalDetails;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpDecrypt;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncryptTest;
 

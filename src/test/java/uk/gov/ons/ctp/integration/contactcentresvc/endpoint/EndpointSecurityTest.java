@@ -42,9 +42,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
 
 @ActiveProfiles("test-cc")
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -54,9 +54,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 @MockBean(name = "collectionExerciseEventInbound", value = PubSubInboundChannelAdapter.class)
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
 public class EndpointSecurityTest {
-  @MockBean CaseService caseService;
-  @MockBean InteractionService interactionService;
-  @MockBean AddressService addressService;
+  @MockBean CaseServiceImpl caseService;
+  @MockBean InteractionServiceImpl interactionService;
+  @MockBean AddressServiceImpl addressService;
 
   TestRestTemplate restTemplate;
   URL base;

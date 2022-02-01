@@ -28,7 +28,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.Fulfilments;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ProductGroup;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
 
 @ExtendWith(MockitoExtension.class)
 public class FulfilmentServiceImplTest {
@@ -39,7 +38,7 @@ public class FulfilmentServiceImplTest {
 
   @Spy private MapperFacade mapperFacade = new CCSvcBeanMapper();
 
-  @InjectMocks FulfilmentsService fulfilmentService = new FulfilmentsServiceImpl();
+  @InjectMocks FulfilmentsServiceImpl fulfilmentService = new FulfilmentsServiceImpl();
 
   private static final String BLACK_LISTED_FULFILMENT_CODE = "P_TB_TBBEN1";
 

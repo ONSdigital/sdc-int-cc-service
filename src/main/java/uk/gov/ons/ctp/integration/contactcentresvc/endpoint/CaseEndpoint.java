@@ -24,14 +24,15 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
 
 /** The REST controller for ContactCentreSvc find cases end points */
 @Slf4j
@@ -39,8 +40,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 @RestController
 @RequestMapping(value = "/cases", produces = "application/json")
 public class CaseEndpoint implements CTPEndpoint {
-  private CaseService caseService;
-  private InteractionService interactionService;
+  private CaseServiceImpl caseService;
+  private InteractionServiceImpl interactionService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
@@ -49,7 +50,8 @@ public class CaseEndpoint implements CTPEndpoint {
    *     endpoint.
    */
   @Autowired
-  public CaseEndpoint(final CaseService caseService, final InteractionService interactionService) {
+  public CaseEndpoint(
+      final CaseServiceImpl caseService, final InteractionServiceImpl interactionService) {
     this.caseService = caseService;
     this.interactionService = interactionService;
   }
@@ -77,30 +79,19 @@ public class CaseEndpoint implements CTPEndpoint {
   }
 
   /**
-   * the GET end point to get a Case by a Sample attribute
+   * the GET end point to search for cases by a Sample attribute.
    *
-   * @param key the attribute key to search
-   * @param value the attribute value to search
-   * @param requestParamsDTO contains request params
-   * @return the case
-   * @throws CTPException something went wrong
+   * @param key the attribute key to search.
+   * @param value the attribute value to search.
+   * @return a summary of matching cases.
+   * @throws CTPException something went wrong.
    */
   @RequestMapping(value = "/attribute/{key}/{value}", method = RequestMethod.GET)
-  public ResponseEntity<List<CaseDTO>> getCaseByAttribute(
-      @PathVariable("key") String key,
-      @PathVariable("value") String value,
-      @Valid CaseQueryRequestDTO requestParamsDTO)
-      throws CTPException {
-    log.info(
-        "Entering GET getCaseBySampleAttribute",
-        kv("key", key),
-        kv("value", value),
-        kv("requestParams", requestParamsDTO));
+  public ResponseEntity<List<CaseSummaryDTO>> getCaseBySampleAttribute(
+      @PathVariable("key") String key, @PathVariable("value") String value) throws CTPException {
+    log.info("Entering GET getCaseBySampleAttribute", kv("key", key), kv("value", value));
 
-    List<CaseDTO> results = caseService.getCaseBySampleAttribute(key, value, requestParamsDTO);
-
-    // TODO Interactions will possibly be recorded once it's determined how this endpoint will be
-    // used
+    List<CaseSummaryDTO> results = caseService.getCaseSummaryBySampleAttribute(key, value);
 
     return ResponseEntity.ok(results);
   }

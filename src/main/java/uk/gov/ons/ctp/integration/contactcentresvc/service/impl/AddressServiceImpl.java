@@ -25,8 +25,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRe
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /**
  * A ContactCentreDataService implementation which encapsulates all business logic for getting
@@ -35,14 +33,13 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 @Slf4j
 @Service
 @Validated
-public class AddressServiceImpl implements AddressService {
+public class AddressServiceImpl {
   private static final String HISTORICAL_ADDRESS_STATUS = "8";
 
   @Autowired private AddressServiceClientServiceImpl addressServiceClient;
 
-  @Autowired private CaseService caseService;
+  @Autowired private CaseServiceImpl caseService;
 
-  @Override
   public AddressQueryResponseDTO addressQuery(AddressQueryRequestDTO addressQueryRequest)
       throws CTPException {
     if (log.isDebugEnabled()) {
@@ -64,7 +61,6 @@ public class AddressServiceImpl implements AddressService {
     return results;
   }
 
-  @Override
   public AddressQueryResponseDTO postcodeQuery(PostcodeQueryRequestDTO postcodeQueryRequest)
       throws CTPException {
     if (log.isDebugEnabled()) {
@@ -86,7 +82,6 @@ public class AddressServiceImpl implements AddressService {
     return results;
   }
 
-  @Override
   public AddressIndexAddressCompositeDTO uprnQuery(long uprn) throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Running search by uprn", kv("uprnQueryRequest", uprn));

@@ -24,7 +24,7 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.FulfilmentsServiceImpl;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -40,7 +40,7 @@ public final class FulfilmentsEndpointTest {
   private static final String FULFILMENT_CODE_2 = "P2";
   private static final String DESCRIPTION_2 = "Another fulfilment";
 
-  @Mock private FulfilmentsService fulfilmentService;
+  @Mock private FulfilmentsServiceImpl fulfilmentService;
 
   @InjectMocks private FulfilmentsEndpoint fulfilmentsEndpoint;
 

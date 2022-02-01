@@ -41,7 +41,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /**
  * Unit Test {@link CaseService#fulfilmentRequestByPost(PostalFulfilmentRequestDTO)
