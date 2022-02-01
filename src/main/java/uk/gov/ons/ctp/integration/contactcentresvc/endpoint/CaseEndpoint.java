@@ -24,6 +24,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -314,6 +315,21 @@ public class CaseEndpoint implements CTPEndpoint {
     }
     ResponseDTO response = interactionService.saveCaseInteraction(caseId, requestBodyDTO);
     return ResponseEntity.ok(response);
+  }
+
+  @RequestMapping(value = "/{caseId}/enrol", method = RequestMethod.POST)
+  @ResponseStatus(value = HttpStatus.OK)
+  public ResponseEntity<CaseDTO> enrol(
+      @PathVariable(value = "caseId") final UUID caseId,
+      @Valid @RequestBody EnrolmentRequestDTO enrolmentRequestDTO)
+      throws CTPException {
+
+    log.info(
+        "Entering POST enrolment", kv("caseId", caseId), kv("requestBody", enrolmentRequestDTO));
+
+    CaseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
+
+    return ResponseEntity.ok(caseDTO);
   }
 
   private void validateMatchingCaseId(UUID caseId, UUID dtoCaseId) throws CTPException {
