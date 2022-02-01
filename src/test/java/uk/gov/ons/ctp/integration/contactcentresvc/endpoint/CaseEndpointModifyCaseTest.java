@@ -32,16 +32,16 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
 
 /** Test the PUT endpoint to modify case details. */
 @ExtendWith(MockitoExtension.class)
 public final class CaseEndpointModifyCaseTest {
 
-  @Mock private CaseService caseService;
+  @Mock private CaseServiceImpl caseService;
 
-  @Mock InteractionService interactionService;
+  @Mock InteractionServiceImpl interactionService;
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 

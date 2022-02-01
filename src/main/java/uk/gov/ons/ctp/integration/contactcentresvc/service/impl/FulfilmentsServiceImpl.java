@@ -19,18 +19,16 @@ import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ProductGroup;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
 
 @Service
 @Validated()
-public class FulfilmentsServiceImpl implements FulfilmentsService {
+public class FulfilmentsServiceImpl {
   @Autowired ProductReference productReference;
 
   @Autowired private MapperFacade mapperFacade;
 
   @Autowired private AppConfig appConfig;
 
-  @Override
   public List<FulfilmentDTO> getFulfilments(
       CaseType caseType,
       Region region,
