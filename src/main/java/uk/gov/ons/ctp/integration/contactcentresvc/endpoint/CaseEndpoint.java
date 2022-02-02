@@ -71,9 +71,9 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering GET getCaseById", kv("pathParam", caseId), kv("requestParams", requestParamsDTO));
 
-    saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
-
     CaseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
+
+    saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
     return ResponseEntity.ok(result);
   }
