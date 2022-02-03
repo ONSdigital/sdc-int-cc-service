@@ -110,8 +110,6 @@ public class CaseEndpointCaseLaunchTest {
     actions
         .andExpect(status().isBadRequest())
         .andExpect(content().string(containsString("a message")));
-
-    verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 
   @Test
@@ -122,7 +120,6 @@ public class CaseEndpointCaseLaunchTest {
     actions
         .andExpect(status().isAccepted())
         .andExpect(content().string(containsString("a message")));
-    verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 
   @Test
@@ -133,6 +130,5 @@ public class CaseEndpointCaseLaunchTest {
     actions
         .andExpect(status().isIAmATeapot())
         .andExpect(content().string(containsString("SYSTEM_ERROR")));
-    verify(interactionService, times(1)).saveCaseInteraction(uuid, interactionDTO);
   }
 }
