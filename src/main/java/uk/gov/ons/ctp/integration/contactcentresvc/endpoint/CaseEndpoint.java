@@ -71,9 +71,9 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering GET getCaseById", kv("pathParam", caseId), kv("requestParams", requestParamsDTO));
 
-    saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
-
     CaseResponseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
+
+    saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
     return ResponseEntity.ok(result);
   }
@@ -140,9 +140,9 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestParams", requestParamsDTO));
 
-    saveCaseInteraction(caseId, CaseInteractionType.TELEPHONE_CAPTURE_STARTED, null, null);
-
     String launchURL = caseService.getLaunchURLForCaseId(caseId, requestParamsDTO);
+
+    saveCaseInteraction(caseId, CaseInteractionType.TELEPHONE_CAPTURE_STARTED, null, null);
 
     return ResponseEntity.ok(launchURL);
   }
@@ -169,6 +169,8 @@ public class CaseEndpoint implements CTPEndpoint {
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
+    ResponseDTO response = caseService.fulfilmentRequestByPost(requestBodyDTO);
+
     saveCaseInteraction(
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED,
@@ -176,7 +178,6 @@ public class CaseEndpoint implements CTPEndpoint {
         // TODO should be the fulfilment description when refactored to use new survey products
         requestBodyDTO.getFulfilmentCode());
 
-    ResponseDTO response = caseService.fulfilmentRequestByPost(requestBodyDTO);
     return ResponseEntity.ok(response);
   }
 
@@ -202,14 +203,14 @@ public class CaseEndpoint implements CTPEndpoint {
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
+    ResponseDTO response = caseService.fulfilmentRequestBySMS(requestBodyDTO);
+
     saveCaseInteraction(
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED,
         CaseSubInteractionType.FULFILMENT_SMS,
         // TODO should be the fulfilment description when refactored to use new survey products
         requestBodyDTO.getFulfilmentCode());
-
-    ResponseDTO response = caseService.fulfilmentRequestBySMS(requestBodyDTO);
 
     return ResponseEntity.ok(response);
   }
@@ -238,13 +239,13 @@ public class CaseEndpoint implements CTPEndpoint {
           Fault.BAD_REQUEST, "reportRefusal caseId in path and body must be identical");
     }
 
+    ResponseDTO response = caseService.reportRefusal(caseId, requestBodyDTO);
+
     saveCaseInteraction(
         caseId,
         CaseInteractionType.REFUSAL_REQUESTED,
         CaseSubInteractionType.valueOf("REFUSAL_" + requestBodyDTO.getReason().name()),
         requestBodyDTO.getReason().name());
-
-    ResponseDTO response = caseService.reportRefusal(caseId, requestBodyDTO);
 
     log.debug("Exiting reportRefusal", kv("caseId", caseId));
 
@@ -271,10 +272,12 @@ public class CaseEndpoint implements CTPEndpoint {
       throws CTPException {
     log.info("Entering PUT modifyCase", kv("requestBody", requestBodyDTO));
 
+    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
+
+    CaseResponseDTO result = caseService.modifyCase(requestBodyDTO);
+
     saveCaseInteraction(caseId, CaseInteractionType.CASE_UPDATE_REQUESTED, null, null);
 
-    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
-    CaseResponseDTO result = caseService.modifyCase(requestBodyDTO);
     return ResponseEntity.ok(result);
   }
 
@@ -303,7 +306,9 @@ public class CaseEndpoint implements CTPEndpoint {
       log.warn(message, kv("caseId", caseId));
       throw new CTPException(Fault.VALIDATION_FAILED, message);
     }
+
     ResponseDTO response = interactionService.saveCaseInteraction(caseId, requestBodyDTO);
+
     return ResponseEntity.ok(response);
   }
 
