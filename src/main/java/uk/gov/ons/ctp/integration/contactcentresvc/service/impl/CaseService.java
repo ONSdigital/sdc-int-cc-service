@@ -16,9 +16,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.inject.Inject;
-
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +28,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
-
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -249,8 +246,8 @@ public class CaseService {
     return caseSummaries;
   }
 
-  public CaseResponseDTO getCaseByCaseReference(final long caseRef, CaseQueryRequestDTO requestParamsDTO)
-      throws CTPException {
+  public CaseResponseDTO getCaseByCaseReference(
+      final long caseRef, CaseQueryRequestDTO requestParamsDTO) throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Fetching case details by case reference", kv("caseRef", caseRef));
     }
@@ -390,7 +387,8 @@ public class CaseService {
     return eqUrl;
   }
 
-  public CaseResponseDTO enrol(UUID caseId, EnrolmentRequestDTO enrolmentRequestDTO) throws CTPException {
+  public CaseResponseDTO enrol(UUID caseId, EnrolmentRequestDTO enrolmentRequestDTO)
+      throws CTPException {
 
     // Read parent case from db
     Case existingCase = caseRepoClient.getCaseById(caseId);
@@ -693,7 +691,10 @@ public class CaseService {
 
   // TODO : FLEXIBLE CASE - this assumes that modifications are address related
   private void prepareModificationResponse(
-      CaseResponseDTO response, ModifyCaseRequestDTO modifyRequestDTO, UUID caseId, String caseRef) {
+      CaseResponseDTO response,
+      ModifyCaseRequestDTO modifyRequestDTO,
+      UUID caseId,
+      String caseRef) {
     response.setId(caseId);
     response.setCaseRef(caseRef);
     response

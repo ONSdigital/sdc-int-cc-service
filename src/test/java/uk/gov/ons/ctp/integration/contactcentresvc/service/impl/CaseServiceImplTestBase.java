@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
+import ma.glasnost.orika.MapperFacade;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -28,8 +28,6 @@ import org.mockito.Spy;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.server.ResponseStatusException;
-
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
@@ -135,7 +133,7 @@ public abstract class CaseServiceImplTestBase {
   CaseResponseDTO createExpectedCaseResponseDTO(Case caseFromDb) {
 
     Survey survey = caseFromDb.getCollectionExercise().getSurvey();
-    
+
     CaseResponseDTO expectedCaseResult =
         CaseResponseDTO.builder()
             .id(caseFromDb.getId())
