@@ -6,6 +6,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.converter.BidirectionalConverter;
@@ -14,6 +15,7 @@ import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
 import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;
@@ -97,7 +99,25 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     factory.classMap(CaseInteractionRequestDTO.class, CaseInteraction.class).byDefault().register();
     factory.classMap(RmCaseDTO.class, Case.class).byDefault().register();
-    factory.classMap(CaseDTO.class, Case.class).byDefault().register();
+
+    factory
+        .classMap(CaseDTO.class, Case.class)
+        .field("collectionExerciseId", "collectionExercise.id")
+        .field("surveyId", "collectionExercise.survey.id")
+        .customize(
+            new CustomMapper<CaseDTO, Case>() {
+              @Override
+              public void mapBtoA(Case a, CaseDTO b, MappingContext mappingContext) {
+                // Work out survey type
+                Survey survey = a.getCollectionExercise().getSurvey();
+                if (survey != null) {
+                  String sampleDefinitionUrl = survey.getSampleDefinitionUrl();
+                  b.setSurveyType(SurveyType.fromSampleDefinitionUrl(sampleDefinitionUrl));
+                }
+              }
+            })
+        .byDefault()
+        .register();
 
     factory
         .classMap(NewCasePayloadContent.class, CaseDTO.class)
