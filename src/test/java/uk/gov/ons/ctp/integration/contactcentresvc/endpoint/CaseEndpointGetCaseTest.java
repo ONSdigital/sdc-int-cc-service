@@ -47,7 +47,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServi
 public final class CaseEndpointGetCaseTest {
 
   private static final String CASE_UUID_STRING = "dca05c61-8b95-46af-8f73-36f0dc2cbf5e";
-  private static final String COLLECTION_EXERCISE_UUID_STRING = "1975f5e9-dda3-4ee7-b94d-6620cd6ce767";
+  private static final String COLLECTION_EXERCISE_UUID_STRING =
+      "1975f5e9-dda3-4ee7-b94d-6620cd6ce767";
   private static final String SURVEY_UUID_STRING = "703ae229-72af-4ae1-b44c-63b216180922";
   private static final String SURVEY_TYPE = "SOCIAL";
   private static final String CASE_REF = "123456";
