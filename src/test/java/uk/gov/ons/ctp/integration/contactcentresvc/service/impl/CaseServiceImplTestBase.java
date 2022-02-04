@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import ma.glasnost.orika.MapperFacade;
+
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -28,7 +28,10 @@ import org.mockito.Spy;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.server.ResponseStatusException;
+
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
@@ -44,12 +47,13 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
@@ -102,8 +106,11 @@ public abstract class CaseServiceImplTestBase {
     verify(eventTransfer, never()).send(any(), any());
   }
 
-  void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
+  void verifyCase(CaseResponseDTO results, CaseResponseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
+    assertEquals(expectedCaseResult.getCollectionExerciseId(), results.getCollectionExerciseId());
+    assertEquals(expectedCaseResult.getSurveyId(), results.getSurveyId());
+    assertEquals(expectedCaseResult.getSurveyType(), results.getSurveyType());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
     assertEquals(expectedCaseResult.getSample(), results.getSample());
     assertEquals(expectedCaseResult.getSampleSensitive(), results.getSampleSensitive());
@@ -125,11 +132,16 @@ public abstract class CaseServiceImplTestBase {
     }
   }
 
-  CaseDTO createExpectedCaseDTO(Case caseFromDb) {
+  CaseResponseDTO createExpectedCaseResponseDTO(Case caseFromDb) {
 
-    CaseDTO expectedCaseResult =
-        CaseDTO.builder()
+    Survey survey = caseFromDb.getCollectionExercise().getSurvey();
+    
+    CaseResponseDTO expectedCaseResult =
+        CaseResponseDTO.builder()
             .id(caseFromDb.getId())
+            .collectionExerciseId(caseFromDb.getCollectionExercise().getId())
+            .surveyId(survey.getId())
+            .surveyType(SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl()))
             .caseRef(caseFromDb.getCaseRef())
             .sample(new HashMap<>(caseFromDb.getSample()))
             .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))

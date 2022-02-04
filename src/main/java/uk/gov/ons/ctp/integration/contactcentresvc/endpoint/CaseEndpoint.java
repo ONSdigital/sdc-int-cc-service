@@ -2,11 +2,11 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
-import io.micrometer.core.annotation.Timed;
 import java.util.List;
 import java.util.UUID;
+
 import javax.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,14 +16,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.micrometer.core.annotation.Timed;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
@@ -65,7 +68,7 @@ public class CaseEndpoint implements CTPEndpoint {
    * @throws CTPException something went wrong
    */
   @RequestMapping(value = "/{caseId}", method = RequestMethod.GET)
-  public ResponseEntity<CaseDTO> getCaseById(
+  public ResponseEntity<CaseResponseDTO> getCaseById(
       @PathVariable("caseId") final UUID caseId, @Valid CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     log.info(
@@ -73,7 +76,7 @@ public class CaseEndpoint implements CTPEndpoint {
 
     saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
-    CaseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
+    CaseResponseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
 
     return ResponseEntity.ok(result);
   }
@@ -105,7 +108,7 @@ public class CaseEndpoint implements CTPEndpoint {
    * @throws CTPException something went wrong
    */
   @RequestMapping(value = "/ref/{ref}", method = RequestMethod.GET)
-  public ResponseEntity<CaseDTO> getCaseByCaseReference(
+  public ResponseEntity<CaseResponseDTO> getCaseByCaseReference(
       @PathVariable(value = "ref") final long ref, @Valid CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     log.info(
@@ -113,7 +116,7 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", ref),
         kv("requestParams", requestParamsDTO));
 
-    CaseDTO result = caseService.getCaseByCaseReference(ref, requestParamsDTO);
+    CaseResponseDTO result = caseService.getCaseByCaseReference(ref, requestParamsDTO);
 
     if (result != null) {
       saveCaseInteraction(result.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
@@ -265,7 +268,7 @@ public class CaseEndpoint implements CTPEndpoint {
    */
   @RequestMapping(value = "/{caseId}", method = RequestMethod.PUT)
   @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<CaseDTO> modifyCase(
+  public ResponseEntity<CaseResponseDTO> modifyCase(
       @PathVariable(value = "caseId") final UUID caseId,
       @Valid @RequestBody ModifyCaseRequestDTO requestBodyDTO)
       throws CTPException {
@@ -274,7 +277,7 @@ public class CaseEndpoint implements CTPEndpoint {
     saveCaseInteraction(caseId, CaseInteractionType.CASE_UPDATE_REQUESTED, null, null);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
-    CaseDTO result = caseService.modifyCase(requestBodyDTO);
+    CaseResponseDTO result = caseService.modifyCase(requestBodyDTO);
     return ResponseEntity.ok(result);
   }
 
@@ -309,7 +312,7 @@ public class CaseEndpoint implements CTPEndpoint {
 
   @RequestMapping(value = "/{caseId}/enrol", method = RequestMethod.POST)
   @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<CaseDTO> enrol(
+  public ResponseEntity<CaseResponseDTO> enrol(
       @PathVariable(value = "caseId") final UUID caseId,
       @Valid @RequestBody EnrolmentRequestDTO enrolmentRequestDTO)
       throws CTPException {
@@ -317,7 +320,7 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering POST enrolment", kv("caseId", caseId), kv("requestBody", enrolmentRequestDTO));
 
-    CaseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
+    CaseResponseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
 
     return ResponseEntity.ok(caseDTO);
   }

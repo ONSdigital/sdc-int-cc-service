@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,14 +28,15 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import uk.gov.ons.ctp.common.domain.Region;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
@@ -86,7 +88,7 @@ public final class CaseEndpointGetCaseTest {
 
   @Test
   public void getCaseById_GoodId() throws Exception {
-    CaseDTO testCaseDTO = createResponseCaseDTO();
+    CaseResponseDTO testCaseDTO = createCaseResponseDTO();
     Mockito.when(caseService.getCaseById(eq(uuid), any())).thenReturn(testCaseDTO);
 
     ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid));
@@ -105,7 +107,7 @@ public final class CaseEndpointGetCaseTest {
 
   @Test
   public void getCaseById_CaseEventsTrue() throws Exception {
-    CaseDTO testCaseDTO = createResponseCaseDTO();
+    CaseResponseDTO testCaseDTO = createCaseResponseDTO();
     Mockito.when(caseService.getCaseById(eq(uuid), any())).thenReturn(testCaseDTO);
 
     ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "?caseEvents=1"));
@@ -124,7 +126,7 @@ public final class CaseEndpointGetCaseTest {
 
   @Test
   public void getCaseByRef_GoodRef() throws Exception {
-    CaseDTO testCaseDTO = createResponseCaseDTO();
+    CaseResponseDTO testCaseDTO = createCaseResponseDTO();
     Mockito.when(caseService.getCaseByCaseReference(eq(123456L), any())).thenReturn(testCaseDTO);
 
     ResultActions actions = mockMvc.perform(getJson("/cases/ref/123456"));
@@ -142,7 +144,7 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(status().isBadRequest());
   }
 
-  private CaseDTO createResponseCaseDTO() throws ParseException {
+  private CaseResponseDTO createCaseResponseDTO() throws ParseException {
     CaseInteractionDTO interactionDTO1 =
         CaseInteractionDTO.builder()
             .interaction(EVENT_CATEGORY)
@@ -158,8 +160,11 @@ public final class CaseEndpointGetCaseTest {
     fakeSample.put(CaseUpdate.ATTRIBUTE_POSTCODE, POSTCODE);
     fakeSample.put(CaseUpdate.ATTRIBUTE_REGION, REGION.name());
 
-    return CaseDTO.builder()
+    return CaseResponseDTO.builder()
         .id(UUID.fromString(CASE_UUID_STRING))
+        .collectionExerciseId(UUID.fromString(CASE_UUID_STRING)) //PMB
+        .surveyId(UUID.fromString(CASE_UUID_STRING)) //PMB
+        .surveyType(null) //PMB
         .caseRef(CASE_REF)
         .sample(fakeSample)
         .interactions(Arrays.asList(interactionDTO1))

@@ -11,9 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.ons.ctp.common.MvcHelper.putJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,12 +24,16 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
@@ -53,7 +56,7 @@ public final class CaseEndpointModifyCaseTest {
       CaseInteractionRequestDTO.builder().type(CaseInteractionType.CASE_UPDATE_REQUESTED).build();
 
   private ObjectNode json;
-  private CaseDTO responseDTO;
+  private CaseResponseDTO responseDTO;
   private String caseId;
 
   /**
@@ -76,7 +79,7 @@ public final class CaseEndpointModifyCaseTest {
   }
 
   private void createValidResponse(ModifyCaseRequestDTO dto) {
-    this.responseDTO = CaseDTO.builder().id(dto.getCaseId()).build();
+    this.responseDTO = CaseResponseDTO.builder().id(dto.getCaseId()).build();
   }
 
   private ResultActions doPut() throws Exception {

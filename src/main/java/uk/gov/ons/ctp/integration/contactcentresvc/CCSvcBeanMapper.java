@@ -6,6 +6,10 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
+import org.springframework.stereotype.Component;
+
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -13,8 +17,6 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
-import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
-import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
@@ -31,8 +33,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 
 /** The bean mapper that maps to/from DTOs and JPA entity types. */
 @Component
@@ -101,13 +103,13 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     factory.classMap(RmCaseDTO.class, Case.class).byDefault().register();
 
     factory
-        .classMap(CaseDTO.class, Case.class)
+        .classMap(CaseResponseDTO.class, Case.class)
         .field("collectionExerciseId", "collectionExercise.id")
         .field("surveyId", "collectionExercise.survey.id")
         .customize(
-            new CustomMapper<CaseDTO, Case>() {
+            new CustomMapper<CaseResponseDTO, Case>() {
               @Override
-              public void mapBtoA(Case a, CaseDTO b, MappingContext mappingContext) {
+              public void mapBtoA(Case a, CaseResponseDTO b, MappingContext mappingContext) {
                 // Work out survey type
                 Survey survey = a.getCollectionExercise().getSurvey();
                 if (survey != null) {
@@ -120,10 +122,10 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .register();
 
     factory
-        .classMap(NewCasePayloadContent.class, CaseDTO.class)
-        .field("caseId", "id")
-        .byDefault()
-        .register();
+      .classMap(NewCasePayloadContent.class, CaseResponseDTO.class)
+      .field("caseId", "id")
+      .byDefault()
+      .register();
   }
 
   static class UtcOffsetDateTimeConverter extends BidirectionalConverter<Date, OffsetDateTime> {

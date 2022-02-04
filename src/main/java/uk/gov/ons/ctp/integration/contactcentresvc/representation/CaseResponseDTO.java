@@ -3,11 +3,11 @@ package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.log.LoggingScope;
 import uk.gov.ons.ctp.common.log.Scope;
 
@@ -20,9 +20,14 @@ import uk.gov.ons.ctp.common.log.Scope;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CaseDTO {
+public class CaseResponseDTO {
 
   private UUID id;
+
+  private UUID collectionExerciseId;
+
+  private UUID surveyId;
+  private SurveyType surveyType;
 
   @LoggingScope(scope = Scope.HASH)
   private String caseRef;

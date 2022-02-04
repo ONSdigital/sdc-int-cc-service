@@ -8,19 +8,21 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CAS
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 
 /** Unit Test {@link CaseService#getCaseById(UUID, CaseQueryRequestDTO) getCaseById}. */
 @ExtendWith(MockitoExtension.class)
@@ -35,14 +37,14 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   public void shouldGetCaseByCaseId_withNoInteractionHistory() throws Exception {
     // Build results to be returned from search
     Case caze = casesFromDb().get(0);
-    CaseDTO expectedCaseResult;
+    CaseResponseDTO expectedCaseResult;
 
     mockGetCaseById(CASE_ID_0, caze);
-    expectedCaseResult = createExpectedCaseDTO(caze);
+    expectedCaseResult = createExpectedCaseResponseDTO(caze);
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(false);
-    CaseDTO results = target.getCaseById(CASE_ID_0, requestParams);
+    CaseResponseDTO results = target.getCaseById(CASE_ID_0, requestParams);
 
     verifyCase(results, expectedCaseResult);
     assertEquals(0, results.getInteractions().size());
@@ -52,17 +54,17 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   public void shouldGetCaseByCaseId_withInteractionHistory() throws Exception {
     // Build results to be returned from search
     Case caze = casesFromDb().get(0);
-    CaseDTO expectedCaseResult;
+    CaseResponseDTO expectedCaseResult;
 
     mockGetCaseById(CASE_ID_0, caze);
-    expectedCaseResult = createExpectedCaseDTO(caze);
+    expectedCaseResult = createExpectedCaseResponseDTO(caze);
 
     mockRmGetCaseDTO(CASE_ID_0);
     mockCaseInteractionRepoFindByCaseId(CASE_ID_0);
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(true);
-    CaseDTO results = target.getCaseById(CASE_ID_0, requestParams);
+    CaseResponseDTO results = target.getCaseById(CASE_ID_0, requestParams);
 
     verifyCase(results, expectedCaseResult);
 
@@ -128,7 +130,7 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(false);
-    CaseDTO results = target.getCaseById(CASE_ID_0, requestParams);
+    CaseResponseDTO results = target.getCaseById(CASE_ID_0, requestParams);
 
     assertEquals(expectedCanLaunch, results.isCanLaunch());
   }
