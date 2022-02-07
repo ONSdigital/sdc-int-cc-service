@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -44,6 +45,7 @@ import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
+import uk.gov.ons.ctp.common.event.model.NewCasePayloadContent;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.common.rest.RestClient;
@@ -69,6 +71,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -81,7 +84,7 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 @Slf4j
 @Service
-public class CaseServiceImpl {
+public class CaseService {
 
   @Autowired private AppConfig appConfig;
 
@@ -185,7 +188,7 @@ public class CaseServiceImpl {
 
     // Find the case
     Case caseDb = caseRepoClient.getCaseById(caseId);
-    CaseDTO caseServiceResponse = mapCaseToDto(caseDb);
+    CaseDTO caseServiceResponse = mapper.map(caseDb, CaseDTO.class);
 
     // Attach history of case interactions
     List<CaseInteractionDTO> interactions =
@@ -253,7 +256,7 @@ public class CaseServiceImpl {
 
     // Find the case
     Case caseDetails = caseRepoClient.getCaseByCaseRef(caseRef);
-    CaseDTO caseServiceResponse = mapCaseToDto(caseDetails);
+    CaseDTO caseServiceResponse = mapper.map(caseDetails, CaseDTO.class);
 
     // Attach history of case interactions
     List<CaseInteractionDTO> interactions =
@@ -382,6 +385,32 @@ public class CaseServiceImpl {
     String eqUrl = createLaunchUrl(caseDetails, requestParamsDTO, uac);
     publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;
+  }
+
+  public CaseDTO enrol(UUID caseId, EnrolmentRequestDTO enrolmentRequestDTO) throws CTPException {
+
+    // Read parent case from db
+    Case existingCase = caseRepoClient.getCaseById(caseId);
+
+    // Create and send a new case
+    final UUID newCaseId = UUID.randomUUID();
+
+    NewCasePayloadContent newCasePayload =
+        NewCasePayloadContent.builder()
+            .caseId(newCaseId)
+            .collectionExerciseId(existingCase.getCollectionExercise().getId())
+            .sample(existingCase.getSample())
+            .sampleSensitive(new HashMap<String, String>())
+            .build();
+
+    sendEvent(TopicType.NEW_CASE, newCasePayload, newCaseId);
+
+    // Return details about the new case
+    CaseDTO newCaseDTO = mapper.map(newCasePayload, CaseDTO.class);
+    newCaseDTO.setCaseRef("");
+    newCaseDTO.setInteractions(new ArrayList<CaseInteractionDTO>());
+
+    return newCaseDTO;
   }
 
   private Optional<Integer> getWaveNumberForCase(Case caseDetails) {
@@ -626,11 +655,6 @@ public class CaseServiceImpl {
           kv("caseId", caseId),
           kv("transferId", transferId));
     }
-  }
-
-  private CaseDTO mapCaseToDto(Case caze) {
-    CaseDTO caseServiceResponse = mapper.map(caze, CaseDTO.class);
-    return caseServiceResponse;
   }
 
   private void validateCaseRef(long caseRef) throws CTPException {

@@ -25,14 +25,15 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
 /** The REST controller for ContactCentreSvc find cases end points */
 @Slf4j
@@ -40,8 +41,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServi
 @RestController
 @RequestMapping(value = "/cases", produces = "application/json")
 public class CaseEndpoint implements CTPEndpoint {
-  private CaseServiceImpl caseService;
-  private InteractionServiceImpl interactionService;
+  private CaseService caseService;
+  private InteractionService interactionService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
@@ -50,8 +51,7 @@ public class CaseEndpoint implements CTPEndpoint {
    *     endpoint.
    */
   @Autowired
-  public CaseEndpoint(
-      final CaseServiceImpl caseService, final InteractionServiceImpl interactionService) {
+  public CaseEndpoint(final CaseService caseService, final InteractionService interactionService) {
     this.caseService = caseService;
     this.interactionService = interactionService;
   }
@@ -309,6 +309,21 @@ public class CaseEndpoint implements CTPEndpoint {
     ResponseDTO response = interactionService.saveCaseInteraction(caseId, requestBodyDTO);
 
     return ResponseEntity.ok(response);
+  }
+
+  @RequestMapping(value = "/{caseId}/enrol", method = RequestMethod.POST)
+  @ResponseStatus(value = HttpStatus.OK)
+  public ResponseEntity<CaseDTO> enrol(
+      @PathVariable(value = "caseId") final UUID caseId,
+      @Valid @RequestBody EnrolmentRequestDTO enrolmentRequestDTO)
+      throws CTPException {
+
+    log.info(
+        "Entering POST enrolment", kv("caseId", caseId), kv("requestBody", enrolmentRequestDTO));
+
+    CaseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
+
+    return ResponseEntity.ok(caseDTO);
   }
 
   private void validateMatchingCaseId(UUID caseId, UUID dtoCaseId) throws CTPException {

@@ -38,7 +38,7 @@ public class FulfilmentServiceImplTest {
 
   @Spy private MapperFacade mapperFacade = new CCSvcBeanMapper();
 
-  @InjectMocks FulfilmentsServiceImpl fulfilmentService = new FulfilmentsServiceImpl();
+  @InjectMocks FulfilmentsService fulfilmentService = new FulfilmentsService();
 
   private static final String BLACK_LISTED_FULFILMENT_CODE = "P_TB_TBBEN1";
 

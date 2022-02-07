@@ -31,7 +31,7 @@ public class InteractionServiceImplTest {
 
   @Spy private MapperFacade mapperFacade = new CCSvcBeanMapper();
 
-  @InjectMocks InteractionServiceImpl interactionService = new InteractionServiceImpl();
+  @InjectMocks InteractionService interactionService = new InteractionService();
 
   @Captor private ArgumentCaptor<CaseInteraction> interactionCaptor;
 

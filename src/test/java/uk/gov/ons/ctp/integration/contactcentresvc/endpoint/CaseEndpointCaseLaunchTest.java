@@ -31,8 +31,8 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseServiceImpl;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServiceImpl;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -40,9 +40,9 @@ public class CaseEndpointCaseLaunchTest {
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 
-  @Mock CaseServiceImpl caseService;
+  @Mock CaseService caseService;
 
-  @Mock InteractionServiceImpl interactionService;
+  @Mock InteractionService interactionService;
 
   @Autowired private MockMvc mockMvc;
 

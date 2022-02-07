@@ -78,7 +78,7 @@ public abstract class CaseServiceImplTestBase {
   static final List<DeliveryChannel> ALL_DELIVERY_CHANNELS =
       List.of(DeliveryChannel.POST, DeliveryChannel.SMS);
 
-  @InjectMocks CaseServiceImpl target = new CaseServiceImpl();
+  @InjectMocks CaseService target = new CaseService();
 
   void verifyTimeInExpectedRange(long minAllowed, long maxAllowed, Date dateTime) {
     long actualInMillis = dateTime.getTime();

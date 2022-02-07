@@ -17,7 +17,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 
 @Slf4j
 @Service
-public class InteractionServiceImpl {
+public class InteractionService {
 
   @Autowired private CaseInteractionRepository repository;
 
