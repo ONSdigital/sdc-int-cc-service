@@ -125,7 +125,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .field("caseId", "id")
         .byDefault()
         .register();
-    
+
     factory
         .classMap(Survey.class, SurveyDTO.class)
         .field("id", "surveyId")
@@ -133,7 +133,8 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .customize(
             new CustomMapper<Survey, SurveyDTO>() {
               @Override
-              public void mapAtoB(Survey survey, SurveyDTO surveyDTO, MappingContext mappingContext) {
+              public void mapAtoB(
+                  Survey survey, SurveyDTO surveyDTO, MappingContext mappingContext) {
                 String sampleDefinitionUrl = survey.getSampleDefinitionUrl();
                 surveyDTO.setSurveyType(SurveyType.fromSampleDefinitionUrl(sampleDefinitionUrl));
               }
