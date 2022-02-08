@@ -33,6 +33,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 
 /** The bean mapper that maps to/from DTOs and JPA entity types. */
 @Component
@@ -122,6 +123,21 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     factory
         .classMap(NewCasePayloadContent.class, CaseResponseDTO.class)
         .field("caseId", "id")
+        .byDefault()
+        .register();
+    
+    factory
+        .classMap(Survey.class, SurveyDTO.class)
+        .field("id", "surveyId")
+        .field("name", "surveyName")
+        .customize(
+            new CustomMapper<Survey, SurveyDTO>() {
+              @Override
+              public void mapAtoB(Survey survey, SurveyDTO surveyDTO, MappingContext mappingContext) {
+                String sampleDefinitionUrl = survey.getSampleDefinitionUrl();
+                surveyDTO.setSurveyType(SurveyType.fromSampleDefinitionUrl(sampleDefinitionUrl));
+              }
+            })
         .byDefault()
         .register();
   }

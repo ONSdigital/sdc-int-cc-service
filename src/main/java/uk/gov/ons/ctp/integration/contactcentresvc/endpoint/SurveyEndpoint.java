@@ -5,6 +5,7 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,14 +25,18 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.SurveyService;
 public class SurveyEndpoint {
   private SurveyService surveyService;
 
+  
   public SurveyEndpoint(SurveyService surveyService) {
     this.surveyService = surveyService;
   }
 
+  @Transactional
   @GetMapping("/{surveyId}")
   public ResponseEntity<SurveyDTO> survey(@PathVariable final UUID surveyId) throws CTPException {
     log.info("Entering GET survey by ID {}", kv("surveyId", surveyId));
+    
     SurveyDTO result = surveyService.getSurvey(surveyId);
+    
     return ResponseEntity.ok(result);
   }
 }
