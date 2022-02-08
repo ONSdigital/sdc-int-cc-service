@@ -12,10 +12,8 @@ import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAd
 
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.domain.Region;
-import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
@@ -38,8 +35,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
 /**
  * Contact Centre Data Endpoint Unit tests. This class tests the get case endpoints, covering gets
@@ -145,48 +142,6 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(status().isBadRequest());
   }
 
-  @Test
-  public void getCaseBySampleAttribute_GoodUPRN() throws Exception {
-    List<CaseDTO> testCases = new ArrayList<>();
-    testCases.add(createResponseCaseDTO());
-    testCases.add(createResponseCaseDTO());
-    UniquePropertyReferenceNumber expectedUprn = new UniquePropertyReferenceNumber(123456789012L);
-    Mockito.when(
-            caseService.getCaseBySampleAttribute(
-                eq(CaseUpdate.ATTRIBUTE_UPRN), eq(String.valueOf(expectedUprn.getValue())), any()))
-        .thenReturn(testCases);
-
-    ResultActions actions = mockMvc.perform(getJson("/cases/attribute/uprn/123456789012"));
-    actions.andExpect(status().isOk());
-
-    verifyStructureOfMultiResultsActions(actions);
-  }
-
-  @Test
-  public void getCaseBySampleAttribute_CaseEventsTrue() throws Exception {
-    List<CaseDTO> testCases = new ArrayList<>();
-    testCases.add(createResponseCaseDTO());
-    testCases.add(createResponseCaseDTO());
-    UniquePropertyReferenceNumber expectedUprn = new UniquePropertyReferenceNumber(123456789012L);
-    Mockito.when(
-            caseService.getCaseBySampleAttribute(
-                eq(CaseUpdate.ATTRIBUTE_UPRN), eq(String.valueOf(expectedUprn.getValue())), any()))
-        .thenReturn(testCases);
-
-    ResultActions actions =
-        mockMvc.perform(getJson("/cases/attribute/uprn/123456789012?caseEvents=1"));
-    actions.andExpect(status().isOk());
-
-    verifyStructureOfMultiResultsActions(actions);
-  }
-
-  @Test
-  public void getCaseBySampleAttribute_CaseEventsDuff() throws Exception {
-    ResultActions actions =
-        mockMvc.perform(getJson("/cases/attribute/uprn/12345678901234?caseEvents=maybe"));
-    actions.andExpect(status().isBadRequest());
-  }
-
   private CaseDTO createResponseCaseDTO() throws ParseException {
     CaseInteractionDTO interactionDTO1 =
         CaseInteractionDTO.builder()
@@ -223,33 +178,5 @@ public final class CaseEndpointGetCaseTest {
 
     actions.andExpect(jsonPath("$.interactions[0].interaction", is(EVENT_CATEGORY)));
     actions.andExpect(jsonPath("$.interactions[0].note", is(EVENT_DESCRIPTION)));
-  }
-
-  private void verifyStructureOfMultiResultsActions(ResultActions actions) throws Exception {
-    // This is not ideal - obvious duplication here - want to find a neater way of making the same
-    // assertions repeatedly
-    actions.andExpect(jsonPath("$[0].id", is(CASE_UUID_STRING)));
-    actions.andExpect(jsonPath("$[0].caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$[0].sample.addressLine1", is(ADDRESS_LINE_1)));
-    actions.andExpect(jsonPath("$[0].sample.addressLine2", is(ADDRESS_LINE_2)));
-    actions.andExpect(jsonPath("$[0].sample.addressLine3", is(ADDRESS_LINE_3)));
-    actions.andExpect(jsonPath("$[0].sample.townName", is(TOWN)));
-    actions.andExpect(jsonPath("$[0].sample.region", is(REGION.name())));
-    actions.andExpect(jsonPath("$[0].sample.postcode", is(POSTCODE)));
-
-    actions.andExpect(jsonPath("$[0].interactions[0].interaction", is(EVENT_CATEGORY)));
-    actions.andExpect(jsonPath("$[0].interactions[0].note", is(EVENT_DESCRIPTION)));
-
-    actions.andExpect(jsonPath("$[1].id", is(CASE_UUID_STRING)));
-    actions.andExpect(jsonPath("$[1].caseRef", is(CASE_REF)));
-    actions.andExpect(jsonPath("$[1].sample.addressLine1", is(ADDRESS_LINE_1)));
-    actions.andExpect(jsonPath("$[1].sample.addressLine2", is(ADDRESS_LINE_2)));
-    actions.andExpect(jsonPath("$[1].sample.addressLine3", is(ADDRESS_LINE_3)));
-    actions.andExpect(jsonPath("$[1].sample.townName", is(TOWN)));
-    actions.andExpect(jsonPath("$[1].sample.region", is(REGION.name())));
-    actions.andExpect(jsonPath("$[1].sample.postcode", is(POSTCODE)));
-
-    actions.andExpect(jsonPath("$[1].interactions[0].interaction", is(EVENT_CATEGORY)));
-    actions.andExpect(jsonPath("$[1].interactions[0].note", is(EVENT_DESCRIPTION)));
   }
 }

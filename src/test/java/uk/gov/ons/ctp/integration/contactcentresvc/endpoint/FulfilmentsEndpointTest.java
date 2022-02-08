@@ -24,7 +24,7 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.FulfilmentsService;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)

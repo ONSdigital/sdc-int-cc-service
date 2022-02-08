@@ -14,11 +14,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
 
 @Slf4j
 @Service
-public class InteractionServiceImpl implements InteractionService {
+public class InteractionService {
 
   @Autowired private CaseInteractionRepository repository;
 

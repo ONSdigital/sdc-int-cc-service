@@ -15,7 +15,7 @@ import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.FulfilmentsRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.FulfilmentsService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.FulfilmentsService;
 
 /** The REST controller for ContactCentreSvc Fulfilments end points */
 @Slf4j

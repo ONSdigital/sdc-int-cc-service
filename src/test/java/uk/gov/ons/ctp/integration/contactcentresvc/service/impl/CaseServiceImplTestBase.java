@@ -52,7 +52,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 public abstract class CaseServiceImplTestBase {
@@ -79,7 +78,7 @@ public abstract class CaseServiceImplTestBase {
   static final List<DeliveryChannel> ALL_DELIVERY_CHANNELS =
       List.of(DeliveryChannel.POST, DeliveryChannel.SMS);
 
-  @InjectMocks CaseService target = new CaseServiceImpl();
+  @InjectMocks CaseService target = new CaseService();
 
   void verifyTimeInExpectedRange(long minAllowed, long maxAllowed, Date dateTime) {
     long actualInMillis = dateTime.getTime();
@@ -108,6 +107,7 @@ public abstract class CaseServiceImplTestBase {
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
     assertEquals(expectedCaseResult.getSample(), results.getSample());
     assertEquals(expectedCaseResult.getSampleSensitive(), results.getSampleSensitive());
+    assertEquals(expectedCaseResult.isCanLaunch(), results.isCanLaunch());
 
     verifyEventNotSent();
   }
@@ -134,6 +134,7 @@ public abstract class CaseServiceImplTestBase {
             .sample(new HashMap<>(caseFromDb.getSample()))
             .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))
             .interactions(Collections.emptyList())
+            .canLaunch(false)
             .build();
     return expectedCaseResult;
   }

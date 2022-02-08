@@ -10,14 +10,15 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.inject.Inject;
-
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +28,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
-
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -47,6 +45,7 @@ import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
+import uk.gov.ons.ctp.common.event.model.NewCasePayloadContent;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.common.rest.RestClient;
@@ -67,34 +66,29 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerciseRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyUsageDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 @Slf4j
 @Service
-public class CaseServiceImpl implements CaseService {
+public class CaseService {
 
   @Autowired private AppConfig appConfig;
 
   @Autowired private CaseRepositoryClient caseRepoClient;
-
-  @Autowired private CaseInteractionRepository caseInteractionRepository;
 
   @Autowired private UacRepository uacRepo;
 
@@ -110,17 +104,13 @@ public class CaseServiceImpl implements CaseService {
 
   @Autowired private BlacklistedUPRNBean blacklistedUPRNBean;
 
+  @Autowired private CaseInteractionRepository caseInteractionRepository;
 
   @Inject
   @Qualifier("addressIndexClient")
   private RestClient addressIndexClient;
 
   private LuhnCheckDigit luhnChecker = new LuhnCheckDigit();
-
-  public Survey getSurveyForCase(UUID caseId) throws CTPException {
-    Case caze = caseRepoClient.getCaseById(caseId);
-    return caze.getCollectionExercise().getSurvey();
-  }
 
   public ResponseDTO fulfilmentRequestByPost(PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
@@ -190,15 +180,17 @@ public class CaseServiceImpl implements CaseService {
     return response;
   }
 
-  @Override
   public CaseDTO getCaseById(final UUID caseId, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Fetching case details by caseId: {}", caseId);
     }
 
-    CaseDTO caseServiceResponse = mapCaseToDto(caseRepoClient.getCaseById(caseId));
+    // Find the case
+    Case caseDb = caseRepoClient.getCaseById(caseId);
+    CaseDTO caseServiceResponse = mapper.map(caseDb, CaseDTO.class);
 
+    // Attach history of case interactions
     List<CaseInteractionDTO> interactions =
         buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
@@ -207,41 +199,33 @@ public class CaseServiceImpl implements CaseService {
       log.debug("Returning case details for caseId", kv("caseId", caseId));
     }
 
+    // Indicate to UI if this case can be launched
+    Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDb);
+    caseServiceResponse.setCanLaunch(waveNumOpt.isPresent());
+
     return caseServiceResponse;
   }
 
-  @Override
-  public List<CaseDTO> getCaseBySampleAttribute(
-      String key, String value, CaseQueryRequestDTO requestParamsDTO) throws CTPException {
-    if (log.isDebugEnabled()) {
-      log.debug("Fetching latest case details by {}", key, kv("key", key), kv("value", value));
-    }
-
-    List<Case> dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
-
-    List<CaseDTO> cases = mapper.mapAsList(dbCases, CaseDTO.class);
-
-    // Set interaction history for all cases
-    for (CaseDTO caseDTO : cases) {
-      List<CaseInteractionDTO> interactions =
-          buildInteractionHistory(caseDTO.getId(), requestParamsDTO.getCaseEvents());
-      caseDTO.setInteractions(interactions);
-    }
-
-    return cases;
-  }
-
-  @Override
   public List<CaseSummaryDTO> getCaseSummaryBySampleAttribute(String key, String value)
       throws CTPException {
     if (log.isDebugEnabled()) {
-      log.debug(
-          "Fetching latest case summary details by {}", key, kv("key", key), kv("value", value));
+      log.debug("Fetching latest case summary details", kv("key", key), kv("value", value));
     }
 
     // Find matching cases
     List<Case> dbCases;
-    dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
+    try {
+      dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
+    } catch (CTPException ex) {
+      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
+        log.info(
+            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
+        return Collections.emptyList();
+      } else {
+        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
+        throw ex;
+      }
+    }
 
     // Summarise all found cases
     List<CaseSummaryDTO> caseSummaries = new ArrayList<>();
@@ -262,7 +246,6 @@ public class CaseServiceImpl implements CaseService {
     return caseSummaries;
   }
 
-  @Override
   public CaseDTO getCaseByCaseReference(final long caseRef, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
@@ -271,16 +254,18 @@ public class CaseServiceImpl implements CaseService {
 
     validateCaseRef(caseRef);
 
+    // Find the case
     Case caseDetails = caseRepoClient.getCaseByCaseRef(caseRef);
-    CaseDTO caseServiceResponse = mapCaseToDto(caseDetails);
+    CaseDTO caseServiceResponse = mapper.map(caseDetails, CaseDTO.class);
 
+    // Attach history of case interactions
     List<CaseInteractionDTO> interactions =
         buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
 
-    if (log.isDebugEnabled()) {
-      log.debug("Returning case details for case reference", kv("caseRef", caseRef));
-    }
+    // Indicate to UI if this case can be launched
+    Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDetails);
+    caseServiceResponse.setCanLaunch(waveNumOpt.isPresent());
 
     // Return a 404 if the UPRN is blacklisted
     UniquePropertyReferenceNumber foundUprn =
@@ -303,10 +288,13 @@ public class CaseServiceImpl implements CaseService {
               + " is IVR restricted");
     }
 
+    if (log.isDebugEnabled()) {
+      log.debug("Returning case details for case reference", kv("caseRef", caseRef));
+    }
+
     return caseServiceResponse;
   }
 
-  @Override
   public CaseDTO modifyCase(ModifyCaseRequestDTO modifyRequestDTO) throws CTPException {
     validateCompatibleEstabAndCaseType(
         modifyRequestDTO.getCaseType(), modifyRequestDTO.getEstabType());
@@ -327,7 +315,6 @@ public class CaseServiceImpl implements CaseService {
     return response;
   }
 
-  @Override
   public ResponseDTO reportRefusal(UUID caseId, RefusalRequestDTO requestBodyDTO)
       throws CTPException {
     String reportedDateTime = "null";
@@ -360,7 +347,6 @@ public class CaseServiceImpl implements CaseService {
    * providing the UI with an endpoint that pre validates the ability to launch which would enable
    * it to disable the launch button in the first place.
    */
-  @Override
   public String getLaunchURLForCaseId(final UUID caseId, LaunchRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
@@ -376,12 +362,8 @@ public class CaseServiceImpl implements CaseService {
     TelephoneCaptureDTO newQuestionnaireIdDto = getNewQidForCase(caseDetails);
     String questionnaireId = newQuestionnaireIdDto.getQId();
 
-    // But RM do not provide a collectionInstrumentUrl so we will use the collex
-    // and calc the current wave
-    CollectionExercise collex = caseDetails.getCollectionExercise();
-    // the assumption is that the calc should be strict and not allow launch if a wave is no longer
-    // operational
-    Optional<Integer> waveNumOpt = collex.calcWaveForDate(LocalDateTime.now(), true);
+    // Calculate current wave
+    Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDetails);
     if (waveNumOpt.isEmpty()) {
       throw new CTPException(
           Fault.BAD_REQUEST, "The CollectionExercise for this Case has no current wave");
@@ -403,6 +385,44 @@ public class CaseServiceImpl implements CaseService {
     String eqUrl = createLaunchUrl(caseDetails, requestParamsDTO, uac);
     publishEqLaunchedEvent(caseDetails.getId(), questionnaireId);
     return eqUrl;
+  }
+
+  public CaseDTO enrol(UUID caseId, EnrolmentRequestDTO enrolmentRequestDTO) throws CTPException {
+
+    // Read parent case from db
+    Case existingCase = caseRepoClient.getCaseById(caseId);
+
+    // Create and send a new case
+    final UUID newCaseId = UUID.randomUUID();
+
+    NewCasePayloadContent newCasePayload =
+        NewCasePayloadContent.builder()
+            .caseId(newCaseId)
+            .collectionExerciseId(existingCase.getCollectionExercise().getId())
+            .sample(existingCase.getSample())
+            .sampleSensitive(new HashMap<String, String>())
+            .build();
+
+    sendEvent(TopicType.NEW_CASE, newCasePayload, newCaseId);
+
+    // Return details about the new case
+    CaseDTO newCaseDTO = mapper.map(newCasePayload, CaseDTO.class);
+    newCaseDTO.setCaseRef("");
+    newCaseDTO.setInteractions(new ArrayList<CaseInteractionDTO>());
+
+    return newCaseDTO;
+  }
+
+  private Optional<Integer> getWaveNumberForCase(Case caseDetails) {
+    // But RM do not provide a collectionInstrumentUrl so we will use the collex
+    // and calc the current wave
+    CollectionExercise collex = caseDetails.getCollectionExercise();
+
+    // The assumption is that the calc should be strict and not allow launch if a wave is no longer
+    // operational
+    Optional<Integer> waveNumber = collex.calcWaveForDate(LocalDateTime.now(), true);
+
+    return waveNumber;
   }
 
   /*
@@ -635,11 +655,6 @@ public class CaseServiceImpl implements CaseService {
           kv("caseId", caseId),
           kv("transferId", transferId));
     }
-  }
-
-  private CaseDTO mapCaseToDto(Case caze) {
-    CaseDTO caseServiceResponse = mapper.map(caze, CaseDTO.class);
-    return caseServiceResponse;
   }
 
   private void validateCaseRef(long caseRef) throws CTPException {

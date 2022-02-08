@@ -20,6 +20,7 @@ import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;
+import uk.gov.ons.ctp.common.event.model.NewCasePayloadContent;
 import uk.gov.ons.ctp.common.event.model.SurveyUpdate;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
 import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
@@ -110,6 +111,12 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     factory.classMap(CaseInteractionRequestDTO.class, CaseInteraction.class).byDefault().register();
     factory.classMap(RmCaseDTO.class, Case.class).byDefault().register();
     factory.classMap(CaseDTO.class, Case.class).byDefault().register();
+
+    factory
+        .classMap(NewCasePayloadContent.class, CaseDTO.class)
+        .field("caseId", "id")
+        .byDefault()
+        .register();
   }
 
   static class UtcOffsetDateTimeConverter extends BidirectionalConverter<Date, OffsetDateTime> {

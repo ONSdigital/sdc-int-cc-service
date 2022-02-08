@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.CASE_ID_0;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 
 /**
  * Unit Test {@link CaseService#getCaseByCaseReference(long, CaseQueryRequestDTO)
@@ -115,6 +115,41 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
       assertEquals(Fault.RESOURCE_NOT_FOUND, e.getFault());
       assertTrue(e.getMessage().contains("IVR restricted"), e.getMessage());
     }
+  }
+
+  @Test
+  public void testNotLaunchableBeforeFirstWave() throws Exception {
+    checkCanLaunchFlag(2088, 2089, 100, false);
+  }
+
+  @Test
+  public void testCanLaunchableCase() throws Exception {
+    checkCanLaunchFlag(1970, 2189, 999999, true);
+  }
+
+  @Test
+  public void testNotLaunchableAfterLastWave() throws Exception {
+    checkCanLaunchFlag(2000, 2001, 122, false);
+  }
+
+  private void checkCanLaunchFlag(
+      int startYear, int endYear, int waveLength, boolean expectedCanLaunch)
+      throws Exception, CTPException {
+    // Build results to be returned from search
+    Case caseFromDb = casesFromDatabase().get(0);
+    caseFromDb.getCollectionExercise().setStartDate(LocalDateTime.of(startYear, 1, 1, 1, 1, 1));
+    caseFromDb.getCollectionExercise().setEndDate(LocalDateTime.of(endYear, 1, 1, 1, 1, 1));
+    caseFromDb.getCollectionExercise().setWaveLength(waveLength);
+
+    mockGetCaseByRef(caseFromDb);
+    mockRmGetCaseDTO(caseFromDb.getId());
+    mockCaseInteractionRepoFindByCaseId(caseFromDb.getId());
+
+    // Run the request
+    CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(false);
+    CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
+
+    assertEquals(expectedCanLaunch, results.isCanLaunch());
   }
 
   private void doTestGetCaseByCaseRef(boolean caseEvents) throws Exception {

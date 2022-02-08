@@ -42,9 +42,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
 @ActiveProfiles("test-cc")
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)

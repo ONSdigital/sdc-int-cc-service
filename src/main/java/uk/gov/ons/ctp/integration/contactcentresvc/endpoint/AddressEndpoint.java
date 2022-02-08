@@ -20,7 +20,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRe
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.AddressService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
 
 /** The REST endpoint controller for ContactCentreSvc Details */
 @Slf4j
