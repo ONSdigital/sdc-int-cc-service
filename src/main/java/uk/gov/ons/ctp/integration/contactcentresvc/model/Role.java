@@ -42,6 +42,8 @@ public class Role {
 
   @ToString.Include private String name;
 
+  private String description;
+
   @JsonIgnore
   @ManyToMany(mappedBy = "userRoles")
   private List<User> users;

@@ -55,7 +55,7 @@ public class RoleTest {
     assertFalse(s.contains(u1.getName()));
     assertFalse(s.contains(u2.getName()));
     assertFalse(s.contains(PermissionType.SEARCH_CASES.name()));
-    assertFalse(s.contains(PermissionType.VIEW_CASE_DETAILS.name()));
+    assertFalse(s.contains(PermissionType.VIEW_CASE.name()));
   }
 
   private void createRole() {
@@ -68,7 +68,7 @@ public class RoleTest {
     Permission p2 =
         Permission.builder()
             .id(UUID.randomUUID())
-            .permissionType(PermissionType.VIEW_CASE_DETAILS)
+            .permissionType(PermissionType.VIEW_CASE)
             .build();
 
     role =

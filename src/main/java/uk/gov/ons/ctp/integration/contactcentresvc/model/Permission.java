@@ -1,19 +1,22 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 import java.util.UUID;
+
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.DynamicUpdate;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.DynamicUpdate;
 
 /**
  * Representation of Permission entity from database table. This represents a permission for a given
@@ -45,6 +48,4 @@ public class Permission {
 
   @ManyToOne(optional = false)
   private Role role;
-
-  @ManyToOne private Survey survey;
 }

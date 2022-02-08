@@ -15,9 +15,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import javax.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +27,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
+
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -64,6 +67,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CollectionExerciseRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
@@ -75,6 +80,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyUsageDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
@@ -87,6 +93,8 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private AppConfig appConfig;
 
   @Autowired private CaseRepositoryClient caseRepoClient;
+
+  @Autowired private CaseInteractionRepository caseInteractionRepository;
 
   @Autowired private UacRepository uacRepo;
 
@@ -102,13 +110,17 @@ public class CaseServiceImpl implements CaseService {
 
   @Autowired private BlacklistedUPRNBean blacklistedUPRNBean;
 
-  @Autowired private CaseInteractionRepository caseInteractionRepository;
 
   @Inject
   @Qualifier("addressIndexClient")
   private RestClient addressIndexClient;
 
   private LuhnCheckDigit luhnChecker = new LuhnCheckDigit();
+
+  public Survey getSurveyForCase(UUID caseId) throws CTPException {
+    Case caze = caseRepoClient.getCaseById(caseId);
+    return caze.getCollectionExercise().getSurvey();
+  }
 
   public ResponseDTO fulfilmentRequestByPost(PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {

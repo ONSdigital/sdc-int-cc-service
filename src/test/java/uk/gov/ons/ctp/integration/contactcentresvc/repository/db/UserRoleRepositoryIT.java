@@ -80,20 +80,20 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   @Test
   public void shouldCreateRole() {
     txOps.createRole("nurse", NURSE_UUID, null);
-    Role nurse = roleRepo.findByName("nurse");
-    assertEquals("nurse", nurse.getName());
-    assertTrue(nurse.getPermissions().isEmpty());
+    Optional<Role> nurse = roleRepo.findByName("nurse");
+    assertEquals("nurse", nurse.get().getName());
+    assertTrue(nurse.get().getPermissions().isEmpty());
   }
 
   @Test
   public void shouldCreateRoleWithPermissions() {
     var perms =
         Arrays.asList(
-            new PermissionType[] {PermissionType.SEARCH_CASES, PermissionType.VIEW_CASE_DETAILS});
+            new PermissionType[] {PermissionType.SEARCH_CASES, PermissionType.VIEW_CASE});
     txOps.createRole("nurse", NURSE_UUID, perms);
-    Role nurse = roleRepo.findByName("nurse");
-    assertEquals("nurse", nurse.getName());
-    assertEquals(2, nurse.getPermissions().size());
+    Optional<Role> nurse = roleRepo.findByName("nurse");
+    assertEquals("nurse", nurse.get().getName());
+    assertEquals(2, nurse.get().getPermissions().size());
     assertEquals(2, permRepo.findAll().size());
   }
 
@@ -101,10 +101,10 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   public void shouldAddPermission() {
     Role role = txOps.createRole("nurse", NURSE_UUID, null);
     txOps.addPermission(role, PermissionType.SUPER_USER);
-    Role nurse = roleRepo.findByName("nurse");
-    assertEquals(1, nurse.getPermissions().size());
+    Optional<Role> nurse = roleRepo.findByName("nurse");
+    assertEquals(1, nurse.get().getPermissions().size());
     assertEquals(1, permRepo.findAll().size());
-    assertEquals(PermissionType.SUPER_USER, nurse.getPermissions().get(0).getPermissionType());
+    assertEquals(PermissionType.SUPER_USER, nurse.get().getPermissions().get(0).getPermissionType());
   }
 
   @Test
@@ -112,14 +112,14 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     // create role with 2 permissions
     var perms =
         Arrays.asList(
-            new PermissionType[] {PermissionType.SEARCH_CASES, PermissionType.VIEW_CASE_DETAILS});
+            new PermissionType[] {PermissionType.SEARCH_CASES, PermissionType.VIEW_CASE});
     Role role = txOps.createRole("nurse", NURSE_UUID, perms);
     // now remove one of those permissions
-    txOps.removePermission(role, PermissionType.VIEW_CASE_DETAILS);
-    Role nurse = roleRepo.findByName("nurse");
-    assertEquals(1, nurse.getPermissions().size());
+    txOps.removePermission(role, PermissionType.VIEW_CASE);
+    Optional<Role> nurse = roleRepo.findByName("nurse");
+    assertEquals(1, nurse.get().getPermissions().size());
     assertEquals(1, permRepo.findAll().size());
-    assertEquals(PermissionType.SEARCH_CASES, nurse.getPermissions().get(0).getPermissionType());
+    assertEquals(PermissionType.SEARCH_CASES, nurse.get().getPermissions().get(0).getPermissionType());
   }
 
   @Test
@@ -171,8 +171,8 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     }
 
     public void removePermission(Role role, PermissionType type) {
-      Permission p = permRepo.findByPermissionTypeAndRole(type, role);
-      permRepo.delete(p);
+      Optional<Permission> p = permRepo.findByPermissionTypeAndRole(type, role);
+      permRepo.delete(p.get());
     }
 
     public Role createRole(String name, UUID id, List<PermissionType> permTypes) {
@@ -207,9 +207,9 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
 
     public void verifyJoeTheShopkeeper() {
       Optional<User> joe = userRepo.findByName("Joe");
-      Role shopkeeper = roleRepo.findByName("shopkeeper");
-      assertEquals(shopkeeper, joe.get().getUserRoles().get(0));
-      assertEquals(joe.get(), shopkeeper.getUsers().get(0));
+      Optional<Role> shopkeeper = roleRepo.findByName("shopkeeper");
+      assertEquals(shopkeeper.get(), joe.get().getUserRoles().get(0));
+      assertEquals(joe.get(), shopkeeper.get().getUsers().get(0));
     }
 
     public void createJoeTheShopkeeperAdmin() {
@@ -221,9 +221,9 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
 
     public void verifyJoeTheShopkeeperAdmin() {
       Optional<User> joe = userRepo.findByName("Joe");
-      Role shopkeeper = roleRepo.findByName("shopkeeper");
-      assertEquals(shopkeeper, joe.get().getAdminRoles().get(0));
-      assertEquals(joe.get(), shopkeeper.getAdmins().get(0));
+      Optional<Role> shopkeeper = roleRepo.findByName("shopkeeper");
+      assertEquals(shopkeeper.get(), joe.get().getAdminRoles().get(0));
+      assertEquals(joe.get(), shopkeeper.get().getAdmins().get(0));
     }
   }
 }

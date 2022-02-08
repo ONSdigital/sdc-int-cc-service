@@ -45,6 +45,14 @@ public class User {
   @JsonIgnore
   @ManyToMany
   @JoinTable(
+      name = "ccuser_survey_usage",
+      joinColumns = @JoinColumn(name = "ccuser_id"),
+      inverseJoinColumns = @JoinColumn(name = "survey_usage_id"))
+  private List<SurveyUsage> surveyUsages;  
+
+  @JsonIgnore
+  @ManyToMany
+  @JoinTable(
       name = "ccuser_role",
       joinColumns = @JoinColumn(name = "ccuser_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))
