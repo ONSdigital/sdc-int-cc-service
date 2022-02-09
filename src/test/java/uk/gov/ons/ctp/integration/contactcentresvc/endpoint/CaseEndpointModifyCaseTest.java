@@ -29,8 +29,8 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
@@ -53,7 +53,7 @@ public final class CaseEndpointModifyCaseTest {
       CaseInteractionRequestDTO.builder().type(CaseInteractionType.CASE_UPDATE_REQUESTED).build();
 
   private ObjectNode json;
-  private CaseResponseDTO responseDTO;
+  private CaseDTO responseDTO;
   private String caseId;
 
   /**
@@ -76,7 +76,7 @@ public final class CaseEndpointModifyCaseTest {
   }
 
   private void createValidResponse(ModifyCaseRequestDTO dto) {
-    this.responseDTO = CaseResponseDTO.builder().id(dto.getCaseId()).build();
+    this.responseDTO = CaseDTO.builder().id(dto.getCaseId()).build();
   }
 
   private ResultActions doPut() throws Exception {

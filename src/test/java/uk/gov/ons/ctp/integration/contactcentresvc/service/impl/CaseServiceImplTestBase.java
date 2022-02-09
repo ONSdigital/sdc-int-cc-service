@@ -50,8 +50,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
@@ -104,7 +104,7 @@ public abstract class CaseServiceImplTestBase {
     verify(eventTransfer, never()).send(any(), any());
   }
 
-  void verifyCase(CaseResponseDTO results, CaseResponseDTO expectedCaseResult) throws Exception {
+  void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
     assertEquals(expectedCaseResult.getCollectionExerciseId(), results.getCollectionExerciseId());
     assertEquals(expectedCaseResult.getSurveyId(), results.getSurveyId());
@@ -130,12 +130,12 @@ public abstract class CaseServiceImplTestBase {
     }
   }
 
-  CaseResponseDTO createExpectedCaseResponseDTO(Case caseFromDb) {
+  CaseDTO createExpectedCaseDTO(Case caseFromDb) {
 
     Survey survey = caseFromDb.getCollectionExercise().getSurvey();
 
-    CaseResponseDTO expectedCaseResult =
-        CaseResponseDTO.builder()
+    CaseDTO expectedCaseResult =
+        CaseDTO.builder()
             .id(caseFromDb.getId())
             .collectionExerciseId(caseFromDb.getCollectionExercise().getId())
             .surveyId(survey.getId())

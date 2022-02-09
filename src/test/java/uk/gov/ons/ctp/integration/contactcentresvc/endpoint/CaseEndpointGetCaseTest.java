@@ -33,9 +33,9 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
@@ -91,7 +91,7 @@ public final class CaseEndpointGetCaseTest {
 
   @Test
   public void getCaseById_GoodId() throws Exception {
-    CaseResponseDTO testCaseDTO = createCaseResponseDTO();
+    CaseDTO testCaseDTO = createCaseDTO();
     Mockito.when(caseService.getCaseById(eq(uuid), any())).thenReturn(testCaseDTO);
 
     ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid));
@@ -110,7 +110,7 @@ public final class CaseEndpointGetCaseTest {
 
   @Test
   public void getCaseById_CaseEventsTrue() throws Exception {
-    CaseResponseDTO testCaseDTO = createCaseResponseDTO();
+    CaseDTO testCaseDTO = createCaseDTO();
     Mockito.when(caseService.getCaseById(eq(uuid), any())).thenReturn(testCaseDTO);
 
     ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "?caseEvents=1"));
@@ -129,7 +129,7 @@ public final class CaseEndpointGetCaseTest {
 
   @Test
   public void getCaseByRef_GoodRef() throws Exception {
-    CaseResponseDTO testCaseDTO = createCaseResponseDTO();
+    CaseDTO testCaseDTO = createCaseDTO();
     Mockito.when(caseService.getCaseByCaseReference(eq(123456L), any())).thenReturn(testCaseDTO);
 
     ResultActions actions = mockMvc.perform(getJson("/cases/ref/123456"));
@@ -147,7 +147,7 @@ public final class CaseEndpointGetCaseTest {
     actions.andExpect(status().isBadRequest());
   }
 
-  private CaseResponseDTO createCaseResponseDTO() throws ParseException {
+  private CaseDTO createCaseDTO() throws ParseException {
     CaseInteractionDTO interactionDTO1 =
         CaseInteractionDTO.builder()
             .interaction(EVENT_CATEGORY)
@@ -163,7 +163,7 @@ public final class CaseEndpointGetCaseTest {
     fakeSample.put(CaseUpdate.ATTRIBUTE_POSTCODE, POSTCODE);
     fakeSample.put(CaseUpdate.ATTRIBUTE_REGION, REGION.name());
 
-    return CaseResponseDTO.builder()
+    return CaseDTO.builder()
         .id(UUID.fromString(CASE_UUID_STRING))
         .collectionExerciseId(UUID.fromString(COLLECTION_EXERCISE_UUID_STRING))
         .surveyId(UUID.fromString(SURVEY_UUID_STRING))

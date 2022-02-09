@@ -20,7 +20,7 @@ import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 
 // This used to have a lot of tests in Census but had to be deleted since the depended
@@ -58,7 +58,7 @@ public class CaseServiceImplModifyCaseTest extends CaseServiceImplTestBase {
   private void verifyAcceptCompatible(EstabType estabType, CaseType caseType) throws Exception {
     requestDTO.setEstabType(estabType);
     requestDTO.setCaseType(caseType);
-    CaseResponseDTO response = target.modifyCase(requestDTO);
+    CaseDTO response = target.modifyCase(requestDTO);
     assertNotNull(response);
   }
 

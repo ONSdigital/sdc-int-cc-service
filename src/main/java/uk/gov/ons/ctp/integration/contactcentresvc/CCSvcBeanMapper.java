@@ -31,8 +31,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 
 /** The bean mapper that maps to/from DTOs and JPA entity types. */
@@ -102,13 +102,13 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     factory.classMap(RmCaseDTO.class, Case.class).byDefault().register();
 
     factory
-        .classMap(CaseResponseDTO.class, Case.class)
+        .classMap(CaseDTO.class, Case.class)
         .field("collectionExerciseId", "collectionExercise.id")
         .field("surveyId", "collectionExercise.survey.id")
         .customize(
-            new CustomMapper<CaseResponseDTO, Case>() {
+            new CustomMapper<CaseDTO, Case>() {
               @Override
-              public void mapBtoA(Case a, CaseResponseDTO b, MappingContext mappingContext) {
+              public void mapBtoA(Case a, CaseDTO b, MappingContext mappingContext) {
                 // Work out survey type
                 Survey survey = a.getCollectionExercise().getSurvey();
                 if (survey != null) {
@@ -121,7 +121,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
         .register();
 
     factory
-        .classMap(NewCasePayloadContent.class, CaseResponseDTO.class)
+        .classMap(NewCasePayloadContent.class, CaseDTO.class)
         .field("caseId", "id")
         .byDefault()
         .register();
