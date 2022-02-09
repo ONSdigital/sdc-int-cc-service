@@ -67,9 +67,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UacRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
@@ -180,7 +180,7 @@ public class CaseService {
     return response;
   }
 
-  public CaseResponseDTO getCaseById(final UUID caseId, CaseQueryRequestDTO requestParamsDTO)
+  public CaseDTO getCaseById(final UUID caseId, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Fetching case details by caseId: {}", caseId);
@@ -188,7 +188,7 @@ public class CaseService {
 
     // Find the case
     Case caseDb = caseRepoClient.getCaseById(caseId);
-    CaseResponseDTO caseServiceResponse = mapper.map(caseDb, CaseResponseDTO.class);
+    CaseDTO caseServiceResponse = mapper.map(caseDb, CaseDTO.class);
 
     // Attach history of case interactions
     List<CaseInteractionDTO> interactions =
@@ -246,8 +246,8 @@ public class CaseService {
     return caseSummaries;
   }
 
-  public CaseResponseDTO getCaseByCaseReference(
-      final long caseRef, CaseQueryRequestDTO requestParamsDTO) throws CTPException {
+  public CaseDTO getCaseByCaseReference(final long caseRef, CaseQueryRequestDTO requestParamsDTO)
+      throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug("Fetching case details by case reference", kv("caseRef", caseRef));
     }
@@ -256,7 +256,7 @@ public class CaseService {
 
     // Find the case
     Case caseDetails = caseRepoClient.getCaseByCaseRef(caseRef);
-    CaseResponseDTO caseServiceResponse = mapper.map(caseDetails, CaseResponseDTO.class);
+    CaseDTO caseServiceResponse = mapper.map(caseDetails, CaseDTO.class);
 
     // Attach history of case interactions
     List<CaseInteractionDTO> interactions =
@@ -295,7 +295,7 @@ public class CaseService {
     return caseServiceResponse;
   }
 
-  public CaseResponseDTO modifyCase(ModifyCaseRequestDTO modifyRequestDTO) throws CTPException {
+  public CaseDTO modifyCase(ModifyCaseRequestDTO modifyRequestDTO) throws CTPException {
     validateCompatibleEstabAndCaseType(
         modifyRequestDTO.getCaseType(), modifyRequestDTO.getEstabType());
     UUID originalCaseId = modifyRequestDTO.getCaseId();
@@ -303,7 +303,7 @@ public class CaseService {
 
     Case caseDetails = caseRepoClient.getCaseById(originalCaseId);
 
-    CaseResponseDTO response = mapper.map(caseDetails, CaseResponseDTO.class);
+    CaseDTO response = mapper.map(caseDetails, CaseDTO.class);
 
     // removed most of the code from original Census code since it relies heavily
     // on CaseType/EstabType.
@@ -387,8 +387,7 @@ public class CaseService {
     return eqUrl;
   }
 
-  public CaseResponseDTO enrol(UUID caseId, EnrolmentRequestDTO enrolmentRequestDTO)
-      throws CTPException {
+  public CaseDTO enrol(UUID caseId, EnrolmentRequestDTO enrolmentRequestDTO) throws CTPException {
 
     // Read parent case from db
     Case existingCase = caseRepoClient.getCaseById(caseId);
@@ -407,7 +406,7 @@ public class CaseService {
     sendEvent(TopicType.NEW_CASE, newCasePayload, newCaseId);
 
     // Return details about the new case
-    CaseResponseDTO newCaseDTO = mapper.map(newCasePayload, CaseResponseDTO.class);
+    CaseDTO newCaseDTO = mapper.map(newCasePayload, CaseDTO.class);
     Survey survey = existingCase.getCollectionExercise().getSurvey();
     newCaseDTO.setSurveyId(survey.getId());
     newCaseDTO.setSurveyType(SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl()));
@@ -691,10 +690,7 @@ public class CaseService {
 
   // TODO : FLEXIBLE CASE - this assumes that modifications are address related
   private void prepareModificationResponse(
-      CaseResponseDTO response,
-      ModifyCaseRequestDTO modifyRequestDTO,
-      UUID caseId,
-      String caseRef) {
+      CaseDTO response, ModifyCaseRequestDTO modifyRequestDTO, UUID caseId, String caseRef) {
     response.setId(caseId);
     response.setCaseRef(caseRef);
     response

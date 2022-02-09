@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.log.LoggingScope;
 import uk.gov.ons.ctp.common.log.Scope;
 
@@ -22,6 +23,11 @@ import uk.gov.ons.ctp.common.log.Scope;
 public class CaseDTO {
 
   private UUID id;
+
+  private UUID collectionExerciseId;
+
+  private UUID surveyId;
+  private SurveyType surveyType;
 
   @LoggingScope(scope = Scope.HASH)
   private String caseRef;

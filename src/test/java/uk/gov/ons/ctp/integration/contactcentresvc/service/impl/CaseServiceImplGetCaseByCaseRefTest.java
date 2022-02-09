@@ -20,9 +20,9 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 
 /**
  * Unit Test {@link CaseService#getCaseByCaseReference(long, CaseQueryRequestDTO)
@@ -147,7 +147,7 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(false);
-    CaseResponseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
+    CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
 
     assertEquals(expectedCanLaunch, results.isCanLaunch());
   }
@@ -161,8 +161,8 @@ public class CaseServiceImplGetCaseByCaseRefTest extends CaseServiceImplTestBase
 
     // Run the request
     CaseQueryRequestDTO requestParams = new CaseQueryRequestDTO(caseEvents);
-    CaseResponseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
-    CaseResponseDTO expectedCaseResult = createExpectedCaseResponseDTO(caseFromDb);
+    CaseDTO results = target.getCaseByCaseReference(VALID_CASE_REF, requestParams);
+    CaseDTO expectedCaseResult = createExpectedCaseDTO(caseFromDb);
     verifyCase(results, expectedCaseResult);
 
     if (caseEvents) {

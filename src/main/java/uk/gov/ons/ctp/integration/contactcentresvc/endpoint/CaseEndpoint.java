@@ -21,9 +21,9 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
@@ -65,13 +65,13 @@ public class CaseEndpoint implements CTPEndpoint {
    * @throws CTPException something went wrong
    */
   @RequestMapping(value = "/{caseId}", method = RequestMethod.GET)
-  public ResponseEntity<CaseResponseDTO> getCaseById(
+  public ResponseEntity<CaseDTO> getCaseById(
       @PathVariable("caseId") final UUID caseId, @Valid CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     log.info(
         "Entering GET getCaseById", kv("pathParam", caseId), kv("requestParams", requestParamsDTO));
 
-    CaseResponseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
+    CaseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
 
     saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
@@ -105,7 +105,7 @@ public class CaseEndpoint implements CTPEndpoint {
    * @throws CTPException something went wrong
    */
   @RequestMapping(value = "/ref/{ref}", method = RequestMethod.GET)
-  public ResponseEntity<CaseResponseDTO> getCaseByCaseReference(
+  public ResponseEntity<CaseDTO> getCaseByCaseReference(
       @PathVariable(value = "ref") final long ref, @Valid CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
     log.info(
@@ -113,7 +113,7 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", ref),
         kv("requestParams", requestParamsDTO));
 
-    CaseResponseDTO result = caseService.getCaseByCaseReference(ref, requestParamsDTO);
+    CaseDTO result = caseService.getCaseByCaseReference(ref, requestParamsDTO);
 
     if (result != null) {
       saveCaseInteraction(result.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
@@ -266,7 +266,7 @@ public class CaseEndpoint implements CTPEndpoint {
    */
   @RequestMapping(value = "/{caseId}", method = RequestMethod.PUT)
   @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<CaseResponseDTO> modifyCase(
+  public ResponseEntity<CaseDTO> modifyCase(
       @PathVariable(value = "caseId") final UUID caseId,
       @Valid @RequestBody ModifyCaseRequestDTO requestBodyDTO)
       throws CTPException {
@@ -274,7 +274,7 @@ public class CaseEndpoint implements CTPEndpoint {
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
-    CaseResponseDTO result = caseService.modifyCase(requestBodyDTO);
+    CaseDTO result = caseService.modifyCase(requestBodyDTO);
 
     saveCaseInteraction(caseId, CaseInteractionType.CASE_UPDATE_REQUESTED, null, null);
 
@@ -314,7 +314,7 @@ public class CaseEndpoint implements CTPEndpoint {
 
   @RequestMapping(value = "/{caseId}/enrol", method = RequestMethod.POST)
   @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<CaseResponseDTO> enrol(
+  public ResponseEntity<CaseDTO> enrol(
       @PathVariable(value = "caseId") final UUID caseId,
       @Valid @RequestBody EnrolmentRequestDTO enrolmentRequestDTO)
       throws CTPException {
@@ -322,7 +322,7 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering POST enrolment", kv("caseId", caseId), kv("requestBody", enrolmentRequestDTO));
 
-    CaseResponseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
+    CaseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
 
     return ResponseEntity.ok(caseDTO);
   }
