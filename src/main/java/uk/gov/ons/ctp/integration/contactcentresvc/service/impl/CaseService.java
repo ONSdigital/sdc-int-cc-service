@@ -407,6 +407,9 @@ public class CaseService {
 
     // Return details about the new case
     CaseDTO newCaseDTO = mapper.map(newCasePayload, CaseDTO.class);
+    Survey survey = existingCase.getCollectionExercise().getSurvey();
+    newCaseDTO.setSurveyId(survey.getId());
+    newCaseDTO.setSurveyType(SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl()));
     newCaseDTO.setCaseRef("");
     newCaseDTO.setInteractions(new ArrayList<CaseInteractionDTO>());
 

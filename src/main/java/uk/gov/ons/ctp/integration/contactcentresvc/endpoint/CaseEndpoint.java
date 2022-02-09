@@ -273,6 +273,7 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info("Entering PUT modifyCase", kv("requestBody", requestBodyDTO));
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
+
     CaseDTO result = caseService.modifyCase(requestBodyDTO);
 
     saveCaseInteraction(caseId, CaseInteractionType.CASE_UPDATE_REQUESTED, null, null);
