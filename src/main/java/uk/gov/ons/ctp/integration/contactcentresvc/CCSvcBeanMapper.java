@@ -6,17 +6,14 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
-import org.springframework.stereotype.Component;
-
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
-import uk.gov.ons.ctp.common.domain.SurveyType;
+import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
+import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;
@@ -33,12 +30,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.SurveyUsage;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PermissionDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
 /** The bean mapper that maps to/from DTOs and JPA entity types. */
 @Component
@@ -57,11 +51,8 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter(new UtcOffsetDateTimeConverter());
     converterFactory.registerConverter(new UtcLocalDateTimeConverter());
     converterFactory.registerConverter(new ArrayListConverter());
-    
-    factory
-        .classMap(Permission.class, PermissionDTO.class)
-        .byDefault()
-        .register();
+
+    factory.classMap(Permission.class, PermissionDTO.class).byDefault().register();
 
     factory
         .classMap(CaseUpdate.class, Case.class)

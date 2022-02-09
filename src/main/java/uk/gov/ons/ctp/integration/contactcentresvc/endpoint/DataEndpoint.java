@@ -27,9 +27,6 @@ public class DataEndpoint {
   @Autowired RoleRepository roleRepo;
   @Autowired PermissionRepository permRepo;
 
-  
-
-  
   //  @Transactional
   //  @GetMapping("/user/{user}/role")
   //  public ResponseEntity<List<String>> findUserRole(@PathVariable("user") String userName) {

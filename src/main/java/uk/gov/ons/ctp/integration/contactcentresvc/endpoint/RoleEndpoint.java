@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +27,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.PermissionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.BasicUserDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 
@@ -60,7 +60,8 @@ public class RoleEndpoint {
   @Transactional
   public ResponseEntity<List<RoleDTO>> getRoles(
       @Value("#{request.getAttribute('principal')}") String principal) throws CTPException {
-    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
+
+    identityHelper.assertUserPermission(principal, PermissionType.READ_ROLE);
 
     List<RoleDTO> dtoList = mapper.mapAsList(roleRepository.findAll(), RoleDTO.class);
     return ResponseEntity.ok(dtoList);
@@ -70,58 +71,62 @@ public class RoleEndpoint {
   @Transactional
   public ResponseEntity<RoleDTO> getRoleByName(
       @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal) throws CTPException {
-    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
+      @Value("#{request.getAttribute('principal')}") String principal)
+      throws CTPException {
 
-    Role role = roleRepository
-        .findByName(roleName)
-        .orElseThrow(
-            () -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
+    identityHelper.assertUserPermission(principal, PermissionType.READ_ROLE);
+
+    Role role =
+        roleRepository
+            .findByName(roleName)
+            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
     return ResponseEntity.ok(mapper.map(role, RoleDTO.class));
   }
 
-  @Transactional
   @GetMapping("/{roleName}/users")
-  public ResponseEntity<List<BasicUserDTO>> findUsersForUserRole(
+  @Transactional
+  public ResponseEntity<List<String>> findUsersForUserRole(
       @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal) throws CTPException {
-    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
+      @Value("#{request.getAttribute('principal')}") String principal)
+      throws CTPException {
 
-    Role role = roleRepository
-        .findByName(roleName)
-        .orElseThrow(
-            () -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
+    identityHelper.assertUserPermission(principal, PermissionType.READ_ROLE);
 
-    List<BasicUserDTO> dtoList = mapper.mapAsList(role.getUsers(), BasicUserDTO.class);
-    return ResponseEntity.ok(dtoList);
+    Role role =
+        roleRepository
+            .findByName(roleName)
+            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
+
+    return ResponseEntity.ok(role.getUsers().stream().filter(u->u.isActive()).map(u->u.getName()).collect(Collectors.toList()));
   }
 
-  @Transactional
   @GetMapping("/{roleName}/admins")
-  public ResponseEntity<List<BasicUserDTO>> findUsersForAdminRole(
+  @Transactional
+  public ResponseEntity<List<String>> findUsersForAdminRole(
       @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal) throws CTPException {
-    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
+      @Value("#{request.getAttribute('principal')}") String principal)
+      throws CTPException {
 
-    Role role = roleRepository
-        .findByName(roleName)
-        .orElseThrow(
-            () -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
+    identityHelper.assertUserPermission(principal, PermissionType.READ_ROLE);
 
-    List<BasicUserDTO> dtoList = mapper.mapAsList(role.getAdmins(), BasicUserDTO.class);
-    return ResponseEntity.ok(dtoList);
+    Role role =
+        roleRepository
+            .findByName(roleName)
+            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
+
+    return ResponseEntity.ok(role.getUsers().stream().filter(u->u.isActive()).map(u->u.getName()).collect(Collectors.toList()));
   }
 
   @PostMapping
   @Transactional
   public ResponseEntity<RoleDTO> createRole(
-      @RequestBody RoleDTO roleDTO,
-      @Value("#{request.getAttribute('principal')}") String principal) throws CTPException {
+      @RequestBody RoleDTO roleDTO, @Value("#{request.getAttribute('principal')}") String principal)
+      throws CTPException {
+
     identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
 
-    if (roleRepository
-        .findByName(roleDTO.getName()).isPresent()) {
+    if (roleRepository.findByName(roleDTO.getName()).isPresent()) {
       throw new CTPException(Fault.BAD_REQUEST, "Role with that name already exists");
     }
     Role role = new Role();
@@ -137,13 +142,18 @@ public class RoleEndpoint {
   public ResponseEntity<RoleDTO> addPermission(
       @PathVariable(value = "roleName") String roleName,
       @PathVariable(value = "permissionType") PermissionType permissionType,
-      @RequestAttribute(value = "principal") String principal) throws CTPException {
+      @RequestAttribute(value = "principal") String principal)
+      throws CTPException {
+
     identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
 
-    Role role = roleRepository.findByName(roleName).orElseThrow(
-        () -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
+    Role role =
+        roleRepository
+            .findByName(roleName)
+            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    Optional<Permission> permissionOpt = permissionRepository.findByPermissionTypeAndRole(permissionType, role);
+    Optional<Permission> permissionOpt =
+        permissionRepository.findByPermissionTypeAndRole(permissionType, role);
     if (permissionOpt.isEmpty()) {
       Permission permission = new Permission();
       permission.setId(UUID.randomUUID());
@@ -161,14 +171,18 @@ public class RoleEndpoint {
   public ResponseEntity<RoleDTO> removePermission(
       @PathVariable(value = "roleName") String roleName,
       @PathVariable(value = "permissionType") PermissionType permissionType,
-      @RequestAttribute(value = "principal") String principal) throws CTPException {
+      @RequestAttribute(value = "principal") String principal)
+      throws CTPException {
+
     identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
 
-    Role role = roleRepository.findByName(roleName).orElseThrow(
-        () -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
+    Role role =
+        roleRepository
+            .findByName(roleName)
+            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-
-    Optional<Permission> permissionOpt = permissionRepository.findByPermissionTypeAndRole(permissionType, role);
+    Optional<Permission> permissionOpt =
+        permissionRepository.findByPermissionTypeAndRole(permissionType, role);
     if (permissionOpt.isEmpty()) {
       Permission permission = new Permission();
       log.info("Removing permission " + permission);
@@ -179,5 +193,4 @@ public class RoleEndpoint {
 
     return ResponseEntity.ok(mapper.map(role, RoleDTO.class));
   }
-
 }

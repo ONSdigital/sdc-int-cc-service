@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -10,15 +9,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
@@ -54,7 +50,7 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     txOps.createUser("Fred", FRED_UUID);
 
     Optional<User> fredOpt = userRepo.findByName("Fred");
-    assert(fredOpt.isPresent());
+    assert (fredOpt.isPresent());
     User fred = fredOpt.get();
     assertEquals("Fred", fred.getName());
     assertEquals(FRED_UUID, fred.getId());
@@ -72,9 +68,9 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   public void shouldDeleteUser() {
     txOps.createUser("Joe", JOE_UUID);
     Optional<User> joe = userRepo.findByName("Joe");
-    assert(joe.isPresent());
+    assert (joe.isPresent());
     userRepo.delete(joe.get());
-    assert(userRepo.findByName("Joe").isEmpty());
+    assert (userRepo.findByName("Joe").isEmpty());
   }
 
   @Test
@@ -88,8 +84,7 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   @Test
   public void shouldCreateRoleWithPermissions() {
     var perms =
-        Arrays.asList(
-            new PermissionType[] {PermissionType.SEARCH_CASES, PermissionType.VIEW_CASE});
+        Arrays.asList(new PermissionType[] {PermissionType.SEARCH_CASES, PermissionType.VIEW_CASE});
     txOps.createRole("nurse", NURSE_UUID, perms);
     Optional<Role> nurse = roleRepo.findByName("nurse");
     assertEquals("nurse", nurse.get().getName());
@@ -104,22 +99,23 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     Optional<Role> nurse = roleRepo.findByName("nurse");
     assertEquals(1, nurse.get().getPermissions().size());
     assertEquals(1, permRepo.findAll().size());
-    assertEquals(PermissionType.SUPER_USER, nurse.get().getPermissions().get(0).getPermissionType());
+    assertEquals(
+        PermissionType.SUPER_USER, nurse.get().getPermissions().get(0).getPermissionType());
   }
 
   @Test
   public void shouldRemovePermission() {
     // create role with 2 permissions
     var perms =
-        Arrays.asList(
-            new PermissionType[] {PermissionType.SEARCH_CASES, PermissionType.VIEW_CASE});
+        Arrays.asList(new PermissionType[] {PermissionType.SEARCH_CASES, PermissionType.VIEW_CASE});
     Role role = txOps.createRole("nurse", NURSE_UUID, perms);
     // now remove one of those permissions
     txOps.removePermission(role, PermissionType.VIEW_CASE);
     Optional<Role> nurse = roleRepo.findByName("nurse");
     assertEquals(1, nurse.get().getPermissions().size());
     assertEquals(1, permRepo.findAll().size());
-    assertEquals(PermissionType.SEARCH_CASES, nurse.get().getPermissions().get(0).getPermissionType());
+    assertEquals(
+        PermissionType.SEARCH_CASES, nurse.get().getPermissions().get(0).getPermissionType());
   }
 
   @Test

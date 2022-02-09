@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 public enum PermissionType {
   SUPER_USER,
+
   SEARCH_CASES,
   VIEW_CASE,
   REFUSE_CASE,
@@ -15,5 +16,12 @@ public enum PermissionType {
   REQUEST_SMS_FULFILMENT,
   REQUEST_POSTAL_FULFILMENT,
   REQUEST_EMAIL_FULFILMENT,
-  ADD_CASE_INTERACTION
+  ADD_CASE_INTERACTION,
+  
+  CREATE_USER,
+  READ_USER,
+  MODIFY_USER,
+  USER_SURVEY_MAINTENANCE,
+  USER_ROLE_MAINTENANCE,
+  READ_ROLE
 }

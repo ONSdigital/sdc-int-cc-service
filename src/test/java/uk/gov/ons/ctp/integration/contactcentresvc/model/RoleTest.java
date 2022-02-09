@@ -66,10 +66,7 @@ public class RoleTest {
             .build();
 
     Permission p2 =
-        Permission.builder()
-            .id(UUID.randomUUID())
-            .permissionType(PermissionType.VIEW_CASE)
-            .build();
+        Permission.builder().id(UUID.randomUUID()).permissionType(PermissionType.VIEW_CASE).build();
 
     role =
         Role.builder()

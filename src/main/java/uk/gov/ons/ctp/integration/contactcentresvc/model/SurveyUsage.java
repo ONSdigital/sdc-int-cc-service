@@ -1,17 +1,14 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.UUID;
-
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

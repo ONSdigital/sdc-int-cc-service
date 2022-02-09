@@ -48,7 +48,7 @@ public class User {
       name = "ccuser_survey_usage",
       joinColumns = @JoinColumn(name = "ccuser_id"),
       inverseJoinColumns = @JoinColumn(name = "survey_usage_id"))
-  private List<SurveyUsage> surveyUsages;  
+  private List<SurveyUsage> surveyUsages;
 
   @JsonIgnore
   @ManyToMany

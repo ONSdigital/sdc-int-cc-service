@@ -32,14 +32,13 @@ VALUES ('382a8474-479c-11ec-a052-4c3275913db5', 'robert.catling@ext.ons.gov.uk',
 INSERT INTO role (id, name)
 VALUES ('ecf19b84-4799-11ec-9858-4c3275913db5', 'superuser'),
        ('60e54a1c-9ca7-491f-90d9-eef9c777a34c', 'manager'),
+       ('11822218-0b59-41bb-a01f-b651303786b3', 'usermanager'),
        ('94be28c6-5b84-4946-81da-134b511d6ffc', 'enquiriesoperator'),
        ('632b71e4-479a-11ec-a941-4c3275913db5', 'outboundcalloperator');
 
 -- add permissions to superuser role
 INSERT INTO permission (id, role_id, permission_type)
-VALUES ('8f50c0b2-479a-11ec-94c1-4c3275913db5', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'SUPER_USER'),
-       ('f0a8d736-479b-11ec-9e7f-4c3275913db5', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'VIEW_CASE'),
-       ('73b11d74-400e-42c0-8480-6f9f1aafcab2', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'SEARCH_CASES');
+VALUES ('8f50c0b2-479a-11ec-94c1-4c3275913db5', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'SUPER_USER');
 
 -- add permissions to enquiriesoperator role
 INSERT INTO permission (id, role_id, permission_type)
@@ -86,6 +85,14 @@ VALUES ('a419a655-a3eb-473a-8390-a74fe79eafda', '632b71e4-479a-11ec-a941-4c32759
        ('29a09481-a41d-464f-9d4d-511ed26a99f6', '632b71e4-479a-11ec-a941-4c3275913db5', 'REQUEST_EMAIL_FULFILMENT'),
        ('a52b0289-e17d-40f7-a11c-105986d1d449', '632b71e4-479a-11ec-a941-4c3275913db5', 'ADD_CASE_INTERACTION');      
        
+ -- add permissions to usermanager role
+INSERT INTO permission (id, role_id, permission_type)
+VALUES ('a2ec2409-0de5-4d0f-9d55-281a374755ed', '11822218-0b59-41bb-a01f-b651303786b3', 'CREATE_USER'),
+       ('d58e5707-f32c-4d77-ab83-aa467ba90633', '11822218-0b59-41bb-a01f-b651303786b3', 'READ_USER'),
+       ('77ffa322-4452-45ff-916b-e1a3b3d83d2a', '11822218-0b59-41bb-a01f-b651303786b3', 'MODIFY_USER'),
+       ('fe0d2a13-ec9c-4cd1-b6a7-b0231d034805', '11822218-0b59-41bb-a01f-b651303786b3', 'USER_SURVEY_MAINTENANCE'),
+       ('725777c7-4dc4-4439-a4f1-040dfd2a913b', '11822218-0b59-41bb-a01f-b651303786b3', 'USER_ROLE_MAINTENANCE'),
+       ('944c9cd0-1420-4624-9fe3-f6e0ec70ce4d', '11822218-0b59-41bb-a01f-b651303786b3', 'READ_ROLE');
        
 -- put users into superuser role
 INSERT INTO ccuser_role (role_id, ccuser_id)

@@ -112,6 +112,11 @@ public class CaseService {
 
   private LuhnCheckDigit luhnChecker = new LuhnCheckDigit();
 
+  public Survey getSurveyForCase(UUID caseId) throws CTPException {
+    Case caze = caseRepoClient.getCaseById(caseId);
+    return caze.getCollectionExercise().getSurvey();
+  }
+  
   public ResponseDTO fulfilmentRequestByPost(PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
 
@@ -214,19 +219,7 @@ public class CaseService {
 
     // Find matching cases
     List<Case> dbCases;
-    try {
-      dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
-    } catch (CTPException ex) {
-      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
-        log.info(
-            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
-        return Collections.emptyList();
-      } else {
-        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
-        throw ex;
-      }
-    }
-
+    dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
     // Summarise all found cases
     List<CaseSummaryDTO> caseSummaries = new ArrayList<>();
     for (Case dbCase : dbCases) {
