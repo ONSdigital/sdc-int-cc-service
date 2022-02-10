@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
+import uk.gov.ons.ctp.integration.contactcentresvc.UserContext;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.VersionResponseDTO;
 
 /** The REST endpoint controller for ContactCentreSvc Version Details */
@@ -23,7 +24,7 @@ public final class VersionEndpoint implements CTPEndpoint {
    */
   @RequestMapping(value = "/version", method = RequestMethod.GET)
   public VersionResponseDTO getVersion() {
-    log.info("Entering GET getVersion");
+    log.info("Entering GET getVersion for user {}", UserContext.get());
     VersionResponseDTO fakeVersion = VersionResponseDTO.builder().apiVersion("1.0.0").build();
     return fakeVersion;
   }
