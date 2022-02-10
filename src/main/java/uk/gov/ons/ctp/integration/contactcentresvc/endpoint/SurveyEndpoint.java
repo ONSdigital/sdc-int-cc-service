@@ -6,7 +6,6 @@ import io.micrometer.core.annotation.Timed;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +26,6 @@ public class SurveyEndpoint {
     this.surveyService = surveyService;
   }
 
-  @Transactional
   @GetMapping("/{surveyId}")
   public ResponseEntity<SurveyDTO> survey(@PathVariable final UUID surveyId) throws CTPException {
     log.info("Entering GET survey by ID {}", kv("surveyId", surveyId));

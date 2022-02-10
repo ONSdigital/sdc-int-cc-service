@@ -13,7 +13,7 @@ import uk.gov.ons.ctp.common.domain.SurveyType;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SurveyDTO {
-  private UUID surveyId;
+  private UUID id;
   private List<ProductDTO> allowedFulfilments;
   private SurveyType surveyType;
   private String surveyName;

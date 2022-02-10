@@ -128,7 +128,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
     factory
         .classMap(Survey.class, SurveyDTO.class)
-        .field("id", "surveyId")
         .field("name", "surveyName")
         .customize(
             new CustomMapper<Survey, SurveyDTO>() {
