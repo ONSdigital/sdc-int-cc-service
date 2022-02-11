@@ -1,5 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
+import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
+
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -9,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -65,11 +66,11 @@ public class UserEndpoint {
   @GetMapping("/{userName}")
   @Transactional
   public ResponseEntity<UserDTO> getUserByName(
-      @PathVariable(value = "userName") String userName,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "userName") String userName)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.READ_USER);
+    log.info("Entering getUserByName", kv("userName", userName));
+    identityHelper.assertUserPermission(PermissionType.READ_USER);
 
     User user = userRepository
         .findByName(userName)
@@ -81,8 +82,7 @@ public class UserEndpoint {
   @GetMapping("/{userName}/permissions")
   @Transactional
   public ResponseEntity<Set<PermissionType>> getUsersPermissions(
-      @PathVariable(value = "userName") String userName,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "userName") String userName)
       throws CTPException {
 
     // All users need to access this so no permission assertion
@@ -105,10 +105,8 @@ public class UserEndpoint {
 
   @GetMapping
   @Transactional
-  public ResponseEntity<List<UserDTO>> getUsers(
-      @Value("#{request.getAttribute('principal')}") String principal) throws CTPException {
-
-    identityHelper.assertUserPermission(principal, PermissionType.READ_USER);
+  public ResponseEntity<List<UserDTO>> getUsers() throws CTPException {
+    identityHelper.assertUserPermission(PermissionType.READ_USER);
 
     List<UserDTO> dtoList = mapper.mapAsList(userRepository.findAll(), UserDTO.class);
     return ResponseEntity.ok(dtoList);
@@ -118,11 +116,11 @@ public class UserEndpoint {
   @Transactional
   public ResponseEntity<UserDTO> modifyUser(
       @PathVariable(value = "userName") String userName,
-      @RequestBody UserDTO userDTO,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @RequestBody UserDTO userDTO)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.MODIFY_USER);
+    identityHelper.assertUserPermission(PermissionType.MODIFY_USER);
+    identityHelper.assertNotSelfModification(userName);
 
     User user = userRepository
         .findByName(userName)
@@ -139,7 +137,7 @@ public class UserEndpoint {
       @RequestBody UserDTO userDTO, @Value("#{request.getAttribute('principal')}") String principal)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.CREATE_USER);
+    identityHelper.assertUserPermission(PermissionType.CREATE_USER);
 
     if (userRepository.findByName(userDTO.getName()).isPresent()) {
       throw new CTPException(Fault.BAD_REQUEST, "User with that name already exists");
@@ -153,36 +151,24 @@ public class UserEndpoint {
     return ResponseEntity.ok(mapper.map(user, UserDTO.class));
   }
 
-//  @DeleteMapping("/{userName}")
-//  @Transactional
-//  public ResponseEntity<Void> deleteUserByName(
-//      @PathVariable("userName") String userName,
-//      @Value("#{request.getAttribute('principal')}") String principal)
-//      throws CTPException {
-//
-//    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
-//
-//    User user = userRepository
-//        .findByName(userName)
-//        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-//    userRepository.delete(user);
-//    return ResponseEntity.ok().build();
-//  }
-
   @PatchMapping("/{userName}/addSurvey/{surveyType}")
   @Transactional
   public ResponseEntity<UserDTO> addUserSurvey(
       @PathVariable(value = "userName") String userName,
-      @PathVariable(value = "surveyType") SurveyType surveyType,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "surveyType") SurveyType surveyType)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.USER_SURVEY_MAINTENANCE);
+    identityHelper.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
+    identityHelper.assertNotSelfModification(userName);
 
     User user = userRepository
         .findByName(userName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
+    if (!user.isActive()) {
+      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
+    }
+    
     SurveyUsage surveyUsage = userSurveyUsageRepository
         .findBySurveyType(surveyType)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "SurveyUsage not found"));
@@ -199,16 +185,21 @@ public class UserEndpoint {
   @Transactional
   public ResponseEntity<UserDTO> removeUserSurvey(
       @PathVariable(value = "userName") String userName,
-      @PathVariable(value = "surveyType") SurveyType surveyType,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "surveyType") SurveyType surveyType)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.USER_ROLE_MAINTENANCE);
+    identityHelper.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
+    identityHelper.assertNotSelfModification(userName);
+
 
     User user = userRepository
         .findByName(userName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
+    if (!user.isActive()) {
+      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
+    }
+    
     SurveyUsage surveyUsage = userSurveyUsageRepository
         .findBySurveyType(surveyType)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "SurveyUsage not found"));
@@ -225,19 +216,24 @@ public class UserEndpoint {
   @Transactional
   public ResponseEntity<UserDTO> addUserRole(
       @PathVariable(value = "userName") String userName,
-      @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
     User user = userRepository
         .findByName(userName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
+    if (!user.isActive()) {
+      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
+    }
+    
     Role role = roleRepository
         .findByName(roleName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    identityHelper.assertAdminPermission(principal, role, PermissionType.USER_ROLE_MAINTENANCE);
+    identityHelper.assertAdminPermission(role, PermissionType.USER_ROLE_MAINTENANCE);
+    identityHelper.assertNotSelfModification(userName);
+
 
     if (!user.getUserRoles().contains(role)) {
       user.getUserRoles().add(role);
@@ -251,19 +247,24 @@ public class UserEndpoint {
   @Transactional
   public ResponseEntity<UserDTO> removeUserRole(
       @PathVariable(value = "userName") String userName,
-      @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
     User user = userRepository
         .findByName(userName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
+    if (!user.isActive()) {
+      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
+    }
+    
     Role role = roleRepository
         .findByName(roleName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    identityHelper.assertAdminPermission(principal, role, PermissionType.USER_ROLE_MAINTENANCE);
+    identityHelper.assertAdminPermission(role, PermissionType.USER_ROLE_MAINTENANCE);
+    identityHelper.assertNotSelfModification(userName);
+
 
     if (user.getUserRoles().contains(role)) {
       user.getUserRoles().remove(role);
@@ -277,16 +278,21 @@ public class UserEndpoint {
   @Transactional
   public ResponseEntity<UserDTO> addAdminRole(
       @PathVariable(value = "userName") String userName,
-      @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
+    identityHelper.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
+    identityHelper.assertNotSelfModification(userName);
+
 
     User user = userRepository
         .findByName(userName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
+    if (!user.isActive()) {
+      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
+    }
+    
     Role role = roleRepository
         .findByName(roleName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
@@ -303,15 +309,21 @@ public class UserEndpoint {
   @Transactional
   public ResponseEntity<UserDTO> removeAdminRole(
       @PathVariable(value = "userName") String userName,
-      @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "roleName") String roleName)
       throws CTPException {
-    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
+
+    identityHelper.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
+    identityHelper.assertNotSelfModification(userName);
+
 
     User user = userRepository
         .findByName(userName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
+    if (!user.isActive()) {
+      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
+    }
+    
     Role role = roleRepository
         .findByName(roleName)
         .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));

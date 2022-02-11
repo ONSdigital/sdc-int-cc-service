@@ -1,8 +1,11 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 public enum PermissionType {
-  SUPER_USER,
-
+  CAN_RECEIVE_INBOUND_CALLS,
+  CAN_MAKE_OUTBOUND_CALLS,
+  CAN_MANAGE_USERS,
+  CAN_MANAGE_SYSTEM,
+  
   SEARCH_CASES,
   VIEW_CASE,
   REFUSE_CASE,
@@ -22,6 +25,10 @@ public enum PermissionType {
   READ_USER,
   MODIFY_USER,
   USER_SURVEY_MAINTENANCE,
+  USER_ROLE_ADMIN,
   USER_ROLE_MAINTENANCE,
-  READ_ROLE
+  ADMIN_ROLE_MAINTENANCE,
+  CREATE_ROLE,
+  READ_ROLE,
+  MAINTAIN_PERMISSIONS
 }

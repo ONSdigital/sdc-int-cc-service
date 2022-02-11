@@ -8,14 +8,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityIntercep
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
-  private final UserIdentityHelper userIdentity;
-
-  public WebMvcConfig(UserIdentityHelper userIdentity) {
-    this.userIdentity = userIdentity;
-  }
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(new UserIdentityInterceptor(userIdentity));
+    registry.addInterceptor(new UserIdentityInterceptor());
   }
 }

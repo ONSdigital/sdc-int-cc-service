@@ -17,8 +17,8 @@ DELETE FROM permission;
 DELETE FROM ccuser_role;
 DELETE FROM admin_role;
 DELETE FROM role; 
-DELETE FROM ccuser;
 DELETE FROM case_interaction;
+DELETE FROM ccuser;
 
 -- create users
 INSERT INTO ccuser (id, name, active)
@@ -29,20 +29,32 @@ VALUES ('382a8474-479c-11ec-a052-4c3275913db5', 'robert.catling@ext.ons.gov.uk',
        ('6774fade-479c-11ec-811e-4c3275913db5', 'peter.bochel@ext.ons.gov.uk', true);
 
 -- create roles
-INSERT INTO role (id, name)
-VALUES ('ecf19b84-4799-11ec-9858-4c3275913db5', 'superuser'),
-       ('60e54a1c-9ca7-491f-90d9-eef9c777a34c', 'manager'),
-       ('11822218-0b59-41bb-a01f-b651303786b3', 'usermanager'),
-       ('94be28c6-5b84-4946-81da-134b511d6ffc', 'enquiriesoperator'),
-       ('632b71e4-479a-11ec-a941-4c3275913db5', 'outboundcalloperator');
+INSERT INTO role (id, name, description)
+VALUES ('ecf19b84-4799-11ec-9858-4c3275913db5', 'superuser', 'permitted to perform all user and role related maintenance'),
+       ('60e54a1c-9ca7-491f-90d9-eef9c777a34c', 'manager', 'permitted to perform everything enquiry and outbound operators can'),
+       ('11822218-0b59-41bb-a01f-b651303786b3', 'usermanager', 'permitted to create new users'),
+       ('94be28c6-5b84-4946-81da-134b511d6ffc', 'enquiriesoperator', 'permitted to assist in bound callers'),
+       ('632b71e4-479a-11ec-a941-4c3275913db5', 'outboundcalloperator', 'permitted to make out bound calls');
 
 -- add permissions to superuser role
 INSERT INTO permission (id, role_id, permission_type)
-VALUES ('8f50c0b2-479a-11ec-94c1-4c3275913db5', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'SUPER_USER');
+VALUES ('c0e6b636-ee43-4607-b26f-462e3d4386eb', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'CAN_MANAGE_USERS'),
+       ('ffc11435-a141-47db-b19b-3b009a15abe1', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'CAN_MANAGE_SYSTEM'),
+       ('8f50c0b2-479a-11ec-94c1-4c3275913db5', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'CREATE_USER'),
+       ('af3fa2b0-dc30-4333-9953-beefb22db13a', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'READ_USER'),
+       ('58771d67-711b-4fec-9204-e1bfdd2c2761', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'MODIFY_USER'),
+       ('7af77150-b6cf-4d49-b0ca-6841627c389e', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'USER_SURVEY_MAINTENANCE'),
+       ('73849634-1b53-46db-920b-5a9962722841', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'USER_ROLE_ADMIN'),
+       ('28fcbf63-13c7-4d41-9990-4d9671650453', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'USER_ROLE_MAINTENANCE'),
+       ('1886096a-ef4a-49e1-b0d7-2f28480e948b', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'ADMIN_ROLE_MAINTENANCE'),
+       ('e4e99ec1-2243-43e1-ba23-785257ddd04e', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'CREATE_ROLE'),
+       ('0651544e-4380-4250-9b4a-4305a8609e11', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'READ_ROLE'),
+       ('c46ab584-14df-4b07-abd4-74f6a111b0d1', 'ecf19b84-4799-11ec-9858-4c3275913db5', 'MAINTAIN_PERMISSIONS');
 
 -- add permissions to enquiriesoperator role
 INSERT INTO permission (id, role_id, permission_type)
-VALUES ('bd95eabe-479b-11ec-8bb2-4c3275913db5', '94be28c6-5b84-4946-81da-134b511d6ffc', 'SEARCH_CASES'),
+VALUES ('bd95eabe-479b-11ec-8bb2-4c3275913db5', '94be28c6-5b84-4946-81da-134b511d6ffc', 'CAN_RECEIVE_INBOUND_CALLS'),
+       ('cc7a6a3e-55b0-42f3-b72a-8b07c06726a9', '94be28c6-5b84-4946-81da-134b511d6ffc', 'SEARCH_CASES'),
        ('594978b4-6806-4fe7-baa3-807e69d6c2af', '94be28c6-5b84-4946-81da-134b511d6ffc', 'VIEW_CASE'),
        ('a82cef6b-16d7-4b05-943b-fcd68414dfb5', '94be28c6-5b84-4946-81da-134b511d6ffc', 'REFUSE_CASE'),
        ('12ed889a-b126-414d-81c0-9017a0001cc8', '94be28c6-5b84-4946-81da-134b511d6ffc', 'REMOVE_CASE'),
@@ -55,7 +67,8 @@ VALUES ('bd95eabe-479b-11ec-8bb2-4c3275913db5', '94be28c6-5b84-4946-81da-134b511
        
  -- add permissions to manager role
 INSERT INTO permission (id, role_id, permission_type)
-VALUES ('80d90533-f07e-4d28-8765-842fc5f8bb81', '60e54a1c-9ca7-491f-90d9-eef9c777a34c', 'SEARCH_CASES'),
+VALUES ('80d90533-f07e-4d28-8765-842fc5f8bb81', '60e54a1c-9ca7-491f-90d9-eef9c777a34c', 'CAN_MANAGE_SYSTEM'),
+       ('a84ef3ca-bffb-4cf6-8b54-3c98ff2701a7', '60e54a1c-9ca7-491f-90d9-eef9c777a34c', 'SEARCH_CASES'),
        ('ccb40d69-848e-42c4-ab08-35edd2c42a4d', '60e54a1c-9ca7-491f-90d9-eef9c777a34c', 'VIEW_CASE'),
        ('d4a152c7-66fd-40d7-96fd-b44e32c9a9c8', '60e54a1c-9ca7-491f-90d9-eef9c777a34c', 'REFUSE_CASE'),
        ('1eec0f25-63cd-4fe0-837a-9ade79eab20d', '60e54a1c-9ca7-491f-90d9-eef9c777a34c', 'REMOVE_CASE'),
@@ -72,7 +85,8 @@ VALUES ('80d90533-f07e-4d28-8765-842fc5f8bb81', '60e54a1c-9ca7-491f-90d9-eef9c77
        
  -- add permissions to outboundoperator role
 INSERT INTO permission (id, role_id, permission_type)
-VALUES ('a419a655-a3eb-473a-8390-a74fe79eafda', '632b71e4-479a-11ec-a941-4c3275913db5', 'SEARCH_CASES'),
+VALUES ('602faaed-ed5f-447f-8479-42be1e476484', '632b71e4-479a-11ec-a941-4c3275913db5', 'CAN_MAKE_OUTBOUND_CALLS'),
+       ('a419a655-a3eb-473a-8390-a74fe79eafda', '632b71e4-479a-11ec-a941-4c3275913db5', 'SEARCH_CASES'),
        ('2240ceb8-10bd-4e5b-964e-824851099e60', '632b71e4-479a-11ec-a941-4c3275913db5', 'VIEW_CASE'),
        ('c5a0d6d0-e236-41e1-a8bd-0b0d5b12128c', '632b71e4-479a-11ec-a941-4c3275913db5', 'REFUSE_CASE'),
        ('ab2ca63f-b9b1-48a5-a39b-a1c597cc1432', '632b71e4-479a-11ec-a941-4c3275913db5', 'REMOVE_CASE'),
@@ -87,7 +101,8 @@ VALUES ('a419a655-a3eb-473a-8390-a74fe79eafda', '632b71e4-479a-11ec-a941-4c32759
        
  -- add permissions to usermanager role
 INSERT INTO permission (id, role_id, permission_type)
-VALUES ('a2ec2409-0de5-4d0f-9d55-281a374755ed', '11822218-0b59-41bb-a01f-b651303786b3', 'CREATE_USER'),
+VALUES ('a2ec2409-0de5-4d0f-9d55-281a374755ed', '11822218-0b59-41bb-a01f-b651303786b3', 'CAN_MANAGE_USERS'),
+       ('b740a27d-ea88-4d6b-9ed4-1341bfb92ab6', '11822218-0b59-41bb-a01f-b651303786b3', 'CREATE_USER'),
        ('d58e5707-f32c-4d77-ab83-aa467ba90633', '11822218-0b59-41bb-a01f-b651303786b3', 'READ_USER'),
        ('77ffa322-4452-45ff-916b-e1a3b3d83d2a', '11822218-0b59-41bb-a01f-b651303786b3', 'MODIFY_USER'),
        ('fe0d2a13-ec9c-4cd1-b6a7-b0231d034805', '11822218-0b59-41bb-a01f-b651303786b3', 'USER_SURVEY_MAINTENANCE'),

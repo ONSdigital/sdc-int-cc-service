@@ -6,14 +6,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,10 +56,9 @@ public class RoleEndpoint {
 
   @GetMapping
   @Transactional
-  public ResponseEntity<List<RoleDTO>> getRoles(
-      @Value("#{request.getAttribute('principal')}") String principal) throws CTPException {
+  public ResponseEntity<List<RoleDTO>> getRoles() throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.READ_ROLE);
+    identityHelper.assertUserPermission(PermissionType.READ_ROLE);
 
     List<RoleDTO> dtoList = mapper.mapAsList(roleRepository.findAll(), RoleDTO.class);
     return ResponseEntity.ok(dtoList);
@@ -70,11 +67,10 @@ public class RoleEndpoint {
   @GetMapping("/{roleName}")
   @Transactional
   public ResponseEntity<RoleDTO> getRoleByName(
-      @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.READ_ROLE);
+    identityHelper.assertUserPermission(PermissionType.READ_ROLE);
 
     Role role =
         roleRepository
@@ -87,11 +83,10 @@ public class RoleEndpoint {
   @GetMapping("/{roleName}/users")
   @Transactional
   public ResponseEntity<List<String>> findUsersForUserRole(
-      @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.READ_ROLE);
+    identityHelper.assertUserPermission(PermissionType.READ_ROLE);
 
     Role role =
         roleRepository
@@ -104,11 +99,10 @@ public class RoleEndpoint {
   @GetMapping("/{roleName}/admins")
   @Transactional
   public ResponseEntity<List<String>> findUsersForAdminRole(
-      @PathVariable(value = "roleName") String roleName,
-      @Value("#{request.getAttribute('principal')}") String principal)
+      @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.READ_ROLE);
+    identityHelper.assertUserPermission(PermissionType.READ_ROLE);
 
     Role role =
         roleRepository
@@ -120,11 +114,10 @@ public class RoleEndpoint {
 
   @PostMapping
   @Transactional
-  public ResponseEntity<RoleDTO> createRole(
-      @RequestBody RoleDTO roleDTO, @Value("#{request.getAttribute('principal')}") String principal)
+  public ResponseEntity<RoleDTO> createRole(@RequestBody RoleDTO roleDTO)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
+    identityHelper.assertUserPermission(PermissionType.CREATE_ROLE);
 
     if (roleRepository.findByName(roleDTO.getName()).isPresent()) {
       throw new CTPException(Fault.BAD_REQUEST, "Role with that name already exists");
@@ -141,11 +134,10 @@ public class RoleEndpoint {
   @Transactional
   public ResponseEntity<RoleDTO> addPermission(
       @PathVariable(value = "roleName") String roleName,
-      @PathVariable(value = "permissionType") PermissionType permissionType,
-      @RequestAttribute(value = "principal") String principal)
+      @PathVariable(value = "permissionType") PermissionType permissionType)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
+    identityHelper.assertUserPermission(PermissionType.MAINTAIN_PERMISSIONS);
 
     Role role =
         roleRepository
@@ -170,11 +162,10 @@ public class RoleEndpoint {
   @Transactional
   public ResponseEntity<RoleDTO> removePermission(
       @PathVariable(value = "roleName") String roleName,
-      @PathVariable(value = "permissionType") PermissionType permissionType,
-      @RequestAttribute(value = "principal") String principal)
+      @PathVariable(value = "permissionType") PermissionType permissionType)
       throws CTPException {
 
-    identityHelper.assertUserPermission(principal, PermissionType.SUPER_USER);
+    identityHelper.assertUserPermission(PermissionType.MAINTAIN_PERMISSIONS);
 
     Role role =
         roleRepository

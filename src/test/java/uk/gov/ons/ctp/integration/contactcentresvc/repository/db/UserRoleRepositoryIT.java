@@ -95,12 +95,12 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   @Test
   public void shouldAddPermission() {
     Role role = txOps.createRole("nurse", NURSE_UUID, null);
-    txOps.addPermission(role, PermissionType.SUPER_USER);
+    txOps.addPermission(role, PermissionType.READ_USER);
     Optional<Role> nurse = roleRepo.findByName("nurse");
     assertEquals(1, nurse.get().getPermissions().size());
     assertEquals(1, permRepo.findAll().size());
     assertEquals(
-        PermissionType.SUPER_USER, nurse.get().getPermissions().get(0).getPermissionType());
+        PermissionType.READ_USER, nurse.get().getPermissions().get(0).getPermissionType());
   }
 
   @Test
