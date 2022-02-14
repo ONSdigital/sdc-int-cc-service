@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
@@ -38,7 +39,7 @@ public class InteractionServiceImplTest {
   private final UUID uuid = UUID.fromString("382a8474-479c-11ec-a052-4c3275913db5");
 
   @Test
-  public void saveInteraction() {
+  public void saveInteraction() throws CTPException {
     CaseInteractionRequestDTO caseInteractionRequestDTO =
         FixtureHelper.loadClassFixtures(CaseInteractionRequestDTO[].class).get(0);
 

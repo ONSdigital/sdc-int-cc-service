@@ -2,11 +2,11 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
+import io.micrometer.core.annotation.Timed;
 import java.util.List;
 import java.util.UUID;
-
 import javax.validation.Valid;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,14 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.micrometer.core.annotation.Timed;
-import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
@@ -35,6 +33,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
@@ -46,6 +45,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServi
 public class CaseEndpoint implements CTPEndpoint {
   private CaseService caseService;
   private InteractionService interactionService;
+  private UserIdentityHelper identityHelper;
 
   /**
    * Constructor for ContactCentreDataEndpoint
@@ -54,8 +54,12 @@ public class CaseEndpoint implements CTPEndpoint {
    *     endpoint.
    */
   @Autowired
-  public CaseEndpoint(final CaseService caseService, final InteractionService interactionService) {
+  public CaseEndpoint(
+      final CaseService caseService,
+      final UserIdentityHelper identityHelper,
+      InteractionService interactionService) {
     this.caseService = caseService;
+    this.identityHelper = identityHelper;
     this.interactionService = interactionService;
   }
 
@@ -74,11 +78,14 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering GET getCaseById", kv("pathParam", caseId), kv("requestParams", requestParamsDTO));
 
-    CaseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
+    identityHelper.assertUserPermission(
+        caseService.getSurveyForCase(caseId), PermissionType.VIEW_CASE);
+
+    CaseDTO caze = caseService.getCaseById(caseId, requestParamsDTO);
 
     saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
-    return ResponseEntity.ok(result);
+    return ResponseEntity.ok(caze);
   }
 
   /**
@@ -93,6 +100,8 @@ public class CaseEndpoint implements CTPEndpoint {
   public ResponseEntity<List<CaseSummaryDTO>> getCaseBySampleAttribute(
       @PathVariable("key") String key, @PathVariable("value") String value) throws CTPException {
     log.info("Entering GET getCaseBySampleAttribute", kv("key", key), kv("value", value));
+
+    identityHelper.assertUserPermission(PermissionType.SEARCH_CASES);
 
     List<CaseSummaryDTO> results = caseService.getCaseSummaryBySampleAttribute(key, value);
 
@@ -116,13 +125,16 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", ref),
         kv("requestParams", requestParamsDTO));
 
-    CaseDTO result = caseService.getCaseByCaseReference(ref, requestParamsDTO);
+    CaseDTO caze = caseService.getCaseByCaseReference(ref, requestParamsDTO);
 
-    if (result != null) {
-      saveCaseInteraction(result.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
+    identityHelper.assertUserPermission(
+        caseService.getSurveyForCase(caze.getId()), PermissionType.VIEW_CASE);
+
+    if (caze != null) {
+      saveCaseInteraction(caze.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
     }
 
-    return ResponseEntity.ok(result);
+    return ResponseEntity.ok(caze);
   }
 
   /**
@@ -142,6 +154,9 @@ public class CaseEndpoint implements CTPEndpoint {
         "Entering GET getLaunchURLForCaseId",
         kv("pathParam", caseId),
         kv("requestParams", requestParamsDTO));
+
+    identityHelper.assertUserPermission(
+        caseService.getSurveyForCase(caseId), PermissionType.LAUNCH_EQ);
 
     String launchURL = caseService.getLaunchURLForCaseId(caseId, requestParamsDTO);
 
@@ -169,6 +184,9 @@ public class CaseEndpoint implements CTPEndpoint {
         "Entering POST fulfilmentRequestByPost",
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
+
+    identityHelper.assertUserPermission(
+        caseService.getSurveyForCase(caseId), PermissionType.REQUEST_POSTAL_FULFILMENT);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
@@ -204,6 +222,9 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
+    identityHelper.assertUserPermission(
+        caseService.getSurveyForCase(caseId), PermissionType.REQUEST_SMS_FULFILMENT);
+
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
     ResponseDTO response = caseService.fulfilmentRequestBySMS(requestBodyDTO);
@@ -235,6 +256,9 @@ public class CaseEndpoint implements CTPEndpoint {
 
     log.info(
         "Entering POST reportRefusal", kv("pathParam", caseId), kv("requestBody", requestBodyDTO));
+
+    identityHelper.assertUserPermission(
+        caseService.getSurveyForCase(caseId), PermissionType.REFUSE_CASE);
 
     if (!caseId.equals(requestBodyDTO.getCaseId())) {
       log.warn("reportRefusal caseId in path and body must be identical", kv("caseId", caseId));
@@ -274,6 +298,9 @@ public class CaseEndpoint implements CTPEndpoint {
       @Valid @RequestBody ModifyCaseRequestDTO requestBodyDTO)
       throws CTPException {
     log.info("Entering PUT modifyCase", kv("requestBody", requestBodyDTO));
+
+    identityHelper.assertUserPermission(
+        caseService.getSurveyForCase(caseId), PermissionType.MODIFY_CASE);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
     CaseDTO result = caseService.modifyCase(requestBodyDTO);
@@ -324,6 +351,9 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering POST enrolment", kv("caseId", caseId), kv("requestBody", enrolmentRequestDTO));
 
+    identityHelper.assertUserPermission(
+        caseService.getSurveyForCase(caseId), PermissionType.ENROL_CASE);
+
     CaseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
 
     return ResponseEntity.ok(caseDTO);
@@ -351,7 +381,8 @@ public class CaseEndpoint implements CTPEndpoint {
   }
 
   private void saveCaseInteraction(
-      UUID caseId, CaseInteractionType type, CaseSubInteractionType subtype, String note) {
+      UUID caseId, CaseInteractionType type, CaseSubInteractionType subtype, String note)
+      throws CTPException {
     log.info("Saving case interaction", kv("caseId", caseId));
     CaseInteractionRequestDTO dto =
         CaseInteractionRequestDTO.builder().type(type).subtype(subtype).note(note).build();

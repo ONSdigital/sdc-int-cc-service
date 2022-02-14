@@ -116,7 +116,7 @@ public class CaseService {
     Case caze = caseRepoClient.getCaseById(caseId);
     return caze.getCollectionExercise().getSurvey();
   }
-  
+
   public ResponseDTO fulfilmentRequestByPost(PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
 

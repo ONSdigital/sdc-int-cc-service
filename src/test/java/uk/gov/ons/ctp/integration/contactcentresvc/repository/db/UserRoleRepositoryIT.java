@@ -99,8 +99,7 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     Optional<Role> nurse = roleRepo.findByName("nurse");
     assertEquals(1, nurse.get().getPermissions().size());
     assertEquals(1, permRepo.findAll().size());
-    assertEquals(
-        PermissionType.READ_USER, nurse.get().getPermissions().get(0).getPermissionType());
+    assertEquals(PermissionType.READ_USER, nurse.get().getPermissions().get(0).getPermissionType());
   }
 
   @Test

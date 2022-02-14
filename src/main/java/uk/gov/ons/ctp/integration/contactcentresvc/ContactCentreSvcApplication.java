@@ -1,14 +1,22 @@
 package uk.gov.ons.ctp.integration.contactcentresvc;
 
+import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.support.PublisherFactory;
+import com.google.cloud.spring.pubsub.support.SubscriberFactory;
+import com.google.cloud.spring.pubsub.support.converter.JacksonPubSubMessageConverter;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.config.MeterFilterReply;
+import io.micrometer.stackdriver.StackdriverConfig;
+import io.micrometer.stackdriver.StackdriverMeterRegistry;
 import java.time.Duration;
 import java.util.HashMap;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -20,18 +28,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
-
-import com.google.cloud.spring.pubsub.core.PubSubTemplate;
-import com.google.cloud.spring.pubsub.support.PublisherFactory;
-import com.google.cloud.spring.pubsub.support.SubscriberFactory;
-import com.google.cloud.spring.pubsub.support.converter.JacksonPubSubMessageConverter;
-
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.config.MeterFilter;
-import io.micrometer.core.instrument.config.MeterFilterReply;
-import io.micrometer.stackdriver.StackdriverConfig;
-import io.micrometer.stackdriver.StackdriverMeterRegistry;
-import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
@@ -216,17 +212,4 @@ public class ContactCentreSvcApplication {
     StackdriverMeterRegistry.builder(stackdriverConfig).build();
     return StackdriverMeterRegistry.builder(stackdriverConfig).build();
   }
-  
-//  @Bean
-//  public FilterRegistrationBean<SecurityFilter> securityFilter(){
-//      FilterRegistrationBean<SecurityFilter> registrationBean 
-//        = new FilterRegistrationBean<>();
-//          
-//      registrationBean.setFilter(new SecurityFilter());
-//      registrationBean.addUrlPatterns("/users/*");
-//      registrationBean.addUrlPatterns("/roles/*");
-//      registrationBean.setOrder(1);
-//          
-//      return registrationBean;    
-//  }
 }

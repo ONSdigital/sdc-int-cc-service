@@ -1,16 +1,14 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import java.util.List;
-
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserSurveyUsageRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyUsageDTO;
@@ -24,11 +22,9 @@ public class SurveyUsageEndpoint {
 
   private UserSurveyUsageRepository userSurveyUsageRepository;
 
-
   @Autowired
   public SurveyUsageEndpoint(
-      final UserSurveyUsageRepository userSurveyUsageRepository,
-      final MapperFacade mapper) {
+      final UserSurveyUsageRepository userSurveyUsageRepository, final MapperFacade mapper) {
     this.userSurveyUsageRepository = userSurveyUsageRepository;
     this.mapper = mapper;
   }

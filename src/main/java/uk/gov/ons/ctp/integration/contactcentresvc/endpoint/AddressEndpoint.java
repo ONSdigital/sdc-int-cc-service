@@ -2,16 +2,14 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
+import io.micrometer.core.annotation.Timed;
 import javax.validation.Valid;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.micrometer.core.annotation.Timed;
-import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -29,8 +27,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
 @RequestMapping(value = "/addresses", produces = "application/json")
 public final class AddressEndpoint implements CTPEndpoint {
   private AddressService addressService;
-
   private UserIdentityHelper identityHelper;
+
   /**
    * Constructor for ContactCentreDataEndpoint
    *

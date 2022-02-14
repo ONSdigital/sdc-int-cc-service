@@ -4,13 +4,13 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,84 +19,47 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.SurveyUsage;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserSurveyUsageRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserService;
 
 @Slf4j
-// @Timed
 @RestController
+@Validated
 @RequestMapping(value = "/users", produces = "application/json")
 public class UserEndpoint {
 
-  private MapperFacade mapper;
-
-  private UserRepository userRepository;
-  private UserSurveyUsageRepository userSurveyUsageRepository;
-  private RoleRepository roleRepository;
-
   private UserIdentityHelper identityHelper;
+  private UserService userService;
 
   @Autowired
-  public UserEndpoint(
-      final UserRepository userRepository,
-      final UserSurveyUsageRepository userSurveyUsageRepository,
-      final RoleRepository roleRepository,
-      final MapperFacade mapper,
-      final UserIdentityHelper identityHelper) {
-    this.userRepository = userRepository;
-    this.userSurveyUsageRepository = userSurveyUsageRepository;
-    this.roleRepository = roleRepository;
-    this.mapper = mapper;
+  public UserEndpoint(final UserIdentityHelper identityHelper, final UserService userService) {
     this.identityHelper = identityHelper;
+    this.userService = userService;
   }
 
   @GetMapping("/{userName}")
-  @Transactional
   public ResponseEntity<UserDTO> getUserByName(
-      @PathVariable(value = "userName") String userName)
-      throws CTPException {
+      @PathVariable(value = "userName") @Valid @Email String userName) throws CTPException {
 
     log.info("Entering getUserByName", kv("userName", userName));
     identityHelper.assertUserPermission(PermissionType.READ_USER);
 
-    User user = userRepository
-        .findByName(userName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-    return ResponseEntity.ok(mapper.map(user, UserDTO.class));
+    return ResponseEntity.ok(userService.getUser(userName));
   }
 
   @GetMapping("/{userName}/permissions")
-  @Transactional
   public ResponseEntity<Set<PermissionType>> getUsersPermissions(
-      @PathVariable(value = "userName") String userName)
-      throws CTPException {
+      @PathVariable(value = "userName") @Valid @Email String userName) throws CTPException {
 
+    log.info("Entering getUsersPermissions", kv("userName", userName));
     // All users need to access this so no permission assertion
 
-    User user = userRepository
-        .findByName(userName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-    if (!user.isActive()) {
-      throw new CTPException(Fault.BAD_REQUEST, "User no longer active");
-    }
-    
     return ResponseEntity.ok(
-        user.getUserRoles().stream()
+        userService.getUsersRoles(userName).stream()
             .map(r -> r.getPermissions())
             .flatMap(List::stream)
             .map(p -> p.getPermissionType())
@@ -104,235 +67,110 @@ public class UserEndpoint {
   }
 
   @GetMapping
-  @Transactional
   public ResponseEntity<List<UserDTO>> getUsers() throws CTPException {
+    log.info("Entering getUsers");
     identityHelper.assertUserPermission(PermissionType.READ_USER);
 
-    List<UserDTO> dtoList = mapper.mapAsList(userRepository.findAll(), UserDTO.class);
-    return ResponseEntity.ok(dtoList);
+    return ResponseEntity.ok(userService.getUsers());
   }
 
   @PutMapping("/{userName}")
-  @Transactional
   public ResponseEntity<UserDTO> modifyUser(
-      @PathVariable(value = "userName") String userName,
-      @RequestBody UserDTO userDTO)
+      @PathVariable(value = "userName") @Valid @Email String userName, @RequestBody UserDTO userDTO)
       throws CTPException {
 
+    log.info("Entering modifyUser", kv("userName", userName));
     identityHelper.assertUserPermission(PermissionType.MODIFY_USER);
     identityHelper.assertNotSelfModification(userName);
 
-    User user = userRepository
-        .findByName(userName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-    user.setActive(userDTO.isActive());
-    userRepository.saveAndFlush(user);
-    return ResponseEntity.ok(mapper.map(user, UserDTO.class));
+    userDTO.setName(userName);
+    return ResponseEntity.ok(userService.modifyUser(userDTO));
   }
 
   @PostMapping
-  @Transactional
-  public ResponseEntity<UserDTO> createUser(
-      @RequestBody UserDTO userDTO, @Value("#{request.getAttribute('principal')}") String principal)
-      throws CTPException {
+  public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) throws CTPException {
+    log.info("Entering createUser", kv("userName", userDTO.getName()));
 
     identityHelper.assertUserPermission(PermissionType.CREATE_USER);
 
-    if (userRepository.findByName(userDTO.getName()).isPresent()) {
-      throw new CTPException(Fault.BAD_REQUEST, "User with that name already exists");
-    }
-
-    User user = new User();
-    user.setId(UUID.randomUUID());
-    user.setName(userDTO.getName());
-
-    userRepository.saveAndFlush(user);
-    return ResponseEntity.ok(mapper.map(user, UserDTO.class));
+    return ResponseEntity.ok(userService.createUser(userDTO));
   }
 
   @PatchMapping("/{userName}/addSurvey/{surveyType}")
-  @Transactional
   public ResponseEntity<UserDTO> addUserSurvey(
-      @PathVariable(value = "userName") String userName,
+      @PathVariable(value = "userName") @Valid @Email String userName,
       @PathVariable(value = "surveyType") SurveyType surveyType)
       throws CTPException {
+    log.info("Entering addUserSurvey", kv("userName", userName), kv("surveyType", surveyType));
 
     identityHelper.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
     identityHelper.assertNotSelfModification(userName);
 
-    User user = userRepository
-        .findByName(userName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-    if (!user.isActive()) {
-      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
-    }
-    
-    SurveyUsage surveyUsage = userSurveyUsageRepository
-        .findBySurveyType(surveyType)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "SurveyUsage not found"));
-
-    if (!user.getSurveyUsages().contains(surveyUsage)) {
-      user.getSurveyUsages().add(surveyUsage);
-    }
-
-    userRepository.saveAndFlush(user);
-    return ResponseEntity.ok(mapper.map(user, UserDTO.class));
+    return ResponseEntity.ok(userService.addUserSurvey(userName, surveyType));
   }
 
   @PatchMapping("/{userName}/removeSurvey/{surveyType}")
-  @Transactional
   public ResponseEntity<UserDTO> removeUserSurvey(
-      @PathVariable(value = "userName") String userName,
+      @PathVariable(value = "userName") @Valid @Email String userName,
       @PathVariable(value = "surveyType") SurveyType surveyType)
       throws CTPException {
+    log.info("Entering removeUserSurvey", kv("userName", userName), kv("surveyType", surveyType));
 
     identityHelper.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
     identityHelper.assertNotSelfModification(userName);
 
-
-    User user = userRepository
-        .findByName(userName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-    if (!user.isActive()) {
-      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
-    }
-    
-    SurveyUsage surveyUsage = userSurveyUsageRepository
-        .findBySurveyType(surveyType)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "SurveyUsage not found"));
-
-    if (user.getSurveyUsages().contains(surveyUsage)) {
-      user.getSurveyUsages().remove(surveyUsage);
-    }
-
-    userRepository.saveAndFlush(user);
-    return ResponseEntity.ok(mapper.map(user, UserDTO.class));
+    return ResponseEntity.ok(userService.removeUserSurvey(userName, surveyType));
   }
 
   @PatchMapping("/{userName}/addUserRole/{roleName}")
-  @Transactional
   public ResponseEntity<UserDTO> addUserRole(
-      @PathVariable(value = "userName") String userName,
+      @PathVariable(value = "userName") @Valid @Email String userName,
       @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
-    User user = userRepository
-        .findByName(userName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-    if (!user.isActive()) {
-      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
-    }
-    
-    Role role = roleRepository
-        .findByName(roleName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
-
-    identityHelper.assertAdminPermission(role, PermissionType.USER_ROLE_MAINTENANCE);
+    log.info("Entering addUserRole", kv("userName", userName), kv("roleName", roleName));
+    identityHelper.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
     identityHelper.assertNotSelfModification(userName);
 
-
-    if (!user.getUserRoles().contains(role)) {
-      user.getUserRoles().add(role);
-    }
-
-    userRepository.saveAndFlush(user);
-    return ResponseEntity.ok(mapper.map(user, UserDTO.class));
+    return ResponseEntity.ok(userService.addUserRole(userName, roleName));
   }
 
   @PatchMapping("/{userName}/removeUserRole/{roleName}")
-  @Transactional
   public ResponseEntity<UserDTO> removeUserRole(
-      @PathVariable(value = "userName") String userName,
+      @PathVariable(value = "userName") @Valid @Email String userName,
       @PathVariable(value = "roleName") String roleName)
       throws CTPException {
+    log.info("Entering removeUserRole", kv("userName", userName), kv("roleName", roleName));
 
-    User user = userRepository
-        .findByName(userName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-    if (!user.isActive()) {
-      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
-    }
-    
-    Role role = roleRepository
-        .findByName(roleName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
-
-    identityHelper.assertAdminPermission(role, PermissionType.USER_ROLE_MAINTENANCE);
+    identityHelper.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
     identityHelper.assertNotSelfModification(userName);
 
-
-    if (user.getUserRoles().contains(role)) {
-      user.getUserRoles().remove(role);
-    }
-
-    userRepository.saveAndFlush(user);
-    return ResponseEntity.ok(mapper.map(user, UserDTO.class));
+    return ResponseEntity.ok(userService.removeUserRole(userName, roleName));
   }
 
   @PatchMapping("/{userName}/addAdminRole/{roleName}")
-  @Transactional
   public ResponseEntity<UserDTO> addAdminRole(
-      @PathVariable(value = "userName") String userName,
+      @PathVariable(value = "userName") @Valid @Email String userName,
       @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
+    log.info("Entering addAdminRole", kv("userName", userName), kv("roleName", roleName));
     identityHelper.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
     identityHelper.assertNotSelfModification(userName);
 
-
-    User user = userRepository
-        .findByName(userName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-    if (!user.isActive()) {
-      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
-    }
-    
-    Role role = roleRepository
-        .findByName(roleName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
-
-    if (!user.getAdminRoles().contains(role)) {
-      user.getAdminRoles().add(role);
-    }
-
-    userRepository.saveAndFlush(user);
-    return ResponseEntity.ok(mapper.map(user, UserDTO.class));
+    return ResponseEntity.ok(userService.addAdminRole(userName, roleName));
   }
 
   @PatchMapping("/{userName}/removeAdminRole/{roleName}")
-  @Transactional
   public ResponseEntity<UserDTO> removeAdminRole(
-      @PathVariable(value = "userName") String userName,
+      @PathVariable(value = "userName") @Valid @Email String userName,
       @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
+    log.info("Entering removeAdminRole", kv("userName", userName), kv("roleName", roleName));
     identityHelper.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
     identityHelper.assertNotSelfModification(userName);
 
-
-    User user = userRepository
-        .findByName(userName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-    if (!user.isActive()) {
-      throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
-    }
-    
-    Role role = roleRepository
-        .findByName(roleName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
-
-    if (user.getAdminRoles().contains(role)) {
-      user.getAdminRoles().remove(role);
-    }
-
-    userRepository.saveAndFlush(user);
-    return ResponseEntity.ok(mapper.map(user, UserDTO.class));
+    return ResponseEntity.ok(userService.removeAdminRole(userName, roleName));
   }
 }
