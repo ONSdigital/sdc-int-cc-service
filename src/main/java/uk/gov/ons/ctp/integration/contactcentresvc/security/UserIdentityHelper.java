@@ -36,47 +36,46 @@ public class UserIdentityHelper {
     }
   }
 
+  /**
+   * In a few cases we wish to guard against a user performing a user/role related operation on themselves
+   * ie granting themselves permissions. Security 101.
+   * @param userName the target user
+   * @throws CTPException when the user is forbidden to operate on the their own account
+   */
   public void assertNotSelfModification(String userName) throws CTPException {
     if (UserIdentityContext.get().equals(userName)) {
       throw new CTPException(
-          Fault.BAD_REQUEST, String.format("Self modification of user account not allowed"));
+          Fault.ACCESS_DENIED, String.format("Self modification of user account not allowed"));
     }
   }
 
+  
+  /** 
+   * Asserts that the signed user exists etc etc and that they have permission to perform the
+   * requested action
+   * @param permissionType the permission related to the required action
+   * @throws CTPException they either have not logged in, do not exist, are inactive or do not have the necessary permission
+   */
   @Transactional
   public void assertUserPermission(PermissionType permissionType) throws CTPException {
     assertUserPermission(null, permissionType);
   }
 
+  /** 
+   * Asserts that the signed user exists etc etc and that they have permission to perform the
+   * requested action for the requested survey
+   * @param permissionType the permission related to the required action
+   * @throws CTPException they either have not logged in, do not exist, are inactive or do not have the necessary permission
+   */
   @Transactional
   public void assertUserPermission(Survey survey, PermissionType permissionType)
       throws CTPException {
 
-    DummyUser dummyUser = appConfig.getDummyUser();
-    if (dummyUser.isAllowed()
-        && UserIdentityContext.get().equals(dummyUser.getSuperUserIdentity())) {
-      // Dummy test super user is fully authorised, bypassing all security
-      // This is **STRICTLY** for ease of dev/testing in non-production
-      // environments
+    if (userActingAsAllowedDummy()) {
       return;
     }
 
-    String principalIdentity = UserIdentityContext.get();
-
-    if (StringUtils.isEmpty(principalIdentity)) {
-      throw new CTPException(Fault.ACCESS_DENIED, String.format("User must be logged in"));
-    }
-
-    User user =
-        userRepository
-            .findByName(principalIdentity)
-            .orElseThrow(
-                () -> new CTPException(Fault.ACCESS_DENIED, "User unknown: " + principalIdentity));
-
-    if (!user.isActive()) {
-      throw new CTPException(
-          Fault.ACCESS_DENIED, String.format("User %s no longer active", principalIdentity));
-    }
+    User user = loadUser();
 
     for (Role role : user.getUserRoles()) {
       for (Permission permission : role.getPermissions()) {
@@ -90,11 +89,10 @@ public class UserIdentityHelper {
                 && !user.getSurveyUsages().isEmpty()
                 && user.getSurveyUsages().stream()
                     .anyMatch(
-                        usu ->
-                            usu.getSurveyType()
-                                .equals(
-                                    SurveyType.fromSampleDefinitionUrl(
-                                        survey.getSampleDefinitionUrl()))))) {
+                        usu -> usu.getSurveyType()
+                            .equals(
+                                SurveyType.fromSampleDefinitionUrl(
+                                    survey.getSampleDefinitionUrl()))))) {
           return; // User is authorised
         }
       }
@@ -102,14 +100,29 @@ public class UserIdentityHelper {
 
     throw new CTPException(
         Fault.ACCESS_DENIED,
-        String.format("User not authorised for activity %s", permissionType.name()));
+        String.format("User not authorised for activity %s for survey type %s", permissionType.name(),
+            SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl())));
   }
 
   /**
-   * A special case assertion for the maintenance of user:role assignment For a non 'super' user, it
-   * is required that they themselves are in the admin roles for the target role. An exception is
-   * made if the user is a super user who will have the permission USER_ROLE_ADMIN. Otherwise
-   * Catch-22.
+   * A simple assertion with few uses where a specific permission is not required for an operation,
+   * but we still want to assert that the user has logged in, exists and is active
+   * @throws CTPException
+   */
+  @Transactional
+  public void assertUserValidAndActive() throws CTPException {
+
+    if (userActingAsAllowedDummy()) {
+      return;
+    }
+    loadUser();
+  }
+
+  /**
+   * A special case assertion for the maintenance of user:role assignment
+   * For a non 'super' user, it is required that they themselves are in the admin
+   * roles for the target role. An exception is made if the user is a super user
+   * who will have the permission USER_ROLE_ADMIN. Otherwise Catch-22.
    *
    * @param userName the identity of the user performing the action
    * @param targetRole the role being maintained
@@ -119,36 +132,15 @@ public class UserIdentityHelper {
   @Transactional
   public void assertAdminPermission(String roleName, PermissionType permissionType)
       throws CTPException {
-    DummyUser dummyUser = appConfig.getDummyUser();
-    if (dummyUser.isAllowed()
-        && UserIdentityContext.get().equals(dummyUser.getSuperUserIdentity())) {
-      // Dummy test super user is fully authorised, bypassing all security
-      // This is **STRICTLY** for ease of dev/testing in non-production
-      // environments
+
+    if (userActingAsAllowedDummy()) {
       return;
     }
 
-    String principalIdentity = UserIdentityContext.get();
-
-    if (StringUtils.isEmpty(principalIdentity)) {
-      throw new CTPException(Fault.ACCESS_DENIED, String.format("User must be logged in"));
-    }
-
-    User user =
-        userRepository
-            .findByName(principalIdentity)
-            .orElseThrow(
-                () -> new CTPException(Fault.ACCESS_DENIED, "User unknown: " + principalIdentity));
-
-    if (!user.isActive()) {
-      throw new CTPException(
-          Fault.ACCESS_DENIED, String.format("User %s no longer active", principalIdentity));
-    }
-
-    Role targetRole =
-        roleRepository
-            .findByName(roleName)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
+    User user = loadUser();
+    Role targetRole = roleRepository
+        .findByName(roleName)
+        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
     boolean isAdminForRole = user.getAdminRoles().contains(targetRole);
     for (Role role : user.getUserRoles()) {
@@ -163,5 +155,48 @@ public class UserIdentityHelper {
     throw new CTPException(
         Fault.ACCESS_DENIED,
         String.format("User not authorised for activity %s", permissionType.name()));
+  }
+
+  /**
+   * asserts that the user identity exists in context, the user exists in the db, and the
+   * user is currently active
+   * @return the User if all the above
+   * @throws CTPException one of the conditions above was not met
+   */
+  private User loadUser()
+      throws CTPException {
+
+    String principalIdentity = UserIdentityContext.get();
+
+    if (StringUtils.isEmpty(principalIdentity)) {
+      throw new CTPException(Fault.ACCESS_DENIED, String.format("User must be logged in"));
+    }
+
+    User user = userRepository
+        .findByName(principalIdentity)
+        .orElseThrow(
+            () -> new CTPException(Fault.ACCESS_DENIED, "User unknown: " + principalIdentity));
+
+    if (!user.isActive()) {
+      throw new CTPException(
+          Fault.ACCESS_DENIED, String.format("User %s no longer active", principalIdentity));
+    }
+    return user;
+  }
+
+  /**
+   * checks to see if the dummy user functionality is enabled through config and if so, is
+   * the currently signed in user acting as the dummy
+   * @return true if the above
+   */
+  private boolean userActingAsAllowedDummy() {
+    DummyUser dummyUser = appConfig.getDummyUser();
+    boolean dummyEnabled = false;
+    if (dummyUser.isAllowed()
+        && UserIdentityContext.get().equals(dummyUser.getSuperUserIdentity())) {
+      log.warn("Dummy user is allowed and in effect - this should NOT be seen in a non dev/test environment");
+      dummyEnabled = true;
+    }
+    return dummyEnabled;
   }
 }

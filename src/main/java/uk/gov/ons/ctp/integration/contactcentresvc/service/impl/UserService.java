@@ -49,10 +49,6 @@ public class UserService {
             .findByName(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
-    if (!user.isActive()) {
-      throw new CTPException(Fault.BAD_REQUEST, "User no longer active");
-    }
-
     return mapper.mapAsList(user.getUserRoles(), RoleDTO.class);
   }
 

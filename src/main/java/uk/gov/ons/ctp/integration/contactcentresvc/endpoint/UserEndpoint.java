@@ -5,9 +5,11 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
-import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,9 +21,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.error.CTPException.Fault;
+import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserService;
@@ -50,16 +57,22 @@ public class UserEndpoint {
 
     return ResponseEntity.ok(userService.getUser(userName));
   }
+  
+  @GetMapping("/permissions")
+  public ResponseEntity<Set<PermissionType>> getLoggedInUsersPermissions()  throws CTPException {
 
-  @GetMapping("/{userName}/permissions")
-  public ResponseEntity<Set<PermissionType>> getUsersPermissions(
-      @PathVariable(value = "userName") @Valid @Email String userName) throws CTPException {
+    String userName = UserIdentityContext.get();
+    log.info("Entering getLoggedInUsersPermissions", kv("userName", userName));
 
-    log.info("Entering getUsersPermissions", kv("userName", userName));
+    identityHelper.assertUserValidAndActive();
+
     // All users need to access this so no permission assertion
-
+    List<RoleDTO> usersRoles = userService.getUsersRoles(userName);
+    if (usersRoles.isEmpty()) {
+      throw new CTPException(Fault.ACCESS_DENIED, "User has no roles assigned");
+    }
     return ResponseEntity.ok(
-        userService.getUsersRoles(userName).stream()
+        usersRoles.stream()
             .map(r -> r.getPermissions())
             .flatMap(List::stream)
             .map(p -> p.getPermissionType())

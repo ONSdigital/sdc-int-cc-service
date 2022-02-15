@@ -107,6 +107,24 @@ public class UserIdentityHelperTest {
     assert (exception.getFault().equals(Fault.ACCESS_DENIED));
   }
 
+  @Test
+  public void disallowsDeactivatedUserWithPermission() throws CTPException {
+    User user = createUserWithoutPermissions(USER_NAME);
+    user.setActive(false);
+    addUserRoleWithPermission(user, PermissionType.SEARCH_CASES);
+    addSurveyUsage(user, SurveyType.SOCIAL);
+    Survey survey = Survey.builder().sampleDefinitionUrl("blahblah.social.json").build();
+
+    when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
+    CTPException exception =
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userIdentityHelper.assertUserPermission(survey, PermissionType.SEARCH_CASES);
+            });
+    assert (exception.getFault().equals(Fault.ACCESS_DENIED));
+  }
+  
   private void addSurveyUsage(User user, SurveyType surveyType) {
     SurveyUsage surveyUsage =
         SurveyUsage.builder().id(UUID.randomUUID()).surveyType(surveyType).build();
