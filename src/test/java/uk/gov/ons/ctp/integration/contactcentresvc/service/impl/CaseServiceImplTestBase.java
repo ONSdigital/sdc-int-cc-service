@@ -29,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
@@ -44,6 +45,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CollectionExercise;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.CaseRepositoryClient;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
@@ -104,6 +106,9 @@ public abstract class CaseServiceImplTestBase {
 
   void verifyCase(CaseDTO results, CaseDTO expectedCaseResult) throws Exception {
     assertEquals(expectedCaseResult.getId(), results.getId());
+    assertEquals(expectedCaseResult.getCollectionExerciseId(), results.getCollectionExerciseId());
+    assertEquals(expectedCaseResult.getSurveyId(), results.getSurveyId());
+    assertEquals(expectedCaseResult.getSurveyType(), results.getSurveyType());
     assertEquals(expectedCaseResult.getCaseRef(), results.getCaseRef());
     assertEquals(expectedCaseResult.getSample(), results.getSample());
     assertEquals(expectedCaseResult.getSampleSensitive(), results.getSampleSensitive());
@@ -127,9 +132,14 @@ public abstract class CaseServiceImplTestBase {
 
   CaseDTO createExpectedCaseDTO(Case caseFromDb) {
 
+    Survey survey = caseFromDb.getCollectionExercise().getSurvey();
+
     CaseDTO expectedCaseResult =
         CaseDTO.builder()
             .id(caseFromDb.getId())
+            .collectionExerciseId(caseFromDb.getCollectionExercise().getId())
+            .surveyId(survey.getId())
+            .surveyType(SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl()))
             .caseRef(caseFromDb.getCaseRef())
             .sample(new HashMap<>(caseFromDb.getSample()))
             .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))

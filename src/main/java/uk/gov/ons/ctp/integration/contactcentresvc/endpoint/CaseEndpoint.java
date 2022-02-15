@@ -303,6 +303,7 @@ public class CaseEndpoint implements CTPEndpoint {
         caseService.getSurveyForCase(caseId), PermissionType.MODIFY_CASE);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
+
     CaseDTO result = caseService.modifyCase(requestBodyDTO);
 
     saveCaseInteraction(caseId, CaseInteractionType.CASE_UPDATE_REQUESTED, null, null);
