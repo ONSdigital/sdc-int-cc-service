@@ -21,7 +21,10 @@ surveyName: CENSUS
 public-pgp-key-1 : classpath:pgp/key1.asc
 public-pgp-key-2 : classpath:pgp/key2.asc
 
-
+dummy-user-config:
+  allowed: false
+  user-id: 7704983d-89ea-4447-b681-e412c2a2610b
+  user-name: philip.whiles@ext.ons.gov.uk
 
 management:
   endpoints:
