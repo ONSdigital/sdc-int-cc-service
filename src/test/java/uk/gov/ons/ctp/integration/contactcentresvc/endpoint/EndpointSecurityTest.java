@@ -29,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -56,12 +57,12 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServi
 /**
  * This test class started off during Census when we restricted access to basic auth serco AND the
  * CC service had a dual mode CC/AD persona which meant that endpoints would/would not be accessible
- * depending on the mode in hand. I have gone to the trouble of updating many of the tests here so
- * that they work with the RBAC identity aware endpoints and their permission checks, but looking
- * through these tests I question their value now that basic auth is no longer used - all they are
- * doing is exercising each endpoint and asserting an ok response. The framework in this class could
- * be useful for building out some more extensive tests to test the RBAC checks in each endpoint so
- * leaving here as is for time being
+ * depending on the mode in hand, or if they did not auth correctlt. I have gone to the trouble of
+ * updating many of the tests here so that they work with the RBAC identity aware endpoints and
+ * their permission checks, but looking through these tests now they currently little or no value -
+ * all they are doing is exercising each endpoint and asserting an ok response. The framework in
+ * this class could be useful for building out some more extensive tests to test the RBAC checks in
+ * each endpoint so leaving here as is for time being
  *
  * @author philwhiles
  */
@@ -85,7 +86,7 @@ public class EndpointSecurityTest {
 
   @BeforeEach
   public void setUp() throws MalformedURLException {
-    restTemplate = new TestRestTemplate("serco_cks", "temporary");
+    restTemplate = new TestRestTemplate(new RestTemplateBuilder());
     base = new URL("http://localhost:" + port);
     when(userIdentityHelper.userActingAsAllowedDummy()).thenReturn(true);
   }
@@ -107,26 +108,6 @@ public class EndpointSecurityTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.getBody().contains("ccsvc"), response.getBody());
-  }
-
-  @Test
-  public void whenUserWithWrongCredentialsRequestsVersionThenUnauthorizedPage() throws Exception {
-
-    restTemplate = new TestRestTemplate("user", "wrongpassword");
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/ccsvc/version", String.class);
-
-    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-  }
-
-  @Test
-  public void whenUserWithCorrectCredentialsRequestsVersionThenSuccess() throws Exception {
-
-    restTemplate = new TestRestTemplate("serco_cks", "temporary");
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/ccsvc/version", String.class);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
   @Test

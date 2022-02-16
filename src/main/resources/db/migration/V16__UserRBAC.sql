@@ -25,7 +25,8 @@ INSERT INTO ccuser (id, name, active)
 VALUES ('382a8474-479c-11ec-a052-4c3275913db5', 'robert.catling@ext.ons.gov.uk', true),
        ('46e62d6a-479c-11ec-aab4-4c3275913db5', 'philip.whiles@ext.ons.gov.uk', true),
        ('dc4eb75d-1478-408a-96f0-0309fc8e03fb', 'simon.diaz@ext.ons.gov.uk', true),
-       ('3ed3362a-65e6-4f1b-ab8a-71c2595af25c', 'kieran.wardle@eons.gov.uk', true),
+       ('3ed3362a-65e6-4f1b-ab8a-71c2595af25c', 'kieran.wardle@ons.gov.uk', true),
+       ('a7a770d2-7568-46f7-b459-ad8810412dd2', 'ameet.manjrekar@ext.ons.gov.uk', true),
        ('6774fade-479c-11ec-811e-4c3275913db5', 'peter.bochel@ext.ons.gov.uk', true);
 
 -- create roles
@@ -111,10 +112,39 @@ VALUES ('a2ec2409-0de5-4d0f-9d55-281a374755ed', '11822218-0b59-41bb-a01f-b651303
        ('725777c7-4dc4-4439-a4f1-040dfd2a913b', '11822218-0b59-41bb-a01f-b651303786b3', 'USER_ROLE_MAINTENANCE'),
        ('944c9cd0-1420-4624-9fe3-f6e0ec70ce4d', '11822218-0b59-41bb-a01f-b651303786b3', 'READ_ROLE');
        
--- put users into superuser role
+-- put dev team users into superuser role
 INSERT INTO ccuser_role (role_id, ccuser_id)
 VALUES ('ecf19b84-4799-11ec-9858-4c3275913db5', '382a8474-479c-11ec-a052-4c3275913db5'), -- Rob Catling
+       ('ecf19b84-4799-11ec-9858-4c3275913db5', 'a7a770d2-7568-46f7-b459-ad8810412dd2'), -- Ameet Manjrekar
        ('ecf19b84-4799-11ec-9858-4c3275913db5', '46e62d6a-479c-11ec-aab4-4c3275913db5'), -- Phil Whiles
        ('ecf19b84-4799-11ec-9858-4c3275913db5', 'dc4eb75d-1478-408a-96f0-0309fc8e03fb'), -- Simon Diaz
        ('ecf19b84-4799-11ec-9858-4c3275913db5', '3ed3362a-65e6-4f1b-ab8a-71c2595af25c'), -- Kieran Wardle
        ('ecf19b84-4799-11ec-9858-4c3275913db5', '6774fade-479c-11ec-811e-4c3275913db5'); -- Peter Bochel
+       
+-- put dev team users into enquiriesoperator role
+INSERT INTO ccuser_role (role_id, ccuser_id)
+VALUES ('94be28c6-5b84-4946-81da-134b511d6ffc', '382a8474-479c-11ec-a052-4c3275913db5'), -- Rob Catling
+       ('94be28c6-5b84-4946-81da-134b511d6ffc', 'a7a770d2-7568-46f7-b459-ad8810412dd2'), -- Ameet Manjrekar
+       ('94be28c6-5b84-4946-81da-134b511d6ffc', '46e62d6a-479c-11ec-aab4-4c3275913db5'), -- Phil Whiles
+       ('94be28c6-5b84-4946-81da-134b511d6ffc', 'dc4eb75d-1478-408a-96f0-0309fc8e03fb'), -- Simon Diaz
+       ('94be28c6-5b84-4946-81da-134b511d6ffc', '3ed3362a-65e6-4f1b-ab8a-71c2595af25c'), -- Kieran Wardle
+       ('94be28c6-5b84-4946-81da-134b511d6ffc', '6774fade-479c-11ec-811e-4c3275913db5'); -- Peter Bochel
+
+-- put dev team users into outboundoperator role
+INSERT INTO ccuser_role (role_id, ccuser_id)
+VALUES ('632b71e4-479a-11ec-a941-4c3275913db5', '382a8474-479c-11ec-a052-4c3275913db5'), -- Rob Catling
+       ('632b71e4-479a-11ec-a941-4c3275913db5', 'a7a770d2-7568-46f7-b459-ad8810412dd2'), -- Ameet Manjrekar
+       ('632b71e4-479a-11ec-a941-4c3275913db5', '46e62d6a-479c-11ec-aab4-4c3275913db5'), -- Phil Whiles
+       ('632b71e4-479a-11ec-a941-4c3275913db5', 'dc4eb75d-1478-408a-96f0-0309fc8e03fb'), -- Simon Diaz
+       ('632b71e4-479a-11ec-a941-4c3275913db5', '3ed3362a-65e6-4f1b-ab8a-71c2595af25c'), -- Kieran Wardle
+       ('632b71e4-479a-11ec-a941-4c3275913db5', '6774fade-479c-11ec-811e-4c3275913db5'); -- Peter Bochel
+       
+-- give each dev team user SOCIAL survey usage
+INSERT INTO ccuser_survey_usage (survey_usage_id, ccuser_id)
+VALUES ('f1fa2959-ccf5-447e-99c3-f8c6fc77a90a', '382a8474-479c-11ec-a052-4c3275913db5'), -- Rob Catling
+       ('f1fa2959-ccf5-447e-99c3-f8c6fc77a90a', 'a7a770d2-7568-46f7-b459-ad8810412dd2'), -- Ameet Manjrekar
+       ('f1fa2959-ccf5-447e-99c3-f8c6fc77a90a', '46e62d6a-479c-11ec-aab4-4c3275913db5'), -- Phil Whiles
+       ('f1fa2959-ccf5-447e-99c3-f8c6fc77a90a', 'dc4eb75d-1478-408a-96f0-0309fc8e03fb'), -- Simon Diaz
+       ('f1fa2959-ccf5-447e-99c3-f8c6fc77a90a', '3ed3362a-65e6-4f1b-ab8a-71c2595af25c'), -- Kieran Wardle
+       ('f1fa2959-ccf5-447e-99c3-f8c6fc77a90a', '6774fade-479c-11ec-811e-4c3275913db5'); -- Peter Bochel
+

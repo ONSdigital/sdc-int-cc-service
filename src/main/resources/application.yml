@@ -62,9 +62,7 @@ spring:
     servlet:
       path: /
   security:
-    user:
-      name: serco_cks
-      password: temporary
+    enabled: false
   output:
     ansi:
       enabled: never
