@@ -71,7 +71,7 @@ public class RoleService {
             .findByName(roleName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    return role.getUsers().stream()
+    return role.getAdmins().stream()
         .filter(u -> u.isActive())
         .map(u -> u.getName())
         .collect(Collectors.toList());
@@ -127,8 +127,8 @@ public class RoleService {
 
     Optional<Permission> permissionOpt =
         permissionRepository.findByPermissionTypeAndRole(permissionType, role);
-    if (permissionOpt.isEmpty()) {
-      Permission permission = new Permission();
+    if (permissionOpt.isPresent()) {
+      Permission permission = permissionOpt.get();
       permissionRepository.delete(permission);
       role.getPermissions().remove(permission);
       roleRepository.saveAndFlush(role);

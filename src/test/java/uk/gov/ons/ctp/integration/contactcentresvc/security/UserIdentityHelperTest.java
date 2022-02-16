@@ -25,21 +25,24 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.SurveyUsage;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class UserIdentityHelperTest {
   private static final String USER_NAME = "mickey.mouse@ons.gov.uk";
+  private static final UUID SURVEY_ID = UUID.fromString("55e7f61f-5e0e-45dd-b594-4ba8da2e8b60");
 
   @Mock private UserRepository userRepo;
   @Mock private RoleRepository roleRepo;
+  @Mock private SurveyRepository surveyRepo;
   private AppConfig appConfig = mock(AppConfig.class, Mockito.RETURNS_DEEP_STUBS);
 
   private UserIdentityHelper userIdentityHelper;
 
   @BeforeEach
   public void init() {
-    userIdentityHelper = new UserIdentityHelper(userRepo, roleRepo, appConfig);
+    userIdentityHelper = new UserIdentityHelper(surveyRepo, userRepo, roleRepo, appConfig);
     UserIdentityContext.set(USER_NAME);
   }
 
@@ -68,10 +71,10 @@ public class UserIdentityHelperTest {
     User user = createUserWithoutPermissions(USER_NAME);
     addUserRoleWithPermission(user, PermissionType.SEARCH_CASES);
     addSurveyUsage(user, SurveyType.SOCIAL);
-    Survey survey = Survey.builder().sampleDefinitionUrl("blahblah.social.json").build();
 
+    mockSurveyRepoCall("social");
     when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
-    userIdentityHelper.assertUserPermission(survey, PermissionType.SEARCH_CASES);
+    userIdentityHelper.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
   }
 
   @Test
@@ -80,14 +83,14 @@ public class UserIdentityHelperTest {
     User user = createUserWithoutPermissions(USER_NAME);
     addUserRoleWithPermission(user, PermissionType.SEARCH_CASES);
     addSurveyUsage(user, SurveyType.SOCIAL);
-    Survey survey = Survey.builder().sampleDefinitionUrl("blahblah.fart.json").build();
 
+    mockSurveyRepoCall("business");
     when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
     CTPException exception =
         assertThrows(
             CTPException.class,
             () -> {
-              userIdentityHelper.assertUserPermission(survey, PermissionType.SEARCH_CASES);
+              userIdentityHelper.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
             });
     assert (exception.getFault().equals(Fault.ACCESS_DENIED));
   }
@@ -95,14 +98,14 @@ public class UserIdentityHelperTest {
   @Test
   public void disallowsWithRequestedSurveyWithoutPermission() throws CTPException {
     User user = createUserWithoutPermissions(USER_NAME);
-    Survey survey = Survey.builder().sampleDefinitionUrl("blahblah.social.json").build();
 
+    mockSurveyRepoCall("social");
     when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
     CTPException exception =
         assertThrows(
             CTPException.class,
             () -> {
-              userIdentityHelper.assertUserPermission(survey, PermissionType.SEARCH_CASES);
+              userIdentityHelper.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
             });
     assert (exception.getFault().equals(Fault.ACCESS_DENIED));
   }
@@ -113,18 +116,17 @@ public class UserIdentityHelperTest {
     user.setActive(false);
     addUserRoleWithPermission(user, PermissionType.SEARCH_CASES);
     addSurveyUsage(user, SurveyType.SOCIAL);
-    Survey survey = Survey.builder().sampleDefinitionUrl("blahblah.social.json").build();
 
     when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
     CTPException exception =
         assertThrows(
             CTPException.class,
             () -> {
-              userIdentityHelper.assertUserPermission(survey, PermissionType.SEARCH_CASES);
+              userIdentityHelper.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
             });
     assert (exception.getFault().equals(Fault.ACCESS_DENIED));
   }
-  
+
   private void addSurveyUsage(User user, SurveyType surveyType) {
     SurveyUsage surveyUsage =
         SurveyUsage.builder().id(UUID.randomUUID()).surveyType(surveyType).build();
@@ -150,5 +152,14 @@ public class UserIdentityHelperTest {
             .surveyUsages(new ArrayList<>())
             .build();
     return user;
+  }
+
+  private void mockSurveyRepoCall(String surveyStr) {
+    Survey survey =
+        Survey.builder()
+            .id(SURVEY_ID)
+            .sampleDefinitionUrl("blahblah." + surveyStr + ".json")
+            .build();
+    when(surveyRepo.getById(SURVEY_ID)).thenReturn(survey);
   }
 }

@@ -27,6 +27,7 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 
@@ -47,6 +48,8 @@ public final class CaseEndpoint_getCaseSummaryBySampleAttribute {
   @Mock CaseService caseService;
 
   @Mock InteractionService interactionService;
+
+  @Mock UserIdentityHelper userIdentityHelper;
 
   private MockMvc mockMvc;
 

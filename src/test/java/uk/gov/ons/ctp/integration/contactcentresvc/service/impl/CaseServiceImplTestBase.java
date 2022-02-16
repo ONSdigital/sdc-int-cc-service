@@ -54,6 +54,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.DeliveryChannel;
+import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 public abstract class CaseServiceImplTestBase {
@@ -72,6 +73,8 @@ public abstract class CaseServiceImplTestBase {
   @Mock EqLaunchService eqLaunchService;
 
   @Mock EventTransfer eventTransfer;
+
+  @Mock UserIdentityHelper userIdentityHelper;
 
   @Spy MapperFacade mapperFacade = new CCSvcBeanMapper();
 

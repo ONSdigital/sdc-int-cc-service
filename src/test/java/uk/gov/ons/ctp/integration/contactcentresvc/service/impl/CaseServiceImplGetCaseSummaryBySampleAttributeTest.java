@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
@@ -65,18 +65,17 @@ public class CaseServiceImplGetCaseSummaryBySampleAttributeTest extends CaseServ
 
   // ---- helpers methods below ---
 
-  private void mockCasesFromDb() throws Exception {
+  private void mockCasesFromDb() {
     when(caseDataClient.getCaseBySampleAttribute("uprn", String.valueOf(UPRN.getValue())))
         .thenReturn(casesFromDb);
   }
 
-  private void mockNothingInDb() throws Exception {
-    doThrow(new CTPException(Fault.RESOURCE_NOT_FOUND))
-        .when(caseDataClient)
-        .getCaseBySampleAttribute("uprn", String.valueOf(UPRN.getValue()));
+  private void mockNothingInDb() throws CTPException {
+    when(caseDataClient.getCaseBySampleAttribute("uprn", String.valueOf(UPRN.getValue())))
+        .thenReturn(new ArrayList<Case>());
   }
 
-  private void verifyCallToGetCasesFromDb() throws Exception {
+  private void verifyCallToGetCasesFromDb() {
     verify(caseDataClient).getCaseBySampleAttribute(eq("uprn"), anyString());
   }
 

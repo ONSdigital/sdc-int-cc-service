@@ -15,6 +15,6 @@ case-service-settings:
     port: 8162        
 
 dummy-user:
-  allowed: false
-  identity: Fred
-  super-user-identity: Marge
+  allowed: true
+  user-id: 7704983d-89ea-4447-b681-e412c2a2610b
+  user-name: philip.whiles@ext.ons.gov.uk

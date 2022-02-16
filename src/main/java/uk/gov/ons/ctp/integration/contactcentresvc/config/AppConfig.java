@@ -30,6 +30,5 @@ public class AppConfig {
   private QueueConfig queueConfig;
   private MessagingConfig messaging;
   private Set<String> surveys;
-  // default dummy user for non dev that disallows usage
-  private DummyUser dummyUser = new DummyUser();
+  private DummyUserConfig dummyUserConfig;
 }

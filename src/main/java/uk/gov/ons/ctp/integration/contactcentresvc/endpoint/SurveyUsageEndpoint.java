@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserSurveyUsageRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyUsageDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 
 @Slf4j
 @RestController
@@ -22,9 +23,14 @@ public class SurveyUsageEndpoint {
 
   private UserSurveyUsageRepository userSurveyUsageRepository;
 
+  private UserIdentityHelper identityHelper;
+
   @Autowired
   public SurveyUsageEndpoint(
-      final UserSurveyUsageRepository userSurveyUsageRepository, final MapperFacade mapper) {
+      final UserIdentityHelper identityHelper,
+      final UserSurveyUsageRepository userSurveyUsageRepository,
+      final MapperFacade mapper) {
+    this.identityHelper = identityHelper;
     this.userSurveyUsageRepository = userSurveyUsageRepository;
     this.mapper = mapper;
   }
@@ -33,7 +39,8 @@ public class SurveyUsageEndpoint {
   @Transactional
   public ResponseEntity<List<SurveyUsageDTO>> getSurveyUsages() throws CTPException {
 
-    // All users need to access this so no permission assertion
+    log.info("Entering getSurveyUsages");
+    identityHelper.assertUserValidAndActive();
 
     List<SurveyUsageDTO> dtoList =
         mapper.mapAsList(userSurveyUsageRepository.findAll(), SurveyUsageDTO.class);

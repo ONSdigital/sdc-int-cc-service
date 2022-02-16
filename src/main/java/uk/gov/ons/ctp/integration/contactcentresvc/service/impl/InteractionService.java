@@ -12,19 +12,23 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
+import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 
 @Slf4j
 @Service
 public class InteractionService {
 
-  @Autowired private CaseInteractionRepository caseRepository;
+  @Autowired private CaseInteractionRepository interactionRepository;
   @Autowired private UserRepository userRepository;
+  @Autowired private UserIdentityHelper userIdentityHelper;
+  @Autowired private AppConfig appConfig;
 
   @Autowired private CCSvcBeanMapper mapper;
 
@@ -35,18 +39,24 @@ public class InteractionService {
     userInteraction.setCreatedDateTime(LocalDateTime.now());
 
     String userName = UserIdentityContext.get();
-    User user =
-        userRepository
-            .findByName(userName)
-            .orElseThrow(
-                () -> new CTPException(Fault.SYSTEM_ERROR, "User in context cannot be found"));
+    User user = null;
+
+    if (userIdentityHelper.userActingAsAllowedDummy()) {
+      user = appConfig.getDummyUserConfig().getDummyUser();
+    } else {
+      user =
+          userRepository
+              .findByName(userName)
+              .orElseThrow(
+                  () -> new CTPException(Fault.SYSTEM_ERROR, "User in context cannot be found"));
+    }
 
     userInteraction.setCcuser(user);
 
     log.debug("Saving interaction for case", kv("caseId", caseId));
 
     try {
-      caseRepository.saveAndFlush(userInteraction);
+      interactionRepository.saveAndFlush(userInteraction);
     } catch (Exception e) {
       log.error("Failed to save case interaction", kv("caseId", caseId), e);
       throw e;

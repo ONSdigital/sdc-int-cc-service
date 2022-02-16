@@ -5,11 +5,9 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
-
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -21,8 +19,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -57,9 +53,9 @@ public class UserEndpoint {
 
     return ResponseEntity.ok(userService.getUser(userName));
   }
-  
+
   @GetMapping("/permissions")
-  public ResponseEntity<Set<PermissionType>> getLoggedInUsersPermissions()  throws CTPException {
+  public ResponseEntity<Set<PermissionType>> getLoggedInUsersPermissions() throws CTPException {
 
     String userName = UserIdentityContext.get();
     log.info("Entering getLoggedInUsersPermissions", kv("userName", userName));

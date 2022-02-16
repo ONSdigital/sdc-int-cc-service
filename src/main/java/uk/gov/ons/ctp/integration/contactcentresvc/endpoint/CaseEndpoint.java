@@ -79,8 +79,9 @@ public class CaseEndpoint implements CTPEndpoint {
         "Entering GET getCaseById", kv("pathParam", caseId), kv("requestParams", requestParamsDTO));
 
     identityHelper.assertUserPermission(
-        caseService.getSurveyForCase(caseId), PermissionType.VIEW_CASE);
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.VIEW_CASE);
 
+    // caseService will never return null
     CaseDTO caze = caseService.getCaseById(caseId, requestParamsDTO);
 
     saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
@@ -128,11 +129,8 @@ public class CaseEndpoint implements CTPEndpoint {
     CaseDTO caze = caseService.getCaseByCaseReference(ref, requestParamsDTO);
 
     identityHelper.assertUserPermission(
-        caseService.getSurveyForCase(caze.getId()), PermissionType.VIEW_CASE);
-
-    if (caze != null) {
-      saveCaseInteraction(caze.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
-    }
+        caseService.getSurveyForCase(caze.getId()).getId(), PermissionType.VIEW_CASE);
+    saveCaseInteraction(caze.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
     return ResponseEntity.ok(caze);
   }
@@ -156,7 +154,7 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("requestParams", requestParamsDTO));
 
     identityHelper.assertUserPermission(
-        caseService.getSurveyForCase(caseId), PermissionType.LAUNCH_EQ);
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.LAUNCH_EQ);
 
     String launchURL = caseService.getLaunchURLForCaseId(caseId, requestParamsDTO);
 
@@ -186,7 +184,7 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("requestBody", requestBodyDTO));
 
     identityHelper.assertUserPermission(
-        caseService.getSurveyForCase(caseId), PermissionType.REQUEST_POSTAL_FULFILMENT);
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.REQUEST_POSTAL_FULFILMENT);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
@@ -196,7 +194,8 @@ public class CaseEndpoint implements CTPEndpoint {
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED,
         CaseSubInteractionType.FULFILMENT_PRINT,
-        // TODO should be the fulfilment description when refactored to use new survey products
+        // TODO should be the fulfilment description when refactored to use new
+        // survey products
         requestBodyDTO.getFulfilmentCode());
 
     return ResponseEntity.ok(response);
@@ -223,7 +222,7 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("requestBody", requestBodyDTO));
 
     identityHelper.assertUserPermission(
-        caseService.getSurveyForCase(caseId), PermissionType.REQUEST_SMS_FULFILMENT);
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.REQUEST_SMS_FULFILMENT);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
@@ -233,7 +232,8 @@ public class CaseEndpoint implements CTPEndpoint {
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED,
         CaseSubInteractionType.FULFILMENT_SMS,
-        // TODO should be the fulfilment description when refactored to use new survey products
+        // TODO should be the fulfilment description when refactored to use new
+        // survey products
         requestBodyDTO.getFulfilmentCode());
 
     return ResponseEntity.ok(response);
@@ -258,7 +258,7 @@ public class CaseEndpoint implements CTPEndpoint {
         "Entering POST reportRefusal", kv("pathParam", caseId), kv("requestBody", requestBodyDTO));
 
     identityHelper.assertUserPermission(
-        caseService.getSurveyForCase(caseId), PermissionType.REFUSE_CASE);
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.REFUSE_CASE);
 
     if (!caseId.equals(requestBodyDTO.getCaseId())) {
       log.warn("reportRefusal caseId in path and body must be identical", kv("caseId", caseId));
@@ -300,7 +300,7 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info("Entering PUT modifyCase", kv("requestBody", requestBodyDTO));
 
     identityHelper.assertUserPermission(
-        caseService.getSurveyForCase(caseId), PermissionType.MODIFY_CASE);
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.MODIFY_CASE);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
@@ -353,7 +353,7 @@ public class CaseEndpoint implements CTPEndpoint {
         "Entering POST enrolment", kv("caseId", caseId), kv("requestBody", enrolmentRequestDTO));
 
     identityHelper.assertUserPermission(
-        caseService.getSurveyForCase(caseId), PermissionType.ENROL_CASE);
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.ENROL_CASE);
 
     CaseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
 
