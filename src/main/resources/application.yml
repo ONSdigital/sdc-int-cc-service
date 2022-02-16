@@ -27,6 +27,11 @@ dummy-user-config:
   user-name: philip.whiles@ext.ons.gov.uk
 
 management:
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
   endpoints:
     enabled-by-default: false
     web:
@@ -38,6 +43,8 @@ management:
       enabled: true 
     health:
       enabled: true
+      probes:
+        enabled: true
     flyway:
       enabled: true
   metrics:
