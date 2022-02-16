@@ -1,4 +1,4 @@
-FROM openjdk:openjdk:17
+FROM openjdk:17
 
 RUN apt-get update
 RUN apt-get -yq clean
