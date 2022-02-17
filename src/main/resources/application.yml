@@ -32,6 +32,8 @@ management:
       enabled: true
     readinessState:
       enabled: true
+    startupState:
+      enabled: true
   endpoints:
     enabled-by-default: false
     web:
