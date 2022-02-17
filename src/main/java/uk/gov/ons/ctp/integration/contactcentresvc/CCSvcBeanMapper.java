@@ -7,10 +7,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
-import org.springframework.stereotype.Component;
-
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -20,6 +16,8 @@ import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
 import ma.glasnost.orika.metadata.TypeBuilder;
+import org.eclipse.jdt.internal.compiler.SourceElementNotifier;
+import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
@@ -62,7 +60,8 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter(new UtcOffsetDateTimeConverter());
     converterFactory.registerConverter(new UtcLocalDateTimeConverter());
     converterFactory.registerConverter(new ArrayListConverter());
-    factory.registerObjectFactory(new PermissionTypeFactory(), new TypeBuilder<PermissionType>(){}.build());
+    factory.registerObjectFactory(
+        new PermissionTypeFactory(), new TypeBuilder<PermissionType>() {}.build());
 
     factory.classMap(Permission.class, PermissionDTO.class).byDefault().register();
 
@@ -139,8 +138,10 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
             new CustomMapper<UserDTO, User>() {
               @Override
               public void mapBtoA(User a, UserDTO b, MappingContext mappingContext) {
-                b.setUserRoles(a.getUserRoles().stream().map(r->r.getName()).collect(Collectors.toList()));
-                b.setAdminRoles(a.getAdminRoles().stream().map(r->r.getName()).collect(Collectors.toList()));
+                b.setUserRoles(
+                    a.getUserRoles().stream().map(r -> r.getName()).collect(Collectors.toList()));
+                b.setAdminRoles(
+                    a.getAdminRoles().stream().map(r -> r.getName()).collect(Collectors.toList()));
               }
             })
         .byDefault()
@@ -171,7 +172,7 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
   static class PermissionTypeFactory implements ObjectFactory<PermissionType> {
     @Override
     public PermissionType create(Object source, MappingContext mappingContext) {
-       return ((Permission)source).getPermissionType();
+      return ((Permission) source).getPermissionType();
     }
   }
 
