@@ -1,6 +1,5 @@
 FROM openjdk:17-oraclelinux8
 
-RUN yum -y install mkpasswd && yum -y check-update && yum -y clean all && rm -rf /var/cache
 RUN groupadd -g 985 ccsvc && \
     useradd -r -u 985 -g ccsvc ccsvc
 USER ccsvc
