@@ -67,6 +67,11 @@ public class User {
       inverseJoinColumns = @JoinColumn(name = "role_id"))
   private List<Role> adminRoles;
 
+  /**
+   * Convenience to determine if the user has a role containing the permission
+   * @param permissionType the permission to look for
+   * @return true if the users user roles contain the permission
+   */
   public boolean hasUserPermission(PermissionType permissionType) {
     userRoles.stream()
         .map(r -> r.getPermissions())
