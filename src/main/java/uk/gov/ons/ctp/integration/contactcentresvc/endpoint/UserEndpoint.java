@@ -27,7 +27,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserService;
 
 @Slf4j
@@ -36,12 +36,18 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserService;
 @RequestMapping(value = "/users", produces = "application/json")
 public class UserEndpoint {
 
-  private UserIdentityHelper identityHelper;
+  private RBACService rbacService;
   private UserService userService;
 
+  /**
+   * Create the endpoint
+   *
+   * @param rbacService used for
+   * @param userService
+   */
   @Autowired
-  public UserEndpoint(final UserIdentityHelper identityHelper, final UserService userService) {
-    this.identityHelper = identityHelper;
+  public UserEndpoint(final RBACService rbacService, final UserService userService) {
+    this.rbacService = rbacService;
     this.userService = userService;
   }
 
@@ -50,7 +56,7 @@ public class UserEndpoint {
       @PathVariable(value = "userName") @Valid @Email String userName) throws CTPException {
 
     log.info("Entering getUserByName", kv("userName", userName));
-    identityHelper.assertUserPermission(PermissionType.READ_USER);
+    rbacService.assertUserPermission(PermissionType.READ_USER);
 
     return ResponseEntity.ok(userService.getUser(userName));
   }
@@ -61,7 +67,7 @@ public class UserEndpoint {
     String userName = UserIdentityContext.get();
     log.info("Entering getLoggedInUsersPermissions", kv("userName", userName));
 
-    identityHelper.assertUserValidAndActive();
+    rbacService.assertUserValidAndActive();
 
     // All users need to access this so no permission assertion
     List<RoleDTO> usersRoles = userService.getUsersRoles(userName);
@@ -78,7 +84,7 @@ public class UserEndpoint {
   @GetMapping
   public ResponseEntity<List<UserDTO>> getUsers() throws CTPException {
     log.info("Entering getUsers");
-    identityHelper.assertUserPermission(PermissionType.READ_USER);
+    rbacService.assertUserPermission(PermissionType.READ_USER);
 
     return ResponseEntity.ok(userService.getUsers());
   }
@@ -89,8 +95,8 @@ public class UserEndpoint {
       throws CTPException {
 
     log.info("Entering modifyUser", kv("userName", userName));
-    identityHelper.assertUserPermission(PermissionType.MODIFY_USER);
-    identityHelper.assertNotSelfModification(userName);
+    rbacService.assertUserPermission(PermissionType.MODIFY_USER);
+    rbacService.assertNotSelfModification(userName);
 
     userDTO.setName(userName);
     return ResponseEntity.ok(userService.modifyUser(userDTO));
@@ -100,7 +106,7 @@ public class UserEndpoint {
   public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) throws CTPException {
     log.info("Entering createUser", kv("userName", userDTO.getName()));
 
-    identityHelper.assertUserPermission(PermissionType.CREATE_USER);
+    rbacService.assertUserPermission(PermissionType.CREATE_USER);
 
     return ResponseEntity.ok(userService.createUser(userDTO));
   }
@@ -112,8 +118,8 @@ public class UserEndpoint {
       throws CTPException {
     log.info("Entering addUserSurvey", kv("userName", userName), kv("surveyType", surveyType));
 
-    identityHelper.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
-    identityHelper.assertNotSelfModification(userName);
+    rbacService.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
+    rbacService.assertNotSelfModification(userName);
 
     return ResponseEntity.ok(userService.addUserSurvey(userName, surveyType));
   }
@@ -125,8 +131,8 @@ public class UserEndpoint {
       throws CTPException {
     log.info("Entering removeUserSurvey", kv("userName", userName), kv("surveyType", surveyType));
 
-    identityHelper.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
-    identityHelper.assertNotSelfModification(userName);
+    rbacService.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
+    rbacService.assertNotSelfModification(userName);
 
     return ResponseEntity.ok(userService.removeUserSurvey(userName, surveyType));
   }
@@ -138,8 +144,8 @@ public class UserEndpoint {
       throws CTPException {
 
     log.info("Entering addUserRole", kv("userName", userName), kv("roleName", roleName));
-    identityHelper.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
-    identityHelper.assertNotSelfModification(userName);
+    rbacService.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
+    rbacService.assertNotSelfModification(userName);
 
     return ResponseEntity.ok(userService.addUserRole(userName, roleName));
   }
@@ -151,8 +157,8 @@ public class UserEndpoint {
       throws CTPException {
     log.info("Entering removeUserRole", kv("userName", userName), kv("roleName", roleName));
 
-    identityHelper.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
-    identityHelper.assertNotSelfModification(userName);
+    rbacService.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
+    rbacService.assertNotSelfModification(userName);
 
     return ResponseEntity.ok(userService.removeUserRole(userName, roleName));
   }
@@ -164,8 +170,8 @@ public class UserEndpoint {
       throws CTPException {
 
     log.info("Entering addAdminRole", kv("userName", userName), kv("roleName", roleName));
-    identityHelper.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
-    identityHelper.assertNotSelfModification(userName);
+    rbacService.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
+    rbacService.assertNotSelfModification(userName);
 
     return ResponseEntity.ok(userService.addAdminRole(userName, roleName));
   }
@@ -177,8 +183,8 @@ public class UserEndpoint {
       throws CTPException {
 
     log.info("Entering removeAdminRole", kv("userName", userName), kv("roleName", roleName));
-    identityHelper.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
-    identityHelper.assertNotSelfModification(userName);
+    rbacService.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
+    rbacService.assertNotSelfModification(userName);
 
     return ResponseEntity.ok(userService.removeAdminRole(userName, roleName));
   }

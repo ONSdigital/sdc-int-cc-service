@@ -9,7 +9,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
 
 public class UserIdentityInterceptor implements HandlerInterceptor {
   private static final String USER_HEADER = "x-user-id";
-  private static final String USER_KEY = "user";
+  private static final String PRINCIPAL_KEY = "principal";
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -17,7 +17,7 @@ public class UserIdentityInterceptor implements HandlerInterceptor {
     String userName = request.getHeader(USER_HEADER);
 
     UserIdentityContext.set(userName);
-    MDC.put(USER_KEY, userName);
+    MDC.put(PRINCIPAL_KEY, userName);
     return true;
   }
 
@@ -29,6 +29,6 @@ public class UserIdentityInterceptor implements HandlerInterceptor {
       ModelAndView modelAndView)
       throws Exception {
     UserIdentityContext.clear();
-    MDC.remove(USER_KEY);
+    MDC.remove(PRINCIPAL_KEY);
   }
 }

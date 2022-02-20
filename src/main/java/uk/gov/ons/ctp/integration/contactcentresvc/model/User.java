@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.Entity;
@@ -65,4 +66,12 @@ public class User {
       joinColumns = @JoinColumn(name = "ccuser_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))
   private List<Role> adminRoles;
+
+  public boolean hasUserPermission(PermissionType permissionType) {
+    userRoles.stream()
+        .map(r -> r.getPermissions())
+        .flatMap(Collection::stream)
+        .anyMatch(p -> p.getPermissionType() == permissionType);
+    return true;
+  }
 }

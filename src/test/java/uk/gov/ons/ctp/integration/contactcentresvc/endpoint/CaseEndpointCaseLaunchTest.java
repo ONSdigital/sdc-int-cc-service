@@ -32,9 +32,9 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -46,7 +46,7 @@ public class CaseEndpointCaseLaunchTest {
 
   @Mock InteractionService interactionService;
 
-  @Mock UserIdentityHelper userIdentityHelper;
+  @Mock RBACService rbacService;
 
   @Autowired private MockMvc mockMvc;
 

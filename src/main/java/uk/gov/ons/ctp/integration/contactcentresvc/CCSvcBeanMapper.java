@@ -139,9 +139,17 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
               @Override
               public void mapBtoA(User a, UserDTO b, MappingContext mappingContext) {
                 b.setUserRoles(
-                    a.getUserRoles().stream().map(r -> r.getName()).collect(Collectors.toList()));
+                    a.getUserRoles() == null
+                        ? null
+                        : a.getUserRoles().stream()
+                            .map(r -> r.getName())
+                            .collect(Collectors.toList()));
                 b.setAdminRoles(
-                    a.getAdminRoles().stream().map(r -> r.getName()).collect(Collectors.toList()));
+                    a.getAdminRoles() == null
+                        ? null
+                        : a.getAdminRoles().stream()
+                            .map(r -> r.getName())
+                            .collect(Collectors.toList()));
               }
             })
         .byDefault()
@@ -204,7 +212,8 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     }
   }
 
-  // This converter was added to support the conversion of the metadata map used by
+  // This converter was added to support the conversion of the metadata map used
+  // by
   // the Product class
   static class ArrayListConverter extends BidirectionalConverter<ArrayList<Object>, Object> {
     @Override

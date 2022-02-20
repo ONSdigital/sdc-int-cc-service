@@ -38,9 +38,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /**
  * Contact Centre Data Endpoint Unit tests. This class tests the get case endpoints, covering gets
@@ -71,7 +71,7 @@ public final class CaseEndpointGetCaseTest {
 
   @Mock InteractionService interactionService;
 
-  @Mock UserIdentityHelper userIdentityHelper;
+  @Mock RBACService rbacService;
 
   private MockMvc mockMvc;
 

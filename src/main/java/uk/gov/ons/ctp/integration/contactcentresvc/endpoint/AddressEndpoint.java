@@ -6,7 +6,6 @@ import io.micrometer.core.annotation.Timed;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,8 +16,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** The REST endpoint controller for ContactCentreSvc Details */
 @Slf4j
@@ -27,7 +26,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
 @RequestMapping(value = "/addresses", produces = "application/json")
 public final class AddressEndpoint implements CTPEndpoint {
   private AddressService addressService;
-  private UserIdentityHelper identityHelper;
+  private RBACService rbacService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
@@ -36,10 +35,9 @@ public final class AddressEndpoint implements CTPEndpoint {
    *     searches.
    */
   @Autowired
-  public AddressEndpoint(
-      final AddressService addressService, final UserIdentityHelper identityHelper) {
+  public AddressEndpoint(final AddressService addressService, final RBACService rbacService) {
     this.addressService = addressService;
-    this.identityHelper = identityHelper;
+    this.rbacService = rbacService;
   }
 
   /**
@@ -52,11 +50,9 @@ public final class AddressEndpoint implements CTPEndpoint {
    */
   @RequestMapping(value = "", method = RequestMethod.GET)
   public AddressQueryResponseDTO getAddressesBySearchQuery(
-      @Value("#{request.getAttribute('principal')}") String principal,
-      @Valid AddressQueryRequestDTO addressQueryRequest)
-      throws CTPException {
+      @Valid AddressQueryRequestDTO addressQueryRequest) throws CTPException {
     log.info("Entering GET getAddressesBySearchQuery", kv("requestParams", addressQueryRequest));
-    identityHelper.assertUserPermission(PermissionType.SEARCH_CASES);
+    rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
 
     String addressQueryInput =
         addressQueryRequest.getInput().trim().replaceAll("'", "").replaceAll(",", "").trim();
@@ -80,12 +76,10 @@ public final class AddressEndpoint implements CTPEndpoint {
    */
   @RequestMapping(value = "/postcode", method = RequestMethod.GET)
   public AddressQueryResponseDTO getAddressesByPostcode(
-      @Value("#{request.getAttribute('principal')}") String principal,
-      @Valid PostcodeQueryRequestDTO postcodeQueryRequest)
-      throws CTPException {
+      @Valid PostcodeQueryRequestDTO postcodeQueryRequest) throws CTPException {
     log.info("Entering GET getAddressesByPostcode", kv("requestParams", postcodeQueryRequest));
 
-    identityHelper.assertUserPermission(PermissionType.SEARCH_CASES);
+    rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
     return addressService.postcodeQuery(postcodeQueryRequest);
   }
 }

@@ -49,10 +49,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequest
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /**
  * This test class started off during Census when we restricted access to basic auth serco AND the
@@ -78,7 +78,7 @@ public class EndpointSecurityTest {
   @MockBean CaseService caseService;
   @MockBean InteractionService interactionService;
   @MockBean AddressService addressService;
-  @MockBean UserIdentityHelper userIdentityHelper;
+  @MockBean RBACService rbacService;
 
   TestRestTemplate restTemplate;
   URL base;
@@ -88,7 +88,7 @@ public class EndpointSecurityTest {
   public void setUp() throws MalformedURLException {
     restTemplate = new TestRestTemplate(new RestTemplateBuilder());
     base = new URL("http://localhost:" + port);
-    when(userIdentityHelper.userActingAsAllowedDummy()).thenReturn(true);
+    when(rbacService.userActingAsAllowedDummy()).thenReturn(true);
   }
 
   @Test

@@ -33,9 +33,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** The REST controller for ContactCentreSvc find cases end points */
 @Slf4j
@@ -45,7 +45,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServi
 public class CaseEndpoint implements CTPEndpoint {
   private CaseService caseService;
   private InteractionService interactionService;
-  private UserIdentityHelper identityHelper;
+  private RBACService rbacService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
@@ -56,10 +56,10 @@ public class CaseEndpoint implements CTPEndpoint {
   @Autowired
   public CaseEndpoint(
       final CaseService caseService,
-      final UserIdentityHelper identityHelper,
+      final RBACService rbacService,
       InteractionService interactionService) {
     this.caseService = caseService;
-    this.identityHelper = identityHelper;
+    this.rbacService = rbacService;
     this.interactionService = interactionService;
   }
 
@@ -78,7 +78,7 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering GET getCaseById", kv("pathParam", caseId), kv("requestParams", requestParamsDTO));
 
-    identityHelper.assertUserPermission(
+    rbacService.assertUserPermission(
         caseService.getSurveyForCase(caseId).getId(), PermissionType.VIEW_CASE);
 
     // caseService will never return null
@@ -102,7 +102,7 @@ public class CaseEndpoint implements CTPEndpoint {
       @PathVariable("key") String key, @PathVariable("value") String value) throws CTPException {
     log.info("Entering GET getCaseBySampleAttribute", kv("key", key), kv("value", value));
 
-    identityHelper.assertUserPermission(PermissionType.SEARCH_CASES);
+    rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
 
     List<CaseSummaryDTO> results = caseService.getCaseSummaryBySampleAttribute(key, value);
 
@@ -128,7 +128,7 @@ public class CaseEndpoint implements CTPEndpoint {
 
     CaseDTO caze = caseService.getCaseByCaseReference(ref, requestParamsDTO);
 
-    identityHelper.assertUserPermission(
+    rbacService.assertUserPermission(
         caseService.getSurveyForCase(caze.getId()).getId(), PermissionType.VIEW_CASE);
     saveCaseInteraction(caze.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
@@ -153,7 +153,7 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestParams", requestParamsDTO));
 
-    identityHelper.assertUserPermission(
+    rbacService.assertUserPermission(
         caseService.getSurveyForCase(caseId).getId(), PermissionType.LAUNCH_EQ);
 
     String launchURL = caseService.getLaunchURLForCaseId(caseId, requestParamsDTO);
@@ -183,7 +183,7 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
-    identityHelper.assertUserPermission(
+    rbacService.assertUserPermission(
         caseService.getSurveyForCase(caseId).getId(), PermissionType.REQUEST_POSTAL_FULFILMENT);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
@@ -221,7 +221,7 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
-    identityHelper.assertUserPermission(
+    rbacService.assertUserPermission(
         caseService.getSurveyForCase(caseId).getId(), PermissionType.REQUEST_SMS_FULFILMENT);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
@@ -257,7 +257,7 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering POST reportRefusal", kv("pathParam", caseId), kv("requestBody", requestBodyDTO));
 
-    identityHelper.assertUserPermission(
+    rbacService.assertUserPermission(
         caseService.getSurveyForCase(caseId).getId(), PermissionType.REFUSE_CASE);
 
     if (!caseId.equals(requestBodyDTO.getCaseId())) {
@@ -299,7 +299,7 @@ public class CaseEndpoint implements CTPEndpoint {
       throws CTPException {
     log.info("Entering PUT modifyCase", kv("requestBody", requestBodyDTO));
 
-    identityHelper.assertUserPermission(
+    rbacService.assertUserPermission(
         caseService.getSurveyForCase(caseId).getId(), PermissionType.MODIFY_CASE);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
@@ -352,7 +352,7 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering POST enrolment", kv("caseId", caseId), kv("requestBody", enrolmentRequestDTO));
 
-    identityHelper.assertUserPermission(
+    rbacService.assertUserPermission(
         caseService.getSurveyForCase(caseId).getId(), PermissionType.ENROL_CASE);
 
     CaseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyUsageDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.SurveyService;
 
 /** The REST controller to deal with Surveys */
@@ -26,21 +26,19 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.SurveyService;
 @RequestMapping(value = "/surveys", produces = "application/json")
 public class SurveyEndpoint {
   private SurveyService surveyService;
-
-  private UserIdentityHelper identityHelper;
+  private RBACService rbacService;
 
   @Autowired
-  public SurveyEndpoint(
-      final SurveyService surveyService, final UserIdentityHelper identityHelper) {
+  public SurveyEndpoint(final SurveyService surveyService, final RBACService rbacService) {
     this.surveyService = surveyService;
-    this.identityHelper = identityHelper;
+    this.rbacService = rbacService;
   }
 
   @GetMapping("/{surveyId}")
   public ResponseEntity<SurveyDTO> survey(@PathVariable final UUID surveyId) throws CTPException {
     log.info("Entering GET survey by ID {}", kv("surveyId", surveyId));
 
-    identityHelper.assertUserValidAndActive();
+    rbacService.assertUserValidAndActive();
     SurveyDTO result = surveyService.getSurvey(surveyId);
 
     return ResponseEntity.ok(result);
@@ -51,7 +49,7 @@ public class SurveyEndpoint {
   public ResponseEntity<List<SurveyUsageDTO>> getSurveyUsages() throws CTPException {
 
     log.info("Entering getSurveyUsages");
-    identityHelper.assertUserValidAndActive();
+    rbacService.assertUserValidAndActive();
 
     return ResponseEntity.ok(surveyService.getSurveyUsages());
   }

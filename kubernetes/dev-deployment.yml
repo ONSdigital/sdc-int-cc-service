@@ -111,18 +111,6 @@ spec:
           value: "-XX:+UseContainerSupport
             -XX:-OmitStackTraceInFastThrow
             -Dspring.profiles.active=dev"
-        - name: CHANNEL
-          value: "CC"
-        - name: SPRING_SECURITY_USER_NAME
-          valueFrom:
-            secretKeyRef:
-              name: serco-identity
-              key: username
-        - name: SPRING_SECURITY_USER_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: serco-identity
-              key: password
         - name: FULFILMENTS_BLACKLISTED_CODES
           valueFrom:
             configMapKeyRef:

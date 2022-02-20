@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RoleService;
 
 @Slf4j
@@ -24,19 +24,19 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RoleService;
 @RequestMapping(value = "/roles", produces = "application/json")
 public class RoleEndpoint {
   private RoleService roleService;
-  private UserIdentityHelper identityHelper;
+  private RBACService rbacService;
 
   @Autowired
-  public RoleEndpoint(final RoleService roleService, final UserIdentityHelper identityHelper) {
+  public RoleEndpoint(final RoleService roleService, final RBACService rbacService) {
     this.roleService = roleService;
-    this.identityHelper = identityHelper;
+    this.rbacService = rbacService;
   }
 
   @GetMapping
   public ResponseEntity<List<RoleDTO>> getRoles() throws CTPException {
 
     log.info("Entering getRoles");
-    identityHelper.assertUserPermission(PermissionType.READ_ROLE);
+    rbacService.assertUserPermission(PermissionType.READ_ROLE);
     return ResponseEntity.ok(roleService.getRoles());
   }
 
@@ -45,7 +45,7 @@ public class RoleEndpoint {
       throws CTPException {
 
     log.info("Entering getRoleByName", kv("roleName", roleName));
-    identityHelper.assertUserPermission(PermissionType.READ_ROLE);
+    rbacService.assertUserPermission(PermissionType.READ_ROLE);
     return ResponseEntity.ok(roleService.getRole(roleName));
   }
 
@@ -54,7 +54,7 @@ public class RoleEndpoint {
       @PathVariable(value = "roleName") String roleName) throws CTPException {
 
     log.info("Entering findUsersForUserRole", kv("roleName", roleName));
-    identityHelper.assertUserPermission(PermissionType.READ_ROLE);
+    rbacService.assertUserPermission(PermissionType.READ_ROLE);
     return ResponseEntity.ok(roleService.findUsersForUserRole(roleName));
   }
 
@@ -63,7 +63,7 @@ public class RoleEndpoint {
       @PathVariable(value = "roleName") String roleName) throws CTPException {
 
     log.info("Entering findUsersForAdminRole", kv("roleName", roleName));
-    identityHelper.assertUserPermission(PermissionType.READ_ROLE);
+    rbacService.assertUserPermission(PermissionType.READ_ROLE);
     return ResponseEntity.ok(roleService.findUsersForAdminRole(roleName));
   }
 
@@ -71,7 +71,7 @@ public class RoleEndpoint {
   public ResponseEntity<RoleDTO> createRole(@RequestBody RoleDTO roleDTO) throws CTPException {
 
     log.info("Entering createRole", kv("roleName", roleDTO.getName()));
-    identityHelper.assertUserPermission(PermissionType.CREATE_ROLE);
+    rbacService.assertUserPermission(PermissionType.CREATE_ROLE);
     return ResponseEntity.ok(roleService.createRole(roleDTO));
   }
 
@@ -82,7 +82,7 @@ public class RoleEndpoint {
       throws CTPException {
 
     log.info("Entering addPermission", kv("permissionType", permissionType));
-    identityHelper.assertUserPermission(PermissionType.MAINTAIN_PERMISSIONS);
+    rbacService.assertUserPermission(PermissionType.MAINTAIN_PERMISSIONS);
     return ResponseEntity.ok(roleService.addPermission(roleName, permissionType));
   }
 
@@ -93,7 +93,7 @@ public class RoleEndpoint {
       throws CTPException {
 
     log.info("Entering removePermission", kv("permissionType", permissionType));
-    identityHelper.assertUserPermission(PermissionType.MAINTAIN_PERMISSIONS);
+    rbacService.assertUserPermission(PermissionType.MAINTAIN_PERMISSIONS);
     return ResponseEntity.ok(roleService.removePermission(roleName, permissionType));
   }
 }

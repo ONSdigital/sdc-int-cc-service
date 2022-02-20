@@ -19,7 +19,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteraction
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 
 @Slf4j
 @Service
@@ -27,7 +26,7 @@ public class InteractionService {
 
   @Autowired private CaseInteractionRepository interactionRepository;
   @Autowired private UserRepository userRepository;
-  @Autowired private UserIdentityHelper userIdentityHelper;
+  @Autowired private RBACService rbacService;
   @Autowired private AppConfig appConfig;
 
   @Autowired private CCSvcBeanMapper mapper;
@@ -41,7 +40,7 @@ public class InteractionService {
     String userName = UserIdentityContext.get();
     User user = null;
 
-    if (userIdentityHelper.userActingAsAllowedDummy()) {
+    if (rbacService.userActingAsAllowedDummy()) {
       user = appConfig.getDummyUserConfig().getDummyUser();
     } else {
       user =

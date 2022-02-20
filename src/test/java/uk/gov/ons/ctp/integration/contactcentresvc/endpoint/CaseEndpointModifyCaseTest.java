@@ -33,9 +33,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** Test the PUT endpoint to modify case details. */
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +45,7 @@ public final class CaseEndpointModifyCaseTest {
 
   @Mock InteractionService interactionService;
 
-  @Mock UserIdentityHelper userIdentityHelper;
+  @Mock RBACService rbacService;
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 

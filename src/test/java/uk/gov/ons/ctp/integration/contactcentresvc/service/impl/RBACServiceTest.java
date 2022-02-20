@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.contactcentresvc.security;
+package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -29,7 +29,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepositor
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class UserIdentityHelperTest {
+public class RBACServiceTest {
   private static final String USER_NAME = "mickey.mouse@ons.gov.uk";
   private static final UUID SURVEY_ID = UUID.fromString("55e7f61f-5e0e-45dd-b594-4ba8da2e8b60");
 
@@ -38,11 +38,11 @@ public class UserIdentityHelperTest {
   @Mock private SurveyRepository surveyRepo;
   private AppConfig appConfig = mock(AppConfig.class, Mockito.RETURNS_DEEP_STUBS);
 
-  private UserIdentityHelper userIdentityHelper;
+  private RBACService rbacService;
 
   @BeforeEach
   public void init() {
-    userIdentityHelper = new UserIdentityHelper(surveyRepo, userRepo, roleRepo, appConfig);
+    rbacService = new RBACService(surveyRepo, userRepo, roleRepo, appConfig);
     UserIdentityContext.set(USER_NAME);
   }
 
@@ -52,7 +52,7 @@ public class UserIdentityHelperTest {
     addUserRoleWithPermission(user, PermissionType.SEARCH_CASES);
 
     when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
-    userIdentityHelper.assertUserPermission(PermissionType.SEARCH_CASES);
+    rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
   }
 
   @Test
@@ -62,7 +62,7 @@ public class UserIdentityHelperTest {
     addSurveyUsage(user, SurveyType.SOCIAL);
 
     when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
-    userIdentityHelper.assertUserPermission(PermissionType.SEARCH_CASES);
+    rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
   }
 
   @Test
@@ -74,7 +74,7 @@ public class UserIdentityHelperTest {
 
     mockSurveyRepoCall("social");
     when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
-    userIdentityHelper.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
+    rbacService.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
   }
 
   @Test
@@ -90,7 +90,7 @@ public class UserIdentityHelperTest {
         assertThrows(
             CTPException.class,
             () -> {
-              userIdentityHelper.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
+              rbacService.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
             });
     assert (exception.getFault().equals(Fault.ACCESS_DENIED));
   }
@@ -105,7 +105,7 @@ public class UserIdentityHelperTest {
         assertThrows(
             CTPException.class,
             () -> {
-              userIdentityHelper.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
+              rbacService.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
             });
     assert (exception.getFault().equals(Fault.ACCESS_DENIED));
   }
@@ -122,7 +122,7 @@ public class UserIdentityHelperTest {
         assertThrows(
             CTPException.class,
             () -> {
-              userIdentityHelper.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
+              rbacService.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
             });
     assert (exception.getFault().equals(Fault.ACCESS_DENIED));
   }

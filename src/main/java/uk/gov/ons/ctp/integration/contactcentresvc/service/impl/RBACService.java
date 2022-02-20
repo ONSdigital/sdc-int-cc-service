@@ -1,9 +1,9 @@
-package uk.gov.ons.ctp.integration.contactcentresvc.security;
+package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -11,7 +11,6 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.DummyUserConfig;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
@@ -21,14 +20,14 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.SurveyRepositor
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 
 @Slf4j
-@Component
-public class UserIdentityHelper {
+@Service
+public class RBACService {
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
   private final SurveyRepository surveyRepository;
   private final AppConfig appConfig;
 
-  public UserIdentityHelper(
+  public RBACService(
       SurveyRepository surveyRepository,
       UserRepository userRepository,
       RoleRepository roleRepository,
@@ -89,25 +88,22 @@ public class UserIdentityHelper {
     User user = loadUser();
     Survey survey = (surveyId != null ? surveyRepository.getById(surveyId) : null);
 
-    for (Role role : user.getUserRoles()) {
-      for (Permission permission : role.getPermissions()) {
-        // survey not requested AND user has the specific permission
-        if ((surveyId == null && permission.getPermissionType() == permissionType)
-            // survey was requested AND user allowed to operate on that survey
-            // AND user has the
-            // permission
-            || (surveyId != null
-                && permission.getPermissionType() == permissionType
-                && !user.getSurveyUsages().isEmpty()
-                && user.getSurveyUsages().stream()
-                    .anyMatch(
-                        usu ->
-                            usu.getSurveyType()
-                                .equals(
-                                    SurveyType.fromSampleDefinitionUrl(
-                                        survey.getSampleDefinitionUrl()))))) {
-          return; // User is authorised
-        }
+    if (user.hasUserPermission(permissionType)) {
+      // survey not requested AND user has the specific permission
+      if (surveyId == null
+          // survey was requested AND user allowed to operate on that survey
+          // AND user has the
+          // permission
+          || (surveyId != null
+              && !user.getSurveyUsages().isEmpty()
+              && user.getSurveyUsages().stream()
+                  .anyMatch(
+                      usu ->
+                          usu.getSurveyType()
+                              .equals(
+                                  SurveyType.fromSampleDefinitionUrl(
+                                      survey.getSampleDefinitionUrl()))))) {
+        return; // User is authorised
       }
     }
 
@@ -159,14 +155,9 @@ public class UserIdentityHelper {
             .findByName(roleName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    boolean isAdminForRole = user.getAdminRoles().contains(targetRole);
-    for (Role role : user.getUserRoles()) {
-      for (Permission permission : role.getPermissions()) {
-        if (permission.getPermissionType() == PermissionType.USER_ROLE_ADMIN
-            || (permission.getPermissionType() == permissionType && isAdminForRole)) {
-          return; // User is authorised
-        }
-      }
+    if (user.hasUserPermission(PermissionType.USER_ROLE_ADMIN)
+        || (user.hasUserPermission(permissionType) && user.getAdminRoles().contains(targetRole))) {
+      return; // User is authorised
     }
 
     throw new CTPException(

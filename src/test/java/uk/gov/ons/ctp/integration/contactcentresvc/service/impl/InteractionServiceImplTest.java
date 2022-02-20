@@ -25,7 +25,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 
 @ExtendWith(MockitoExtension.class)
 public class InteractionServiceImplTest {
@@ -36,7 +35,7 @@ public class InteractionServiceImplTest {
 
   @Mock UserRepository userRepository;
 
-  @Mock UserIdentityHelper userIdentityHelper;
+  @Mock RBACService rbacService;
 
   @Spy private MapperFacade mapperFacade = new CCSvcBeanMapper();
 
@@ -58,7 +57,7 @@ public class InteractionServiceImplTest {
     dummyUserConfig.setAllowed(true);
     dummyUserConfig.setUserId(USER_ID);
     dummyUserConfig.setUserName(USER_NAME);
-    when(userIdentityHelper.userActingAsAllowedDummy()).thenReturn(true);
+    when(rbacService.userActingAsAllowedDummy()).thenReturn(true);
     when(appConfig.getDummyUserConfig()).thenReturn(dummyUserConfig);
 
     interactionService.saveCaseInteraction(USER_ID, caseInteractionRequestDTO);

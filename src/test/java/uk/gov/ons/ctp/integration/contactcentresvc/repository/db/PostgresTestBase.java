@@ -15,7 +15,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
-import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** Base class for spring tests that run with TestContainer to assist with database testing. */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
@@ -26,7 +26,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.security.UserIdentityHelper;
 @MockBean(name = "surveyEventInbound", value = PubSubInboundChannelAdapter.class)
 @MockBean(name = "uacEventInbound", value = PubSubInboundChannelAdapter.class)
 @MockBean(name = "collectionExerciseEventInbound", value = PubSubInboundChannelAdapter.class)
-@MockBean(name = "userIdentityHelper", value = UserIdentityHelper.class)
+@MockBean(name = "rbacService", value = RBACService.class)
 @Transactional
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
 @Tag("db")
