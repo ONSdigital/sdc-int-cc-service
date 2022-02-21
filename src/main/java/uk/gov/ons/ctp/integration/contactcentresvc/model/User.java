@@ -74,10 +74,11 @@ public class User {
    * @return true if the users user roles contain the permission
    */
   public boolean hasUserPermission(PermissionType permissionType) {
-    userRoles.stream()
-        .map(r -> r.getPermissions())
-        .flatMap(Collection::stream)
-        .anyMatch(p -> p.getPermissionType() == permissionType);
-    return true;
+    return userRoles == null
+        ? false
+        : userRoles.stream()
+            .map(r -> r.getPermissions())
+            .flatMap(Collection::stream)
+            .anyMatch(p -> p.getPermissionType() == permissionType);
   }
 }
