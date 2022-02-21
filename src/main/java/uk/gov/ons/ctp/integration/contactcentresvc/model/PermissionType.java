@@ -1,6 +1,11 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 public enum PermissionType {
+  // All of the permissions starting 'CAN_' are indicators to the UI that a user is allowed to
+  // perform a wider
+  // set of operations, to enable it to choose to show/hide coarser grained options, without having
+  // to second guess based on
+  // one of the finer permissions which for all it knows may shift and change
   CAN_RECEIVE_INBOUND_CALLS,
   CAN_MAKE_OUTBOUND_CALLS,
   CAN_MANAGE_USERS,

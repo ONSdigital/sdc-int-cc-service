@@ -39,7 +39,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.PermissionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
@@ -62,8 +61,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter(new ArrayListConverter());
     factory.registerObjectFactory(
         new PermissionTypeFactory(), new TypeBuilder<PermissionType>() {}.build());
-
-    factory.classMap(Permission.class, PermissionDTO.class).byDefault().register();
 
     factory
         .classMap(CaseUpdate.class, Case.class)

@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.DynamicUpdate;
 
 /**
  * Representation of Permission entity from database table. This represents a permission for a given
@@ -34,7 +33,6 @@ import org.hibernate.annotations.DynamicUpdate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@DynamicUpdate
 @Table(name = "permission")
 public class Permission {
   @ToString.Include @Id private UUID id;

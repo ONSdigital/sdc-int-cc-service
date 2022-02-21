@@ -331,6 +331,8 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
+    rbacService.assertUserValidAndActive();
+
     if (!validateInteractionType(requestBodyDTO)) {
       String message = "The Interaction type failed validation";
       log.warn(message, kv("caseId", caseId));
