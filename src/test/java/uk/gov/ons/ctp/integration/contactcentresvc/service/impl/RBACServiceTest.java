@@ -98,6 +98,7 @@ public class RBACServiceTest {
   @Test
   public void disallowsWithRequestedSurveyWithoutPermission() throws CTPException {
     User user = createUserWithoutPermissions(USER_NAME);
+    addSurveyUsage(user, SurveyType.SOCIAL);
 
     mockSurveyRepoCall("social");
     when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
