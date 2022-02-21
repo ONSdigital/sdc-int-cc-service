@@ -1,12 +1,10 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import java.util.UUID;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -45,13 +43,11 @@ public class RBACService {
   }
 
   /**
-   * In a few cases we wish to guard against a user performing a user/role
-   * related operation on themselves ie granting themselves permissions.
-   * Security 101.
+   * In a few cases we wish to guard against a user performing a user/role related operation on
+   * themselves ie granting themselves permissions. Security 101.
    *
    * @param userName the target user
-   * @throws CTPException when the user is forbidden to operate on the their own
-   *           account
+   * @throws CTPException when the user is forbidden to operate on the their own account
    */
   public void assertNotSelfModification(String userName) throws CTPException {
     if (UserIdentityContext.get().equals(userName)) {
@@ -61,12 +57,12 @@ public class RBACService {
   }
 
   /**
-   * Asserts that the signed user exists etc etc and that they have permission
-   * to perform the requested action
+   * Asserts that the signed user exists etc etc and that they have permission to perform the
+   * requested action
    *
    * @param permissionType the permission related to the required action
-   * @throws CTPException they either have not logged in, do not exist, are
-   *           inactive or do not have the necessary permission
+   * @throws CTPException they either have not logged in, do not exist, are inactive or do not have
+   *     the necessary permission
    */
   @Transactional
   public void assertUserPermission(PermissionType permissionType) throws CTPException {
@@ -74,13 +70,13 @@ public class RBACService {
   }
 
   /**
-   * Asserts that the signed user exists etc etc and that they have permission
-   * to perform the requested action for the requested survey
+   * Asserts that the signed user exists etc etc and that they have permission to perform the
+   * requested action for the requested survey
    *
    * @param surveyId if not null the survey the user must have permission to access
    * @param permissionType the permission related to the required action
-   * @throws CTPException they either have not logged in, do not exist, are
-   *           inactive or do not have the necessary permission
+   * @throws CTPException they either have not logged in, do not exist, are inactive or do not have
+   *     the necessary permission
    */
   @Transactional
   public void assertUserPermission(UUID surveyId, PermissionType permissionType)
@@ -103,10 +99,11 @@ public class RBACService {
               && !user.getSurveyUsages().isEmpty()
               && user.getSurveyUsages().stream()
                   .anyMatch(
-                      usu -> usu.getSurveyType()
-                          .equals(
-                              SurveyType.fromSampleDefinitionUrl(
-                                  survey.getSampleDefinitionUrl()))))) {
+                      usu ->
+                          usu.getSurveyType()
+                              .equals(
+                                  SurveyType.fromSampleDefinitionUrl(
+                                      survey.getSampleDefinitionUrl()))))) {
         return; // User is authorised
       }
     }
@@ -120,9 +117,8 @@ public class RBACService {
   }
 
   /**
-   * A simple assertion with few uses where a specific permission is not
-   * required for an operation, but we still want to assert that the user has
-   * logged in, exists and is active
+   * A simple assertion with few uses where a specific permission is not required for an operation,
+   * but we still want to assert that the user has logged in, exists and is active
    *
    * @throws CTPException
    */
@@ -136,10 +132,9 @@ public class RBACService {
   }
 
   /**
-   * A special case assertion for the maintenance of user:role assignment For a
-   * non 'super' user, it is required that they themselves are in the admin
-   * roles for the target role. An exception is made if the user is a super user
-   * who will have the permission USER_ROLE_ADMIN. Otherwise Catch-22.
+   * A special case assertion for the maintenance of user:role assignment It is required that they
+   * themselves are in the admin roles for the target role. An exception is made if the user is a
+   * super user who will have the permission USER_ROLE_ADMIN. Otherwise Catch-22.
    *
    * @param roleName the role being maintained
    * @param permissionType the specific permission
@@ -154,9 +149,10 @@ public class RBACService {
     }
 
     User user = loadUser();
-    Role targetRole = roleRepository
-        .findByName(roleName)
-        .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
+    Role targetRole =
+        roleRepository
+            .findByName(roleName)
+            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
     if (user.hasUserPermission(PermissionType.USER_ROLE_ADMIN)
         || (user.hasUserPermission(permissionType) && user.getAdminRoles().contains(targetRole))) {
@@ -169,8 +165,8 @@ public class RBACService {
   }
 
   /**
-   * checks to see if the dummy user functionality is enabled through config and
-   * if so, is the currently signed in user acting as the dummy
+   * checks to see if the dummy user functionality is enabled through config and if so, is the
+   * currently signed in user acting as the dummy
    *
    * @return true if the above
    */
@@ -186,13 +182,13 @@ public class RBACService {
   }
 
   /**
-   * asserts that the user identity exists in context, the user exists in the
-   * db, and the user is currently active
+   * asserts that the user identity exists in context, the user exists in the db, and the user is
+   * currently active
    *
    * @return the User if all the above
    * @throws CTPException one of the conditions above was not met
    */
-  private User loadUser() throws CTPException {
+  public User loadUser() throws CTPException {
 
     String principalIdentity = UserIdentityContext.get();
 
@@ -200,10 +196,11 @@ public class RBACService {
       throw new CTPException(Fault.ACCESS_DENIED, String.format("User must be logged in"));
     }
 
-    User user = userRepository
-        .findByName(principalIdentity)
-        .orElseThrow(
-            () -> new CTPException(Fault.ACCESS_DENIED, "User unknown: " + principalIdentity));
+    User user =
+        userRepository
+            .findByName(principalIdentity)
+            .orElseThrow(
+                () -> new CTPException(Fault.ACCESS_DENIED, "User unknown: " + principalIdentity));
 
     if (!user.isActive()) {
       throw new CTPException(

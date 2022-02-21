@@ -69,6 +69,7 @@ public class User {
 
   /**
    * Convenience to determine if the user has a role containing the permission
+   *
    * @param permissionType the permission to look for
    * @return true if the users user roles contain the permission
    */
