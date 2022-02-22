@@ -219,8 +219,8 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
       List<String> destination = new ArrayList<>();
       for (Object sourceElement : source) {
-        if (sourceElement instanceof String) {
-          destination.add((String) sourceElement);
+        if (sourceElement instanceof String sourceElementStr) {
+          destination.add(sourceElementStr);
         } else {
           throw new UnsupportedOperationException(
               "Unsupported type found when mapping an an ArrayList: "

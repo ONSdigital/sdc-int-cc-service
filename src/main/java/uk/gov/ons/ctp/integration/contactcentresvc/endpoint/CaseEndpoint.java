@@ -50,6 +50,7 @@ public class CaseEndpoint implements CTPEndpoint {
   /**
    * Constructor for ContactCentreDataEndpoint
    *
+   * @param rbacService performs permission checking
    * @param caseService is a service layer object that we be doing the processing on behalf of this
    *     endpoint.
    */

@@ -31,6 +31,7 @@ public final class AddressEndpoint implements CTPEndpoint {
   /**
    * Constructor for ContactCentreDataEndpoint
    *
+   * @param rbacService performs permission checking
    * @param addressService is the object that this endpoint can call for address and postcode
    *     searches.
    */
