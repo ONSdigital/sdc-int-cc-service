@@ -35,7 +35,7 @@ public class CaseRepositoryClient {
     return caze;
   }
 
-  public List<Case> getCaseBySampleAttribute(String key, String value) throws CTPException {
+  public List<Case> getCaseBySampleAttribute(String key, String value) {
     log.debug("Find case details by {}", key, kv("key", key), kv("value", value));
 
     List<Case> cases = caseRepo.findBySampleContains(key, value);

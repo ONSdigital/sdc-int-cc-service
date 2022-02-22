@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostcodeQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** The REST endpoint controller for ContactCentreSvc Details */
 @Slf4j
@@ -24,16 +26,19 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
 @RequestMapping(value = "/addresses", produces = "application/json")
 public final class AddressEndpoint implements CTPEndpoint {
   private AddressService addressService;
+  private RBACService rbacService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
    *
+   * @param rbacService performs permission checking
    * @param addressService is the object that this endpoint can call for address and postcode
    *     searches.
    */
   @Autowired
-  public AddressEndpoint(final AddressService addressService) {
+  public AddressEndpoint(final AddressService addressService, final RBACService rbacService) {
     this.addressService = addressService;
+    this.rbacService = rbacService;
   }
 
   /**
@@ -48,6 +53,7 @@ public final class AddressEndpoint implements CTPEndpoint {
   public AddressQueryResponseDTO getAddressesBySearchQuery(
       @Valid AddressQueryRequestDTO addressQueryRequest) throws CTPException {
     log.info("Entering GET getAddressesBySearchQuery", kv("requestParams", addressQueryRequest));
+    rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
 
     String addressQueryInput =
         addressQueryRequest.getInput().trim().replaceAll("'", "").replaceAll(",", "").trim();
@@ -74,6 +80,7 @@ public final class AddressEndpoint implements CTPEndpoint {
       @Valid PostcodeQueryRequestDTO postcodeQueryRequest) throws CTPException {
     log.info("Entering GET getAddressesByPostcode", kv("requestParams", postcodeQueryRequest));
 
+    rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
     return addressService.postcodeQuery(postcodeQueryRequest);
   }
 }

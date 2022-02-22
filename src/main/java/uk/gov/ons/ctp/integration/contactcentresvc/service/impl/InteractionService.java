@@ -7,8 +7,10 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
+import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
@@ -19,23 +21,32 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 @Service
 public class InteractionService {
 
-  @Autowired private CaseInteractionRepository repository;
+  @Autowired private CaseInteractionRepository interactionRepository;
+  @Autowired private RBACService rbacService;
+  @Autowired private AppConfig appConfig;
 
   @Autowired private CCSvcBeanMapper mapper;
 
-  public ResponseDTO saveCaseInteraction(UUID caseId, CaseInteractionRequestDTO interaction) {
+  public ResponseDTO saveCaseInteraction(UUID caseId, CaseInteractionRequestDTO interaction)
+      throws CTPException {
     CaseInteraction caseInteraction = mapper.map(interaction, CaseInteraction.class);
     caseInteraction.setCaseId(caseId);
     caseInteraction.setCreatedDateTime(LocalDateTime.now());
 
-    // Will eventually be replaced with actual UserId
-    User user = User.builder().id(UUID.fromString("382a8474-479c-11ec-a052-4c3275913db5")).build();
+    User user = null;
+
+    if (rbacService.userActingAsAllowedDummy()) {
+      user = appConfig.getDummyUserConfig().getDummyUser();
+    } else {
+      user = rbacService.loadUser();
+    }
+
     caseInteraction.setCcuser(user);
 
     log.debug("Saving interaction for case", kv("caseId", caseId));
 
     try {
-      repository.saveAndFlush(caseInteraction);
+      interactionRepository.saveAndFlush(caseInteraction);
     } catch (Exception e) {
       log.error("Failed to save case interaction", kv("caseId", caseId), e);
       throw e;

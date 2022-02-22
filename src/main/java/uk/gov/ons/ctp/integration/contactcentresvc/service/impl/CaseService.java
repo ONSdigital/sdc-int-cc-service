@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.domain.AddressType;
@@ -78,6 +79,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
@@ -111,6 +113,12 @@ public class CaseService {
   private RestClient addressIndexClient;
 
   private LuhnCheckDigit luhnChecker = new LuhnCheckDigit();
+
+  @Transactional
+  public SurveyDTO getSurveyForCase(UUID caseId) throws CTPException {
+    Case caze = caseRepoClient.getCaseById(caseId);
+    return mapper.map(caze.getCollectionExercise().getSurvey(), SurveyDTO.class);
+  }
 
   public ResponseDTO fulfilmentRequestByPost(PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
@@ -214,19 +222,7 @@ public class CaseService {
 
     // Find matching cases
     List<Case> dbCases;
-    try {
-      dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
-    } catch (CTPException ex) {
-      if (ex.getFault() == Fault.RESOURCE_NOT_FOUND) {
-        log.info(
-            "Case by {} Not Found calling Case Service", key, kv("key", key), kv("value", value));
-        return Collections.emptyList();
-      } else {
-        log.error("Error calling Case Service", kv("key", key), kv("value", value), ex);
-        throw ex;
-      }
-    }
-
+    dbCases = caseRepoClient.getCaseBySampleAttribute(key, value);
     // Summarise all found cases
     List<CaseSummaryDTO> caseSummaries = new ArrayList<>();
     for (Case dbCase : dbCases) {

@@ -12,3 +12,5 @@ cloud:
         flow-control:
           max-outstanding-element-count: 100
   
+dummy-user:
+  allowed: false

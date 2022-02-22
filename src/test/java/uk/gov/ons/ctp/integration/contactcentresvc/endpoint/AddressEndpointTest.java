@@ -30,6 +30,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.AddressQueryResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** Contact Centre Data endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +54,7 @@ public final class AddressEndpointTest {
   @InjectMocks private AddressEndpoint addressEndpoint;
 
   @Mock AddressService addressService;
+  @Mock RBACService rbacService;
 
   private MockMvc mockMvc;
 

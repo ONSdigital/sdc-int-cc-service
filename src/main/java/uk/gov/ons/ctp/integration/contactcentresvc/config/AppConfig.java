@@ -30,4 +30,5 @@ public class AppConfig {
   private QueueConfig queueConfig;
   private MessagingConfig messaging;
   private Set<String> surveys;
+  private DummyUserConfig dummyUserConfig;
 }

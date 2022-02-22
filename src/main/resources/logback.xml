@@ -56,7 +56,7 @@
         <!-- <context/> -->
         <jsonMessage />
         <mdc>
-          <includeMdcKeyName>included</includeMdcKeyName>
+          <includeMdcKeyName>principal</includeMdcKeyName>
         </mdc>
         <nestedField>
           <fieldName>data</fieldName>

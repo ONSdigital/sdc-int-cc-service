@@ -29,6 +29,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /**
  * Contact Centre Data Endpoint Unit tests. This class tests the get case endpoints, covering gets
@@ -47,6 +48,8 @@ public final class CaseEndpoint_getCaseSummaryBySampleAttribute {
   @Mock CaseService caseService;
 
   @Mock InteractionService interactionService;
+
+  @Mock RBACService rbacService;
 
   private MockMvc mockMvc;
 

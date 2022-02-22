@@ -5,7 +5,16 @@ spring:
         project-id: local
         emulator-host: localhost:9808
 
+logging:
+  level:
+    uk.gov.ons.ctp: INFO
+    org.springframework: INFO
+
 case-service-settings:
   rest-client-config:
     port: 8162        
 
+dummy-user-config:
+  allowed: false
+  user-id: 7704983d-89ea-4447-b681-e412c2a2610b
+  user-name: philip.whiles@ext.ons.gov.uk

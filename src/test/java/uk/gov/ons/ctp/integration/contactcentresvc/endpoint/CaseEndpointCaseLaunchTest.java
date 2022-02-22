@@ -31,8 +31,10 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +45,8 @@ public class CaseEndpointCaseLaunchTest {
   @Mock CaseService caseService;
 
   @Mock InteractionService interactionService;
+
+  @Mock RBACService rbacService;
 
   @Autowired private MockMvc mockMvc;
 
@@ -70,6 +74,8 @@ public class CaseEndpointCaseLaunchTest {
   @Test
   public void getLaunchURL_ValidInvocation() throws Exception {
     String fakeResponse = "{\"url\": \"https://www.google.co.uk/search?q=FAKE\"}";
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
     when(caseService.getLaunchURLForCaseId(any(), any())).thenReturn(fakeResponse);
 
     ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345"));
@@ -106,6 +112,8 @@ public class CaseEndpointCaseLaunchTest {
   public void shouldRejectServiceBadRequestException() throws Exception {
     CTPException ex = new CTPException(Fault.BAD_REQUEST, "a message");
     when(caseService.getLaunchURLForCaseId(any(), any())).thenThrow(ex);
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
     ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345"));
     actions
         .andExpect(status().isBadRequest())
@@ -115,6 +123,8 @@ public class CaseEndpointCaseLaunchTest {
   @Test
   public void shouldRejectServiceAcceptedUnableToProcessException() throws Exception {
     CTPException ex = new CTPException(Fault.ACCEPTED_UNABLE_TO_PROCESS, "a message");
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
     when(caseService.getLaunchURLForCaseId(any(), any())).thenThrow(ex);
     ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345"));
     actions
@@ -126,6 +136,8 @@ public class CaseEndpointCaseLaunchTest {
   public void shouldRejectServiceResponseStatusException() throws Exception {
     ResponseStatusException ex = new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT);
     when(caseService.getLaunchURLForCaseId(any(), any())).thenThrow(ex);
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
     ResultActions actions = mockMvc.perform(getJson("/cases/" + uuid + "/launch?agentId=12345"));
     actions
         .andExpect(status().isIAmATeapot())

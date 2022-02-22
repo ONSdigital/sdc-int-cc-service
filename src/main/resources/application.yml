@@ -21,7 +21,19 @@ surveyName: CENSUS
 public-pgp-key-1 : classpath:pgp/key1.asc
 public-pgp-key-2 : classpath:pgp/key2.asc
 
+dummy-user-config:
+  allowed: false
+  user-id: 7704983d-89ea-4447-b681-e412c2a2610b
+  user-name: philip.whiles@ext.ons.gov.uk
+
 management:
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+    startupState:
+      enabled: true
   endpoints:
     enabled-by-default: false
     web:
@@ -33,6 +45,8 @@ management:
       enabled: true 
     health:
       enabled: true
+      probes:
+        enabled: true
     flyway:
       enabled: true
   metrics:
@@ -60,9 +74,7 @@ spring:
     servlet:
       path: /
   security:
-    user:
-      name: serco_cks
-      password: temporary
+    enabled: false
   output:
     ansi:
       enabled: never

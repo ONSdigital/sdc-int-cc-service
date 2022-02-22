@@ -21,6 +21,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
@@ -34,6 +35,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** The REST controller for ContactCentreSvc find cases end points */
 @Slf4j
@@ -43,16 +45,22 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServi
 public class CaseEndpoint implements CTPEndpoint {
   private CaseService caseService;
   private InteractionService interactionService;
+  private RBACService rbacService;
 
   /**
    * Constructor for ContactCentreDataEndpoint
    *
+   * @param rbacService performs permission checking
    * @param caseService is a service layer object that we be doing the processing on behalf of this
    *     endpoint.
    */
   @Autowired
-  public CaseEndpoint(final CaseService caseService, final InteractionService interactionService) {
+  public CaseEndpoint(
+      final CaseService caseService,
+      final RBACService rbacService,
+      InteractionService interactionService) {
     this.caseService = caseService;
+    this.rbacService = rbacService;
     this.interactionService = interactionService;
   }
 
@@ -71,11 +79,15 @@ public class CaseEndpoint implements CTPEndpoint {
     log.info(
         "Entering GET getCaseById", kv("pathParam", caseId), kv("requestParams", requestParamsDTO));
 
-    CaseDTO result = caseService.getCaseById(caseId, requestParamsDTO);
+    rbacService.assertUserPermission(
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.VIEW_CASE);
+
+    // caseService will never return null
+    CaseDTO caze = caseService.getCaseById(caseId, requestParamsDTO);
 
     saveCaseInteraction(caseId, CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
-    return ResponseEntity.ok(result);
+    return ResponseEntity.ok(caze);
   }
 
   /**
@@ -90,6 +102,8 @@ public class CaseEndpoint implements CTPEndpoint {
   public ResponseEntity<List<CaseSummaryDTO>> getCaseBySampleAttribute(
       @PathVariable("key") String key, @PathVariable("value") String value) throws CTPException {
     log.info("Entering GET getCaseBySampleAttribute", kv("key", key), kv("value", value));
+
+    rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
 
     List<CaseSummaryDTO> results = caseService.getCaseSummaryBySampleAttribute(key, value);
 
@@ -113,13 +127,13 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", ref),
         kv("requestParams", requestParamsDTO));
 
-    CaseDTO result = caseService.getCaseByCaseReference(ref, requestParamsDTO);
+    CaseDTO caze = caseService.getCaseByCaseReference(ref, requestParamsDTO);
 
-    if (result != null) {
-      saveCaseInteraction(result.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
-    }
+    rbacService.assertUserPermission(
+        caseService.getSurveyForCase(caze.getId()).getId(), PermissionType.VIEW_CASE);
+    saveCaseInteraction(caze.getId(), CaseInteractionType.MANUAL_CASE_VIEW, null, null);
 
-    return ResponseEntity.ok(result);
+    return ResponseEntity.ok(caze);
   }
 
   /**
@@ -139,6 +153,9 @@ public class CaseEndpoint implements CTPEndpoint {
         "Entering GET getLaunchURLForCaseId",
         kv("pathParam", caseId),
         kv("requestParams", requestParamsDTO));
+
+    rbacService.assertUserPermission(
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.LAUNCH_EQ);
 
     String launchURL = caseService.getLaunchURLForCaseId(caseId, requestParamsDTO);
 
@@ -167,6 +184,9 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
+    rbacService.assertUserPermission(
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.REQUEST_POSTAL_FULFILMENT);
+
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
     ResponseDTO response = caseService.fulfilmentRequestByPost(requestBodyDTO);
@@ -175,7 +195,8 @@ public class CaseEndpoint implements CTPEndpoint {
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED,
         CaseSubInteractionType.FULFILMENT_PRINT,
-        // TODO should be the fulfilment description when refactored to use new survey products
+        // TODO should be the fulfilment description when refactored to use new
+        // survey products
         requestBodyDTO.getFulfilmentCode());
 
     return ResponseEntity.ok(response);
@@ -201,6 +222,9 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
+    rbacService.assertUserPermission(
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.REQUEST_SMS_FULFILMENT);
+
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
     ResponseDTO response = caseService.fulfilmentRequestBySMS(requestBodyDTO);
@@ -209,7 +233,8 @@ public class CaseEndpoint implements CTPEndpoint {
         caseId,
         CaseInteractionType.FULFILMENT_REQUESTED,
         CaseSubInteractionType.FULFILMENT_SMS,
-        // TODO should be the fulfilment description when refactored to use new survey products
+        // TODO should be the fulfilment description when refactored to use new
+        // survey products
         requestBodyDTO.getFulfilmentCode());
 
     return ResponseEntity.ok(response);
@@ -232,6 +257,9 @@ public class CaseEndpoint implements CTPEndpoint {
 
     log.info(
         "Entering POST reportRefusal", kv("pathParam", caseId), kv("requestBody", requestBodyDTO));
+
+    rbacService.assertUserPermission(
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.REFUSE_CASE);
 
     if (!caseId.equals(requestBodyDTO.getCaseId())) {
       log.warn("reportRefusal caseId in path and body must be identical", kv("caseId", caseId));
@@ -272,6 +300,9 @@ public class CaseEndpoint implements CTPEndpoint {
       throws CTPException {
     log.info("Entering PUT modifyCase", kv("requestBody", requestBodyDTO));
 
+    rbacService.assertUserPermission(
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.MODIFY_CASE);
+
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
 
     CaseDTO result = caseService.modifyCase(requestBodyDTO);
@@ -301,6 +332,8 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
+    rbacService.assertUserPermission(PermissionType.ADD_CASE_INTERACTION);
+
     if (!validateInteractionType(requestBodyDTO)) {
       String message = "The Interaction type failed validation";
       log.warn(message, kv("caseId", caseId));
@@ -321,6 +354,9 @@ public class CaseEndpoint implements CTPEndpoint {
 
     log.info(
         "Entering POST enrolment", kv("caseId", caseId), kv("requestBody", enrolmentRequestDTO));
+
+    rbacService.assertUserPermission(
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.ENROL_CASE);
 
     CaseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
 
@@ -349,7 +385,8 @@ public class CaseEndpoint implements CTPEndpoint {
   }
 
   private void saveCaseInteraction(
-      UUID caseId, CaseInteractionType type, CaseSubInteractionType subtype, String note) {
+      UUID caseId, CaseInteractionType type, CaseSubInteractionType subtype, String note)
+      throws CTPException {
     log.info("Saving case interaction", kv("caseId", caseId));
     CaseInteractionRequestDTO dto =
         CaseInteractionRequestDTO.builder().type(type).subtype(subtype).note(note).build();

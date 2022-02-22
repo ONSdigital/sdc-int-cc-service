@@ -73,6 +73,8 @@ public abstract class CaseServiceImplTestBase {
 
   @Mock EventTransfer eventTransfer;
 
+  @Mock RBACService rbacService;
+
   @Spy MapperFacade mapperFacade = new CCSvcBeanMapper();
 
   @Mock BlacklistedUPRNBean blacklistedUPRNBean;

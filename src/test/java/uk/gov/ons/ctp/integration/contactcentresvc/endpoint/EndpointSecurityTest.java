@@ -3,6 +3,9 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.parallel.ResourceAccessMode.READ_WRITE;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_ADDRESS_LINE_1;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_ADDRESS_LINE_2;
 import static uk.gov.ons.ctp.integration.contactcentresvc.CaseServiceFixture.AN_ADDRESS_LINE_3;
@@ -26,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -33,19 +37,35 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
+/**
+ * This test class started off during Census when we restricted access to basic auth serco AND the
+ * CC service had a dual mode CC/AD persona which meant that endpoints would/would not be accessible
+ * depending on the mode in hand, or if they did not auth correctlt. I have gone to the trouble of
+ * updating many of the tests here so that they work with the RBAC identity aware endpoints and
+ * their permission checks, but looking through these tests now they currently little or no value -
+ * all they are doing is exercising each endpoint and asserting an ok response. The framework in
+ * this class could be useful for building out some more extensive tests to test the RBAC checks in
+ * each endpoint so leaving here as is for time being
+ *
+ * @author philwhiles
+ */
 @ActiveProfiles("test-cc")
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @MockBean({EventToSendPoller.class, EventPublisher.class, PubSubTemplate.class})
@@ -54,9 +74,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionServi
 @MockBean(name = "collectionExerciseEventInbound", value = PubSubInboundChannelAdapter.class)
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
 public class EndpointSecurityTest {
+
   @MockBean CaseService caseService;
   @MockBean InteractionService interactionService;
   @MockBean AddressService addressService;
+  @MockBean RBACService rbacService;
 
   TestRestTemplate restTemplate;
   URL base;
@@ -64,8 +86,9 @@ public class EndpointSecurityTest {
 
   @BeforeEach
   public void setUp() throws MalformedURLException {
-    restTemplate = new TestRestTemplate("serco_cks", "temporary");
+    restTemplate = new TestRestTemplate(new RestTemplateBuilder());
     base = new URL("http://localhost:" + port);
+    when(rbacService.userActingAsAllowedDummy()).thenReturn(true);
   }
 
   @Test
@@ -85,26 +108,6 @@ public class EndpointSecurityTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.getBody().contains("ccsvc"), response.getBody());
-  }
-
-  @Test
-  public void whenUserWithWrongCredentialsRequestsVersionThenUnauthorizedPage() throws Exception {
-
-    restTemplate = new TestRestTemplate("user", "wrongpassword");
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/ccsvc/version", String.class);
-
-    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-  }
-
-  @Test
-  public void whenUserWithCorrectCredentialsRequestsVersionThenSuccess() throws Exception {
-
-    restTemplate = new TestRestTemplate("serco_cks", "temporary");
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/ccsvc/version", String.class);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
   @Test
@@ -133,12 +136,13 @@ public class EndpointSecurityTest {
   }
 
   @Test
-  public void testOkPostRefusal() {
+  public void testOkPostRefusal() throws CTPException {
     UUID caseId = UUID.randomUUID();
     RefusalRequestDTO requestBody = new RefusalRequestDTO();
     requestBody.setCaseId(caseId);
     requestBody.setReason(RefusalType.HARD_REFUSAL);
     requestBody.setDateTime(new Date());
+    mockGetSurvey();
 
     ResponseEntity<String> response =
         restTemplate.postForEntity(
@@ -147,7 +151,7 @@ public class EndpointSecurityTest {
   }
 
   @Test
-  public void testOkPutCase() {
+  public void testOkPutCase() throws CTPException {
     ModifyCaseRequestDTO requestBody = ModifyCaseRequestDTO.builder().caseId(CASE_ID_0).build();
 
     requestBody.setAddressLine1(AN_ADDRESS_LINE_1);
@@ -156,6 +160,7 @@ public class EndpointSecurityTest {
     requestBody.setDateTime(A_REQUEST_DATE_TIME);
     requestBody.setCaseType(A_CASE_TYPE);
     requestBody.setEstabType(AN_ESTAB_TYPE);
+    mockGetSurvey();
 
     HttpHeaders headers = new HttpHeaders();
     Map<String, String> param = new HashMap<String, String>();
@@ -173,23 +178,28 @@ public class EndpointSecurityTest {
   }
 
   @Test
-  public void testOkGetCaseByCaseId() {
+  public void testOkGetCaseByCaseId() throws CTPException {
     UUID caseId = UUID.randomUUID();
+    mockGetSurvey();
     ResponseEntity<String> response =
         restTemplate.getForEntity(base.toString() + "/ccsvc/cases/" + caseId, String.class);
     assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
   @Test
-  public void testOkGetCaseByCaseRef() {
+  public void testOkGetCaseByCaseRef() throws CTPException {
+    mockGetSurvey();
+    CaseDTO caze = CaseDTO.builder().id(CASE_ID_0).build();
+    when(caseService.getCaseByCaseReference(eq(123456789L), any())).thenReturn(caze);
     ResponseEntity<String> response =
         restTemplate.getForEntity(base.toString() + "/ccsvc/cases/ref/123456789", String.class);
     assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
   @Test
-  public void testOkGetCaseLaunch() {
+  public void testOkGetCaseLaunch() throws CTPException {
     UUID caseId = UUID.randomUUID();
+    mockGetSurvey();
     ResponseEntity<String> response =
         restTemplate.getForEntity(
             base.toString() + "/ccsvc/cases/" + caseId + "/launch?individual=false&agentId=12345",
@@ -205,12 +215,13 @@ public class EndpointSecurityTest {
   }
 
   @Test
-  public void testOkPostFulfilmentPost() {
+  public void testOkPostFulfilmentPost() throws CTPException {
     UUID caseId = UUID.randomUUID();
     PostalFulfilmentRequestDTO requestBody = new PostalFulfilmentRequestDTO();
     requestBody.setDateTime(new Date());
     requestBody.setCaseId(caseId);
     requestBody.setFulfilmentCode("ABC123");
+    mockGetSurvey();
 
     ResponseEntity<String> response =
         restTemplate.postForEntity(
@@ -221,13 +232,14 @@ public class EndpointSecurityTest {
   }
 
   @Test
-  public void testOkPostFulfilmentSMS() {
+  public void testOkPostFulfilmentSMS() throws CTPException {
     UUID caseId = UUID.randomUUID();
     SMSFulfilmentRequestDTO requestBody = new SMSFulfilmentRequestDTO();
     requestBody.setDateTime(new Date());
     requestBody.setCaseId(caseId);
     requestBody.setFulfilmentCode("ABC123");
     requestBody.setTelNo("447123456789");
+    mockGetSurvey();
 
     ResponseEntity<String> response =
         restTemplate.postForEntity(
@@ -235,5 +247,10 @@ public class EndpointSecurityTest {
             requestBody,
             String.class);
     assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  private void mockGetSurvey() throws CTPException {
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
   }
 }

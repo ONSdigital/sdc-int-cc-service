@@ -32,8 +32,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** Test the PUT endpoint to modify case details. */
 @ExtendWith(MockitoExtension.class)
@@ -42,6 +44,8 @@ public final class CaseEndpointModifyCaseTest {
   @Mock private CaseService caseService;
 
   @Mock InteractionService interactionService;
+
+  @Mock RBACService rbacService;
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 
@@ -91,6 +95,8 @@ public final class CaseEndpointModifyCaseTest {
 
   private void doPutExpectingOk() throws Exception {
     when(caseService.modifyCase(any())).thenReturn(responseDTO);
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
     doPut().andExpect(status().isOk()).andExpect(jsonPath("$.id", is(caseId)));
     verify(caseService).modifyCase(any());
 
@@ -150,6 +156,8 @@ public final class CaseEndpointModifyCaseTest {
   @Test
   public void shouldRejectMismatchingCaseId() throws Exception {
     json.put("caseId", UUID.randomUUID().toString());
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
     doPutExpectingRejection();
   }
 

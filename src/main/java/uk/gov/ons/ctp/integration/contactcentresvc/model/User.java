@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.Entity;
@@ -45,6 +46,14 @@ public class User {
   @JsonIgnore
   @ManyToMany
   @JoinTable(
+      name = "ccuser_survey_usage",
+      joinColumns = @JoinColumn(name = "ccuser_id"),
+      inverseJoinColumns = @JoinColumn(name = "survey_usage_id"))
+  private List<SurveyUsage> surveyUsages;
+
+  @JsonIgnore
+  @ManyToMany
+  @JoinTable(
       name = "ccuser_role",
       joinColumns = @JoinColumn(name = "ccuser_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -57,4 +66,19 @@ public class User {
       joinColumns = @JoinColumn(name = "ccuser_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))
   private List<Role> adminRoles;
+
+  /**
+   * Convenience to determine if the user has a role containing the permission
+   *
+   * @param permissionType the permission to look for
+   * @return true if the users user roles contain the permission
+   */
+  public boolean hasUserPermission(PermissionType permissionType) {
+    return userRoles == null
+        ? false
+        : userRoles.stream()
+            .map(r -> r.getPermissions())
+            .flatMap(Collection::stream)
+            .anyMatch(p -> p.getPermissionType() == permissionType);
+  }
 }

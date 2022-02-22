@@ -36,14 +36,14 @@ public class PermissionTest {
   public void shouldCreatePermission() {
     createPermission();
     assertEquals(role, permission.getRole());
-    assertEquals(PermissionType.SUPER_USER, permission.getPermissionType());
+    assertEquals(PermissionType.READ_USER, permission.getPermissionType());
   }
 
   @Test
   public void shouldHaveSafeToString() {
     createPermission();
     String s = permission.toString();
-    assertTrue(s.contains(PermissionType.SUPER_USER.toString()));
+    assertTrue(s.contains(PermissionType.READ_USER.toString()));
     assertTrue(s.contains(permission.getId().toString()));
     assertFalse(s.contains(role.getName()));
   }
@@ -54,7 +54,7 @@ public class PermissionTest {
     permission =
         Permission.builder()
             .id(UUID.randomUUID())
-            .permissionType(PermissionType.SUPER_USER)
+            .permissionType(PermissionType.READ_USER)
             .role(role)
             .build();
   }

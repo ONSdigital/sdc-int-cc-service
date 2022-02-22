@@ -25,6 +25,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** Contact Centre Endpoint Unit tests. This class tests the POST case interaction endpoint */
 @ExtendWith(MockitoExtension.class)
@@ -33,6 +34,7 @@ public class CaseEndpointInteractionTest {
   @InjectMocks private CaseEndpoint caseEndpoint;
 
   @Mock CaseService caseService;
+  @Mock RBACService rbacService;
 
   @Mock InteractionService interactionService;
 

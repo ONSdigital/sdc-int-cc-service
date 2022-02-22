@@ -4,6 +4,7 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.postJson;
@@ -32,8 +33,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** Contact Centre Data Endpoint Unit tests */
 @ExtendWith(MockitoExtension.class)
@@ -51,6 +54,8 @@ public final class CaseEndpointRefusalTest {
   @Mock private CaseService caseService;
 
   @Mock private InteractionService interactionService;
+
+  @Mock RBACService rbacService;
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 
@@ -161,6 +166,8 @@ public final class CaseEndpointRefusalTest {
             .dateTime(dateFormat.parse(RESPONSE_DATE_TIME))
             .build();
     Mockito.when(caseService.reportRefusal(any(), any())).thenReturn(responseDTO);
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
 
     ObjectNode json = FixtureHelper.loadClassObjectNode();
     json.put(field, value);
@@ -186,6 +193,8 @@ public final class CaseEndpointRefusalTest {
   }
 
   private void assertOk(ObjectNode json) throws Exception {
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
     ResultActions actions =
         mockMvc.perform(postJson("/cases/" + UUID_STR + "/refusal", json.toString()));
     actions.andExpect(status().isOk());
@@ -198,6 +207,8 @@ public final class CaseEndpointRefusalTest {
   }
 
   private void assertBadRequest(ObjectNode json) throws Exception {
+    SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
+    when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
     ResultActions actions =
         mockMvc.perform(postJson("/cases/" + UUID_STR + "/refusal", json.toString()));
     actions.andExpect(status().isBadRequest());

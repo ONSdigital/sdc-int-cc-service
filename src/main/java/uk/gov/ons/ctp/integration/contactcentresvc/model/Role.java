@@ -39,7 +39,10 @@ import lombok.ToString;
 @Table(name = "role")
 public class Role {
   @ToString.Include @Id private UUID id;
+
   @ToString.Include private String name;
+
+  private String description;
 
   @JsonIgnore
   @ManyToMany(mappedBy = "userRoles")
