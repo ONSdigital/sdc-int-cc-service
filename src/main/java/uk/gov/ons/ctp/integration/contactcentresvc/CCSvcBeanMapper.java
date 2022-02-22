@@ -39,7 +39,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Uac;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.PermissionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
@@ -62,8 +61,6 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
     converterFactory.registerConverter(new ArrayListConverter());
     factory.registerObjectFactory(
         new PermissionTypeFactory(), new TypeBuilder<PermissionType>() {}.build());
-
-    factory.classMap(Permission.class, PermissionDTO.class).byDefault().register();
 
     factory
         .classMap(CaseUpdate.class, Case.class)
@@ -222,8 +219,8 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
 
       List<String> destination = new ArrayList<>();
       for (Object sourceElement : source) {
-        if (sourceElement instanceof String) {
-          destination.add((String) sourceElement);
+        if (sourceElement instanceof String sourceElementStr) {
+          destination.add(sourceElementStr);
         } else {
           throw new UnsupportedOperationException(
               "Unsupported type found when mapping an an ArrayList: "

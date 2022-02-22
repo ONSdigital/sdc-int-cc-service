@@ -8,6 +8,11 @@ import uk.gov.ons.ctp.common.log.Scope;
 
 @Data
 @JsonPropertyOrder({"uprn", "formattedAddress", "welshFormattedAddress"})
+/**
+ * An Address representation
+ *
+ * @author philwhiles
+ */
 public class AddressDTO {
   private String uprn;
   private String region;

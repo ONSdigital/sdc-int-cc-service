@@ -50,6 +50,7 @@ public class CaseEndpoint implements CTPEndpoint {
   /**
    * Constructor for ContactCentreDataEndpoint
    *
+   * @param rbacService performs permission checking
    * @param caseService is a service layer object that we be doing the processing on behalf of this
    *     endpoint.
    */
@@ -330,6 +331,8 @@ public class CaseEndpoint implements CTPEndpoint {
         "Entering POST acceptCaseInteraction",
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
+
+    rbacService.assertUserPermission(PermissionType.ADD_CASE_INTERACTION);
 
     if (!validateInteractionType(requestBodyDTO)) {
       String message = "The Interaction type failed validation";

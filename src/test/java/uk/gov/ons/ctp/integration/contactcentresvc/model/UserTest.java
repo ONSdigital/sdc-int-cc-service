@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -59,6 +60,18 @@ public class UserTest {
     assertFalse(s.contains(r2.getName()));
   }
 
+  @Test
+  public void shouldHavePermission() {
+    createUser();
+    assertTrue(user.hasUserPermission(PermissionType.VIEW_CASE));
+  }
+
+  @Test
+  public void shouldNotHavePermission() {
+    createUser();
+    assertFalse(user.hasUserPermission(PermissionType.CREATE_USER));
+  }
+
   private void createUser() {
     user =
         User.builder()
@@ -69,8 +82,11 @@ public class UserTest {
             .userRoles(new ArrayList<>())
             .build();
 
-    r1 = Role.builder().id(UUID.randomUUID()).name("cleaner").build();
-    r2 = Role.builder().id(UUID.randomUUID()).name("cook").build();
+    Permission p =
+        Permission.builder().id(UUID.randomUUID()).permissionType(PermissionType.VIEW_CASE).build();
+    List<Permission> pList = new ArrayList<Permission>(List.of(p));
+    r1 = Role.builder().id(UUID.randomUUID()).name("cleaner").permissions(pList).build();
+    r2 = Role.builder().id(UUID.randomUUID()).name("cook").permissions(pList).build();
 
     user.getAdminRoles().add(r1);
     user.getUserRoles().add(r2);

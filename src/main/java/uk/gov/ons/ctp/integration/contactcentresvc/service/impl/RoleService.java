@@ -5,7 +5,6 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,10 +55,7 @@ public class RoleService {
             .findByName(roleName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    return role.getUsers().stream()
-        .filter(u -> u.isActive())
-        .map(u -> u.getName())
-        .collect(Collectors.toList());
+    return role.getUsers().stream().filter(u -> u.isActive()).map(u -> u.getName()).toList();
   }
 
   @Transactional
@@ -71,10 +67,7 @@ public class RoleService {
             .findByName(roleName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    return role.getAdmins().stream()
-        .filter(u -> u.isActive())
-        .map(u -> u.getName())
-        .collect(Collectors.toList());
+    return role.getAdmins().stream().filter(u -> u.isActive()).map(u -> u.getName()).toList();
   }
 
   @Transactional
