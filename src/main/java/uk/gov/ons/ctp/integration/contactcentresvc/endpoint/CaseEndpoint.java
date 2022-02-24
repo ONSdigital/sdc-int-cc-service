@@ -273,7 +273,7 @@ public class CaseEndpoint implements CTPEndpoint {
         caseId,
         CaseInteractionType.REFUSAL_REQUESTED,
         CaseSubInteractionType.valueOf("REFUSAL_" + requestBodyDTO.getReason().name()),
-        requestBodyDTO.getReason().name());
+        requestBodyDTO.getNote());
 
     log.debug("Exiting reportRefusal", kv("caseId", caseId));
 

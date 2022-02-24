@@ -56,7 +56,7 @@ public final class CaseEndpointRefusalTest {
 
   private static final String RESPONSE_DATE_TIME = "2019-03-28T11:56:40.705Z";
 
-  private CaseInteractionRequestDTO interactionDTO =
+  private CaseInteractionRequestDTO expectedInteractionDTO =
       CaseInteractionRequestDTO.builder().type(CaseInteractionType.REFUSAL_REQUESTED).build();
 
   @Mock private CaseService caseService;
@@ -209,11 +209,12 @@ public final class CaseEndpointRefusalTest {
     verify(caseService).reportRefusal(any(), requestCaptor.capture());
 
     String refusalType = json.get(REASON).asText();
-    interactionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_" + refusalType));
-    interactionDTO.setNote(refusalType);
+    String expectedNote = json.get(NOTE).isNull() ? null : json.get(NOTE).asText();
+    expectedInteractionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_" + refusalType));
+    expectedInteractionDTO.setNote(expectedNote);
 
     verify(interactionService, times(1))
-        .saveCaseInteraction(UUID.fromString(UUID_STR), interactionDTO);
+        .saveCaseInteraction(UUID.fromString(UUID_STR), expectedInteractionDTO);
   }
 
   private void assertBadRequest(String field, String value) throws Exception {
@@ -231,11 +232,11 @@ public final class CaseEndpointRefusalTest {
         mockMvc.perform(postJson("/cases/" + UUID_STR + "/refusal", json.toString()));
     actions.andExpect(status().isOk());
 
-    interactionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_HARD_REFUSAL"));
-    interactionDTO.setNote("HARD_REFUSAL");
+    expectedInteractionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_HARD_REFUSAL"));
+    expectedInteractionDTO.setNote(A_NOTE);
 
     verify(interactionService, times(1))
-        .saveCaseInteraction(UUID.fromString(UUID_STR), interactionDTO);
+        .saveCaseInteraction(UUID.fromString(UUID_STR), expectedInteractionDTO);
   }
 
   private void assertBadRequest(ObjectNode json) throws Exception {
