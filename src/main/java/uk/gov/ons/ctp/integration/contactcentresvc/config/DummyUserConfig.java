@@ -7,10 +7,10 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 @Data
 public class DummyUserConfig {
   private boolean allowed;
-  private String userName;
+  private String userIdentity;
   private UUID userId;
 
   public User getDummyUser() {
-    return User.builder().id(userId).name(userName).build();
+    return User.builder().id(userId).identity(userIdentity).build();
   }
 }

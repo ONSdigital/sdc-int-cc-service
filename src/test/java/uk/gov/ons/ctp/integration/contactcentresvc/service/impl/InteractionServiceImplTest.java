@@ -56,7 +56,7 @@ public class InteractionServiceImplTest {
     DummyUserConfig dummyUserConfig = new DummyUserConfig();
     dummyUserConfig.setAllowed(true);
     dummyUserConfig.setUserId(USER_ID);
-    dummyUserConfig.setUserName(USER_NAME);
+    dummyUserConfig.setUserIdentity(USER_NAME);
     when(rbacService.userActingAsAllowedDummy()).thenReturn(true);
     when(appConfig.getDummyUserConfig()).thenReturn(dummyUserConfig);
 

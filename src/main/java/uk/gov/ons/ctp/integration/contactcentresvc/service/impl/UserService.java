@@ -35,7 +35,7 @@ public class UserService {
     log.debug("Entering getUser", kv("userName", userName));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     return mapper.map(user, UserDTO.class);
@@ -46,7 +46,7 @@ public class UserService {
     log.debug("Entering getUsers");
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     return mapper.mapAsList(user.getUserRoles(), RoleDTO.class);
@@ -61,13 +61,15 @@ public class UserService {
   @Transactional
   public UserDTO modifyUser(UserDTO userDTO) throws CTPException {
 
-    log.debug("Entering modifyUser", kv("userName", userDTO.getName()));
+    log.debug("Entering modifyUser", kv("userName", userDTO.getIdentity()));
     User user =
         userRepository
-            .findByName(userDTO.getName())
+            .findByIdentity(userDTO.getIdentity())
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     user.setActive(userDTO.isActive());
+    user.setForename(userDTO.getForename());
+    user.setSurname(userDTO.getSurname());
     userRepository.saveAndFlush(user);
     return mapper.map(user, UserDTO.class);
   }
@@ -75,14 +77,14 @@ public class UserService {
   @Transactional
   public UserDTO createUser(UserDTO userDTO) throws CTPException {
 
-    log.debug("Entering createUser", kv("userName", userDTO.getName()));
-    if (userRepository.findByName(userDTO.getName()).isPresent()) {
+    log.debug("Entering createUser", kv("userName", userDTO.getIdentity()));
+    if (userRepository.findByIdentity(userDTO.getIdentity()).isPresent()) {
       throw new CTPException(Fault.BAD_REQUEST, "User with that name already exists");
     }
 
     User user = new User();
     user.setId(UUID.randomUUID());
-    user.setName(userDTO.getName());
+    user.setIdentity(userDTO.getIdentity());
 
     userRepository.saveAndFlush(user);
     return mapper.map(user, UserDTO.class);
@@ -94,7 +96,7 @@ public class UserService {
     log.debug("Entering addUserSurvey", kv("userName", userName), kv("surveyType", surveyType));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -120,7 +122,7 @@ public class UserService {
     log.debug("Entering removeUserSurvey", kv("userName", userName), kv("surveyType", surveyType));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -146,7 +148,7 @@ public class UserService {
     log.debug("Entering addUserRole", kv("userName", userName), kv("roleName", roleName));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -172,7 +174,7 @@ public class UserService {
     log.debug("Entering removeUserRole", kv("userName", userName), kv("roleName", roleName));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -198,7 +200,7 @@ public class UserService {
     log.debug("Entering addAdminRole", kv("userName", userName), kv("roleName", roleName));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -224,7 +226,7 @@ public class UserService {
     log.debug("Entering removeAdminRole", kv("userName", userName), kv("roleName", roleName));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {

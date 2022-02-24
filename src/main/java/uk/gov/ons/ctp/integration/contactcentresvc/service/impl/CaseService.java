@@ -501,7 +501,7 @@ public class CaseService {
         .subInteraction(ccInteraction.getSubtype() != null ? ccInteraction.getSubtype().name() : "")
         .note(ccInteraction.getNote() != null ? ccInteraction.getNote() : "")
         .createdDateTime(ccInteraction.getCreatedDateTime())
-        .userName(ccInteraction.getCcuser().getName())
+        .userName(ccInteraction.getCcuser().getIdentity())
         .build();
   }
 

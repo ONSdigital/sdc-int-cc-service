@@ -46,11 +46,11 @@ public class RBACService {
    * In a few cases we wish to guard against a user performing a user/role related operation on
    * themselves ie granting themselves permissions. Security 101.
    *
-   * @param userName the target user
+   * @param userIdentity the target user
    * @throws CTPException when the user is forbidden to operate on the their own account
    */
-  public void assertNotSelfModification(String userName) throws CTPException {
-    if (UserIdentityContext.get().equals(userName)) {
+  public void assertNotSelfModification(String userIdentity) throws CTPException {
+    if (UserIdentityContext.get().equals(userIdentity)) {
       throw new CTPException(
           Fault.ACCESS_DENIED, String.format("Self modification of user account not allowed"));
     }
@@ -174,7 +174,7 @@ public class RBACService {
     DummyUserConfig dummyUseConfig = appConfig.getDummyUserConfig();
     boolean dummyEnabled = false;
     if (dummyUseConfig.isAllowed()
-        && UserIdentityContext.get().equals(dummyUseConfig.getUserName())) {
+        && UserIdentityContext.get().equals(dummyUseConfig.getUserIdentity())) {
       log.warn("Dummy user is enabled - this should NOT be seen in a non dev/test environment");
       dummyEnabled = true;
     }
@@ -198,7 +198,7 @@ public class RBACService {
 
     User user =
         userRepository
-            .findByName(principalIdentity)
+            .findByIdentity(principalIdentity)
             .orElseThrow(
                 () -> new CTPException(Fault.ACCESS_DENIED, "User unknown: " + principalIdentity));
 
