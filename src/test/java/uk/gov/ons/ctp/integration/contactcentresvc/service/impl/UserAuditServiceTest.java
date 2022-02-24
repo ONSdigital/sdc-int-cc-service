@@ -31,8 +31,7 @@ public class UserAuditServiceTest {
 
   @InjectMocks private UserAuditService userAuditService = new UserAuditService();
 
-  @Captor
-  private ArgumentCaptor<UserAudit> auditCaptor;
+  @Captor private ArgumentCaptor<UserAudit> auditCaptor;
 
   private final UUID PRINCIPAL_ID = UUID.fromString("b7565b5e-1396-4965-91a2-918c0d3642ed");
   private final UUID TARGET_USER = UUID.fromString("c7565b5e-1396-4965-91a2-918c0d3642ed");
@@ -53,15 +52,15 @@ public class UserAuditServiceTest {
     UserAudit capturedUserAudit = auditCaptor.getValue();
 
     UserAudit userAudit =
-            UserAudit.builder()
-                    .ccuserId(PRINCIPAL_ID)
-                    .targetUserId(TARGET_USER)
-                    .targetRoleId(null)
-                    .auditType(AuditType.USER)
-                    .auditSubType(AuditSubType.MODIFIED)
-                    .auditValue("ACTIVE")
-                    .createdDateTime(capturedUserAudit.getCreatedDateTime())
-                    .build();
+        UserAudit.builder()
+            .ccuserId(PRINCIPAL_ID)
+            .targetUserId(TARGET_USER)
+            .targetRoleId(null)
+            .auditType(AuditType.USER)
+            .auditSubType(AuditSubType.MODIFIED)
+            .auditValue("ACTIVE")
+            .createdDateTime(capturedUserAudit.getCreatedDateTime())
+            .build();
 
     assertEquals(userAudit, capturedUserAudit);
   }
@@ -85,15 +84,15 @@ public class UserAuditServiceTest {
     UserAudit capturedUserAudit = auditCaptor.getValue();
 
     UserAudit userAudit =
-            UserAudit.builder()
-                    .ccuserId(PRINCIPAL_ID)
-                    .targetUserId(null)
-                    .targetRoleId(TARGET_ROLE)
-                    .auditType(AuditType.PERMISSION)
-                    .auditSubType(AuditSubType.ADDED)
-                    .auditValue(PermissionType.READ_USER.name())
-                    .createdDateTime(capturedUserAudit.getCreatedDateTime())
-                    .build();
+        UserAudit.builder()
+            .ccuserId(PRINCIPAL_ID)
+            .targetUserId(null)
+            .targetRoleId(TARGET_ROLE)
+            .auditType(AuditType.PERMISSION)
+            .auditSubType(AuditSubType.ADDED)
+            .auditValue(PermissionType.READ_USER.name())
+            .createdDateTime(capturedUserAudit.getCreatedDateTime())
+            .build();
 
     assertEquals(userAudit, capturedUserAudit);
   }
@@ -122,8 +121,8 @@ public class UserAuditServiceTest {
             .auditType(AuditType.USER_ROLE)
             .auditSubType(AuditSubType.ADDED)
             .auditValue(null)
-                .createdDateTime(capturedUserAudit.getCreatedDateTime())
-                .build();
+            .createdDateTime(capturedUserAudit.getCreatedDateTime())
+            .build();
 
     assertEquals(userAudit, capturedUserAudit);
   }
