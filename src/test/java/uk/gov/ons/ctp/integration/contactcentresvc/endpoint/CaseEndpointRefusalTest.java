@@ -1,6 +1,10 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,9 +20,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,10 +33,11 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
@@ -44,7 +50,9 @@ public final class CaseEndpointRefusalTest {
 
   private static final String CASE_ID = "caseId";
   private static final String REASON = "reason";
-  private static final String DATE_TIME = "dateTime";
+  private static final String NOTE = "note";
+  private static final String ERASE_DATA = "eraseData";
+  private static final String A_NOTE = "Respondent advises that they don't trust the ONS";
 
   private static final String RESPONSE_DATE_TIME = "2019-03-28T11:56:40.705Z";
 
@@ -60,6 +68,8 @@ public final class CaseEndpointRefusalTest {
   @InjectMocks private CaseEndpoint caseEndpoint;
 
   private MockMvc mockMvc;
+
+  @Captor private ArgumentCaptor<RefusalRequestDTO> requestCaptor;
 
   // UUID_STR must match the UUID in the test fixture
   private static final String UUID_STR = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
@@ -128,6 +138,11 @@ public final class CaseEndpointRefusalTest {
   }
 
   @Test
+  public void shouldAcceptRefusalWithdrawal() throws Exception {
+    assertOk(REASON, RefusalType.WITHDRAWAL_REFUSAL.name());
+  }
+
+  @Test
   public void refusalHardReasonOk() throws Exception {
     assertOk(REASON, RefusalType.HARD_REFUSAL.name());
   }
@@ -143,18 +158,32 @@ public final class CaseEndpointRefusalTest {
   }
 
   @Test
-  public void refusalDateTimeNull() throws Exception {
-    assertBadRequest(DATE_TIME, (String) null);
+  public void shouldRejectRefusalForEraseDataNull() throws Exception {
+    assertBadRequest(ERASE_DATA, (String) null);
   }
 
   @Test
-  public void refusalDateTimeBlank() throws Exception {
-    assertBadRequest(DATE_TIME, "");
+  public void shouldEraseDta() throws Exception {
+    assertOk(ERASE_DATA, "true");
+    assertTrue(requestCaptor.getValue().getEraseData());
   }
 
   @Test
-  public void refusalDateTimeTooLong() throws Exception {
-    assertBadRequest(DATE_TIME, "2007:12:03T10-15-30");
+  public void shouldNotEraseDta() throws Exception {
+    assertOk(ERASE_DATA, "false");
+    assertFalse(requestCaptor.getValue().getEraseData());
+  }
+
+  @Test
+  public void shouldAcceptRefusalForNullNote() throws Exception {
+    assertOk(NOTE, null);
+    assertNull(requestCaptor.getValue().getNote());
+  }
+
+  @Test
+  public void shouldHaveNote() throws Exception {
+    assertOk(REASON, RefusalType.SOFT_REFUSAL.name());
+    assertEquals(A_NOTE, requestCaptor.getValue().getNote());
   }
 
   private void assertOk(String field, String value) throws Exception {
@@ -165,7 +194,7 @@ public final class CaseEndpointRefusalTest {
             .id(uuid.toString())
             .dateTime(dateFormat.parse(RESPONSE_DATE_TIME))
             .build();
-    Mockito.when(caseService.reportRefusal(any(), any())).thenReturn(responseDTO);
+    when(caseService.reportRefusal(any(), any())).thenReturn(responseDTO);
     SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();
     when(caseService.getSurveyForCase(any())).thenReturn(surveyDTO);
 
@@ -177,8 +206,11 @@ public final class CaseEndpointRefusalTest {
     actions.andExpect(jsonPath("$.id", is(uuid.toString())));
     actions.andExpect(jsonPath("$.dateTime", is(RESPONSE_DATE_TIME)));
 
-    interactionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_" + value));
-    interactionDTO.setNote(value);
+    verify(caseService).reportRefusal(any(), requestCaptor.capture());
+
+    String refusalType = json.get(REASON).asText();
+    interactionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_" + refusalType));
+    interactionDTO.setNote(refusalType);
 
     verify(interactionService, times(1))
         .saveCaseInteraction(UUID.fromString(UUID_STR), interactionDTO);

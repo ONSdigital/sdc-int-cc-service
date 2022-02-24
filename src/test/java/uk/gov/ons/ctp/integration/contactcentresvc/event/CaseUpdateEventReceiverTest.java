@@ -27,9 +27,9 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 
 @ExtendWith(MockitoExtension.class)

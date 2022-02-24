@@ -7,7 +7,6 @@ import static org.mockito.Mockito.lenient;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Date;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
+import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpDecrypt;
@@ -26,7 +25,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncryptTest;
 /** Unit Test {@link CaseService#reportRefusal(UUID, RefusalRequestDTO) reportRefusal}. */
 @ExtendWith(MockitoExtension.class)
 public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
-
+  private static final String A_NOTE = "Respondent advises that they don't trust the ONS";
   private static final String PUBLIC_KEY_1 = "pgp/key1.asc";
   private static final String PUBLIC_KEY_2 = "pgp/key2.asc";
   private static final String PRIVATE_KEY_1 = "pgp/priv-key1.asc";
@@ -42,20 +41,27 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
 
   @Test
   public void testRespondentRefusal_withHardReason() throws Exception {
-    Date dateTime = new Date();
-    doRespondentRefusalTest(dateTime, RefusalType.HARD_REFUSAL);
+    doRespondentRefusalTest(false, RefusalType.HARD_REFUSAL);
   }
 
   @Test
   public void testRespondentRefusal_withExtraordinaryReason() throws Exception {
-    Date dateTime = new Date();
-    doRespondentRefusalTest(dateTime, RefusalType.EXTRAORDINARY_REFUSAL);
+    doRespondentRefusalTest(false, RefusalType.EXTRAORDINARY_REFUSAL);
+  }
+
+  @Test
+  public void testRespondentRefusal_withExtraordinaryReason_andEraseData() throws Exception {
+    doRespondentRefusalTest(true, RefusalType.EXTRAORDINARY_REFUSAL);
   }
 
   @Test
   public void testRespondentRefusal_withSoftReason() throws Exception {
-    Date dateTime = new Date();
-    doRespondentRefusalTest(dateTime, RefusalType.SOFT_REFUSAL);
+    doRespondentRefusalTest(false, RefusalType.SOFT_REFUSAL);
+  }
+
+  @Test
+  public void testRespondentRefusal_withWithdrawal() throws Exception {
+    doRespondentRefusalTest(false, RefusalType.WITHDRAWAL_REFUSAL);
   }
 
   @Test
@@ -66,7 +72,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
         RefusalRequestDTO.builder()
             .caseId(caseId)
             .reason(RefusalType.HARD_REFUSAL)
-            .dateTime(new Date())
+            .eraseData(false)
             .build();
 
     ResponseDTO refusalResponse = target.reportRefusal(caseId, refusalPayload);
@@ -78,15 +84,20 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
     assertEquals("HARD_REFUSAL", refusal.getType());
   }
 
-  private RefusalRequestDTO createRefusalDto(UUID caseId, Date dateTime, RefusalType reason) {
-    return RefusalRequestDTO.builder().caseId(caseId).reason(reason).dateTime(dateTime).build();
+  private RefusalRequestDTO createRefusalDto(UUID caseId, Boolean eraseData, RefusalType reason) {
+    return RefusalRequestDTO.builder()
+        .caseId(caseId)
+        .reason(reason)
+        .eraseData(eraseData)
+        .note(A_NOTE)
+        .build();
   }
 
-  private void doRespondentRefusalTest(Date dateTime, RefusalType reason) throws Exception {
+  private void doRespondentRefusalTest(Boolean eraseData, RefusalType reason) throws Exception {
     UUID caseId = UUID.randomUUID();
     UUID expectedEventCaseId = caseId;
     String expectedResponseCaseId = caseId.toString();
-    RefusalRequestDTO refusalPayload = createRefusalDto(expectedEventCaseId, dateTime, reason);
+    RefusalRequestDTO refusalPayload = createRefusalDto(expectedEventCaseId, eraseData, reason);
 
     // report the refusal
     long timeBeforeInvocation = System.currentTimeMillis();
@@ -102,6 +113,7 @@ public class CaseServiceImplReportRefusalTest extends CaseServiceImplTestBase {
     RefusalDetails refusal = verifyEventSent(TopicType.REFUSAL, RefusalDetails.class);
     assertEquals(expectedEventCaseId, refusal.getCaseId());
     assertEquals(reason.name(), refusal.getType());
+    assertEquals(eraseData, refusal.isEraseData());
 
     // This code is intentionally commented out. Reinstate if ccsvc uses encryption in outgoing
     // events.
