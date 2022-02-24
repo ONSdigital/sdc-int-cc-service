@@ -5,13 +5,12 @@ import java.util.UUID;
 import javax.persistence.*;
 import lombok.*;
 
-@Getter
-@Setter
 @ToString(onlyExplicitlyIncluded = true)
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Data
 @Table(name = "user_audit")
 public class UserAudit {
 
