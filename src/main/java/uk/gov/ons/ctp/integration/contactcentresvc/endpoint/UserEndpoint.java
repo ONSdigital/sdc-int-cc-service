@@ -6,10 +6,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -21,8 +20,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -57,25 +54,29 @@ public class UserEndpoint {
   }
 
   @PutMapping("/login")
-  public ResponseEntity<UserDTO> login(@RequestBody LoginRequestDTO loginRequestDTO) throws CTPException {
+  public ResponseEntity<UserDTO> login(@RequestBody LoginRequestDTO loginRequestDTO)
+      throws CTPException {
 
-	log.info("Entering login", kv("forename", loginRequestDTO.getForename()), kv("surname", loginRequestDTO.getSurname()));
-    
-	rbacService.assertUserValidAndActive();
-	
+    log.info(
+        "Entering login",
+        kv("forename", loginRequestDTO.getForename()),
+        kv("surname", loginRequestDTO.getSurname()));
+
+    rbacService.assertUserValidAndActive();
+
     String userIdentity = UserIdentityContext.get();
     UserDTO userDTO = userService.getUser(userIdentity);
-    
+
     // Update users name
     userDTO.setForename(loginRequestDTO.getForename());
     userDTO.setSurname(loginRequestDTO.getSurname());
     userService.modifyUser(userDTO);
-    
-    //TODO: PMB. Once 412 is done - userAuditService.saveUserAudit() 
-    
+
+    // TODO: PMB. Once 412 is done - userAuditService.saveUserAudit()
+
     return ResponseEntity.ok(userDTO);
   }
-  
+
   @GetMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> getUserByName(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity) throws CTPException {
@@ -116,10 +117,14 @@ public class UserEndpoint {
 
   @PutMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> modifyUser(
-      @PathVariable(value = "userIdentity") @Valid @Email String userIdentity, @RequestBody ModifyUserRequestDTO modifyUserRequestDTO)
+      @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
+      @RequestBody ModifyUserRequestDTO modifyUserRequestDTO)
       throws CTPException {
 
-    log.info("Entering modifyUser", kv("userIdentity", userIdentity), kv("active", modifyUserRequestDTO.isActive()));
+    log.info(
+        "Entering modifyUser",
+        kv("userIdentity", userIdentity),
+        kv("active", modifyUserRequestDTO.isActive()));
 
     rbacService.assertUserPermission(PermissionType.MODIFY_USER);
     rbacService.assertNotSelfModification(userIdentity);
@@ -128,8 +133,8 @@ public class UserEndpoint {
     UserDTO userDTO = userService.getUser(userIdentity);
     userDTO.setActive(modifyUserRequestDTO.isActive());
     UserDTO updatedUser = userService.modifyUser(userDTO);
-    
-	return ResponseEntity.ok(updatedUser);
+
+    return ResponseEntity.ok(updatedUser);
   }
 
   @PostMapping
@@ -146,7 +151,8 @@ public class UserEndpoint {
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
       @PathVariable(value = "surveyType") SurveyType surveyType)
       throws CTPException {
-    log.info("Entering addUserSurvey", kv("userIdentity", userIdentity), kv("surveyType", surveyType));
+    log.info(
+        "Entering addUserSurvey", kv("userIdentity", userIdentity), kv("surveyType", surveyType));
 
     rbacService.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
@@ -159,7 +165,10 @@ public class UserEndpoint {
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
       @PathVariable(value = "surveyType") SurveyType surveyType)
       throws CTPException {
-    log.info("Entering removeUserSurvey", kv("userIdentity", userIdentity), kv("surveyType", surveyType));
+    log.info(
+        "Entering removeUserSurvey",
+        kv("userIdentity", userIdentity),
+        kv("surveyType", surveyType));
 
     rbacService.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
@@ -212,7 +221,8 @@ public class UserEndpoint {
       @PathVariable(value = "roleName") String roleName)
       throws CTPException {
 
-    log.info("Entering removeAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
+    log.info(
+        "Entering removeAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
     rbacService.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
