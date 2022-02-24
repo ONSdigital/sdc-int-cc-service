@@ -14,7 +14,7 @@ import lombok.*;
 @Table(name = "user_audit")
 public class UserAudit {
 
-  @ToString.Include @Id private UUID id;
+  @GeneratedValue @ToString.Include @Id private UUID id;
 
   @ToString.Include private UUID ccuserId;
 

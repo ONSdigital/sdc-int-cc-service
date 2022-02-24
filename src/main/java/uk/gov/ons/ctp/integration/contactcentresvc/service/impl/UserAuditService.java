@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +63,7 @@ public class UserAuditService {
             .auditType(auditType)
             .auditSubType(auditSubType)
             .auditValue(value)
+            .createdDateTime(LocalDateTime.now())
             .build();
 
     verifyAudit(userAudit);
@@ -70,6 +72,11 @@ public class UserAuditService {
   }
 
   private void verifyAudit(UserAudit userAudit) throws CTPException {
+
+    if (!userAudit.getAuditType().getValidSubTypes().contains(userAudit.getAuditSubType())) {
+      throw new CTPException(
+          CTPException.Fault.SYSTEM_ERROR, "Unexpected AuditSubType for given AuditType");
+    }
 
     if (Arrays.asList(userAudit.getAuditType().getTargets()).contains(AuditTarget.USER)) {
       if (userAudit.getTargetUserId() == null) {
