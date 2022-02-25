@@ -26,6 +26,7 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyUsageDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserService;
@@ -107,6 +108,17 @@ public class UserEndpoint {
     log.info("Entering createUser", kv("userName", userDTO.getName()));
 
     rbacService.assertUserPermission(PermissionType.CREATE_USER);
+    if (userDTO.getSurveyUsages() != null) {
+      rbacService.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
+    }
+    if (userDTO.getUserRoles() != null) {
+      for (String userRoleName : userDTO.getUserRoles()) {
+    	rbacService.assertAdminPermission(userRoleName, PermissionType.USER_ROLE_MAINTENANCE);
+      } 
+    }
+    if (userDTO.getAdminRoles() != null) {
+      rbacService.assertUserPermission(PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
+    }
 
     return ResponseEntity.ok(userService.createUser(userDTO));
   }
