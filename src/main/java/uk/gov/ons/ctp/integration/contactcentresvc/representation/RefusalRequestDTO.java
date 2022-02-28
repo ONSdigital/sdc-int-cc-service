@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RefusalType;
+import uk.gov.ons.ctp.common.domain.RefusalType;
 
 /**
  * The request object when contact centre registers a refusal

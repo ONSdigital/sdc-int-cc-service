@@ -30,10 +30,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.RefusalType;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
-import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
@@ -210,7 +210,7 @@ public final class CaseEndpointRefusalTest {
 
     String refusalType = json.get(REASON).asText();
     String expectedNote = json.get(NOTE).isNull() ? null : json.get(NOTE).asText();
-    expectedInteractionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_" + refusalType));
+    expectedInteractionDTO.setSubtype(CaseSubInteractionType.valueOf(refusalType));
     expectedInteractionDTO.setNote(expectedNote);
 
     verify(interactionService, times(1))
@@ -232,7 +232,7 @@ public final class CaseEndpointRefusalTest {
         mockMvc.perform(postJson("/cases/" + UUID_STR + "/refusal", json.toString()));
     actions.andExpect(status().isOk());
 
-    expectedInteractionDTO.setSubtype(CaseSubInteractionType.valueOf("REFUSAL_HARD_REFUSAL"));
+    expectedInteractionDTO.setSubtype(CaseSubInteractionType.valueOf("HARD_REFUSAL"));
     expectedInteractionDTO.setNote(A_NOTE);
 
     verify(interactionService, times(1))
