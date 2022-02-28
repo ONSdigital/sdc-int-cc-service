@@ -6,9 +6,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -75,6 +78,18 @@ public class UserEndpoint {
     // TODO: PMB. Once 412 is done - userAuditService.saveUserAudit()
 
     return ResponseEntity.ok(userDTO);
+  }
+
+  @PutMapping("/logout")
+  public ResponseEntity<Void> logout() throws CTPException {
+
+    log.info("Entering logout");
+    
+    rbacService.assertUserValidAndActive();
+
+    // TODO: PMB. Once 412 is done - userAuditService.saveUserAudit()
+
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/{userIdentity}")
