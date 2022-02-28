@@ -31,10 +31,13 @@ public enum PermissionType {
   READ_USER,
   MODIFY_USER,
   USER_SURVEY_MAINTENANCE,
-  USER_ROLE_ADMIN,
   USER_ROLE_MAINTENANCE,
-  ADMIN_ROLE_MAINTENANCE,
   CREATE_ROLE,
   READ_ROLE,
-  MAINTAIN_PERMISSIONS
+  MAINTAIN_PERMISSIONS,
+
+  // RESERVED_ permisions are those which we only want to assign to superusers
+  // naming this way to call them out from other permissions
+  RESERVED_USER_ROLE_ADMIN,
+  RESERVED_ADMIN_ROLE_MAINTENANCE
 }

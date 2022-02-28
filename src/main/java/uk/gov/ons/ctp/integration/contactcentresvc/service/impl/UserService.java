@@ -43,7 +43,7 @@ public class UserService {
 
   @Transactional
   public List<RoleDTO> getUsersRoles(String userName) throws CTPException {
-    log.debug("Entering getUsers");
+    log.debug("Entering getUsersRoles");
     User user =
         userRepository
             .findByIdentity(userName)

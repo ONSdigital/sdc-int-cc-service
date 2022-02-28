@@ -154,7 +154,7 @@ public class RBACService {
             .findByName(roleName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    if (user.hasUserPermission(PermissionType.USER_ROLE_ADMIN)
+    if (user.hasUserPermission(PermissionType.RESERVED_USER_ROLE_ADMIN)
         || (user.hasUserPermission(permissionType) && user.getAdminRoles().contains(targetRole))) {
       return; // User is authorised
     }

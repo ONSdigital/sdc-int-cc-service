@@ -221,7 +221,7 @@ public class UserEndpoint {
       throws CTPException {
 
     log.info("Entering addAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
-    rbacService.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
+    rbacService.assertUserPermission(PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
     return ResponseEntity.ok(userService.addAdminRole(userIdentity, roleName));
@@ -235,7 +235,7 @@ public class UserEndpoint {
 
     log.info(
         "Entering removeAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
-    rbacService.assertUserPermission(PermissionType.ADMIN_ROLE_MAINTENANCE);
+    rbacService.assertUserPermission(PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
     return ResponseEntity.ok(userService.removeAdminRole(userIdentity, roleName));
