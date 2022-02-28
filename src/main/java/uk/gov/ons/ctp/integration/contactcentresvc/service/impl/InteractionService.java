@@ -35,7 +35,7 @@ public class InteractionService {
 
     User user = null;
 
-    if (rbacService.userActingAsAllowedDummy() || true) {
+    if (rbacService.userActingAsAllowedDummy()) {
       user = appConfig.getDummyUserConfig().getDummyUser();
     } else {
       user = rbacService.loadUser();

@@ -29,8 +29,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
-/** Database tests for users, roles and permissions. */
-public class UserRoleRepositoryIT2 extends PostgresTestBase2 {
+/** Integration test for user login. */
+public class LoginIntegrationTest extends FullStackIntegrationTestBase {
 
   private static UUID FRED_UUID = UUID.fromString("4f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
 

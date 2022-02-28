@@ -16,7 +16,13 @@ import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 
-/** Base class for spring tests that run with TestContainer to assist with database testing. */
+/**
+ * Base class for integration tests which need to span the entire service; from the endpoints down
+ * to the database.
+ *
+ * <p>Note that this test uses the flyway profile, so the flyway scripts are applied to the database
+ * when a test starts.
+ */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test-containers-flyway")
 @Testcontainers
@@ -28,4 +34,4 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 @Transactional
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
 @Tag("db")
-public abstract class PostgresTestBase2 {}
+public abstract class FullStackIntegrationTestBase {}
