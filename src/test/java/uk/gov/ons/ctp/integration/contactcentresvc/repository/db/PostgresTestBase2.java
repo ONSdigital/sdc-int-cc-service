@@ -15,7 +15,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 
 /** Base class for spring tests that run with TestContainer to assist with database testing. */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
