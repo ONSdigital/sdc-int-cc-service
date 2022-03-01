@@ -30,23 +30,23 @@ public class UserService {
   @Autowired private RoleRepository roleRepository;
 
   @Transactional
-  public UserDTO getUser(String userName) throws CTPException {
+  public UserDTO getUser(String userIdentity) throws CTPException {
 
-    log.debug("Entering getUser", kv("userName", userName));
+    log.debug("Entering getUser", kv("userIdentity", userIdentity));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userIdentity)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     return mapper.map(user, UserDTO.class);
   }
 
   @Transactional
-  public List<RoleDTO> getUsersRoles(String userName) throws CTPException {
+  public List<RoleDTO> getUsersRoles(String userIdentity) throws CTPException {
     log.debug("Entering getUsersRoles");
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userIdentity)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     return mapper.mapAsList(user.getUserRoles(), RoleDTO.class);
@@ -61,13 +61,15 @@ public class UserService {
   @Transactional
   public UserDTO modifyUser(UserDTO userDTO) throws CTPException {
 
-    log.debug("Entering modifyUser", kv("userName", userDTO.getName()));
+    log.debug("Entering modifyUser", kv("userIdentity", userDTO.getIdentity()));
     User user =
         userRepository
-            .findByName(userDTO.getName())
+            .findByIdentity(userDTO.getIdentity())
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     user.setActive(userDTO.isActive());
+    user.setForename(userDTO.getForename());
+    user.setSurname(userDTO.getSurname());
     userRepository.saveAndFlush(user);
     return mapper.map(user, UserDTO.class);
   }
@@ -75,26 +77,27 @@ public class UserService {
   @Transactional
   public UserDTO createUser(UserDTO userDTO) throws CTPException {
 
-    log.debug("Entering createUser", kv("userName", userDTO.getName()));
-    if (userRepository.findByName(userDTO.getName()).isPresent()) {
+    log.debug("Entering createUser", kv("userIdentity", userDTO.getIdentity()));
+    if (userRepository.findByIdentity(userDTO.getIdentity()).isPresent()) {
       throw new CTPException(Fault.BAD_REQUEST, "User with that name already exists");
     }
 
     User user = new User();
     user.setId(UUID.randomUUID());
-    user.setName(userDTO.getName());
+    user.setIdentity(userDTO.getIdentity());
 
     userRepository.saveAndFlush(user);
     return mapper.map(user, UserDTO.class);
   }
 
   @Transactional
-  public UserDTO addUserSurvey(String userName, SurveyType surveyType) throws CTPException {
+  public UserDTO addUserSurvey(String userIdentity, SurveyType surveyType) throws CTPException {
 
-    log.debug("Entering addUserSurvey", kv("userName", userName), kv("surveyType", surveyType));
+    log.debug(
+        "Entering addUserSurvey", kv("userIdentity", userIdentity), kv("surveyType", surveyType));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userIdentity)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -115,12 +118,15 @@ public class UserService {
   }
 
   @Transactional
-  public UserDTO removeUserSurvey(String userName, SurveyType surveyType) throws CTPException {
+  public UserDTO removeUserSurvey(String userIdentity, SurveyType surveyType) throws CTPException {
 
-    log.debug("Entering removeUserSurvey", kv("userName", userName), kv("surveyType", surveyType));
+    log.debug(
+        "Entering removeUserSurvey",
+        kv("userIdentity", userIdentity),
+        kv("surveyType", surveyType));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userIdentity)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -141,12 +147,12 @@ public class UserService {
   }
 
   @Transactional
-  public UserDTO addUserRole(String userName, String roleName) throws CTPException {
+  public UserDTO addUserRole(String userIdentity, String roleName) throws CTPException {
 
-    log.debug("Entering addUserRole", kv("userName", userName), kv("roleName", roleName));
+    log.debug("Entering addUserRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userIdentity)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -167,12 +173,13 @@ public class UserService {
   }
 
   @Transactional
-  public UserDTO removeUserRole(String userName, String roleName) throws CTPException {
+  public UserDTO removeUserRole(String userIdentity, String roleName) throws CTPException {
 
-    log.debug("Entering removeUserRole", kv("userName", userName), kv("roleName", roleName));
+    log.debug(
+        "Entering removeUserRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userIdentity)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -193,12 +200,12 @@ public class UserService {
   }
 
   @Transactional
-  public UserDTO addAdminRole(String userName, String roleName) throws CTPException {
+  public UserDTO addAdminRole(String userIdentity, String roleName) throws CTPException {
 
-    log.debug("Entering addAdminRole", kv("userName", userName), kv("roleName", roleName));
+    log.debug("Entering addAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userIdentity)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {
@@ -219,12 +226,13 @@ public class UserService {
   }
 
   @Transactional
-  public UserDTO removeAdminRole(String userName, String roleName) throws CTPException {
+  public UserDTO removeAdminRole(String userIdentity, String roleName) throws CTPException {
 
-    log.debug("Entering removeAdminRole", kv("userName", userName), kv("roleName", roleName));
+    log.debug(
+        "Entering removeAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
     User user =
         userRepository
-            .findByName(userName)
+            .findByIdentity(userIdentity)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
     if (!user.isActive()) {

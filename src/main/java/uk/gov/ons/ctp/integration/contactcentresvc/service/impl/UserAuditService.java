@@ -2,8 +2,8 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -16,7 +16,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserAuditRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 
-@Slf4j
 @Service
 public class UserAuditService {
 
@@ -34,7 +33,7 @@ public class UserAuditService {
 
     UUID principalId =
         userRepository
-            .findByName(UserIdentityContext.get())
+            .findByIdentity(UserIdentityContext.get())
             .orElseThrow(() -> new CTPException(CTPException.Fault.BAD_REQUEST, "User not found"))
             .getId();
     UUID targetUserId = null;
@@ -43,7 +42,7 @@ public class UserAuditService {
     if (targetUserName != null) {
       targetUserId =
           userRepository
-              .findByName(targetUserName)
+              .findByIdentity(targetUserName)
               .orElseThrow(() -> new CTPException(CTPException.Fault.BAD_REQUEST, "User not found"))
               .getId();
     }
@@ -73,7 +72,9 @@ public class UserAuditService {
 
   private void verifyAudit(UserAudit userAudit) throws CTPException {
 
-    if (!userAudit.getAuditType().getValidSubTypes().contains(userAudit.getAuditSubType())) {
+    Set<AuditSubType> validSubTypes = userAudit.getAuditType().getValidSubTypes();
+    boolean subTypeUsed = !validSubTypes.isEmpty() || userAudit.getAuditSubType() != null;
+    if (subTypeUsed && !validSubTypes.contains(userAudit.getAuditSubType())) {
       throw new CTPException(
           CTPException.Fault.SYSTEM_ERROR, "Unexpected AuditSubType for given AuditType");
     }

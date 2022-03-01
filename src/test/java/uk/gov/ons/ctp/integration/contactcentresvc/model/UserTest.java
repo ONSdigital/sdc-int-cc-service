@@ -19,7 +19,7 @@ public class UserTest {
   @Test
   public void shouldHaveNoArgConstructor() {
     user = new User();
-    assertNull(user.getName());
+    assertNull(user.getIdentity());
     assertTrue(user.isActive());
   }
 
@@ -27,12 +27,12 @@ public class UserTest {
   public void shouldHaveSetters() {
     user = new User();
     user.setId(UUID.randomUUID());
-    user.setName("Fred");
+    user.setIdentity("Fred");
     user.setActive(false);
     user.setUserRoles(new ArrayList<>());
     user.setAdminRoles(new ArrayList<>());
     assertNotNull(user.getId());
-    assertNotNull(user.getName());
+    assertNotNull(user.getIdentity());
     assertNotNull(user.getUserRoles());
     assertNotNull(user.getAdminRoles());
     assertFalse(user.isActive());
@@ -43,7 +43,7 @@ public class UserTest {
     createUser();
 
     assertNotNull(user.getId());
-    assertEquals("Fred", user.getName());
+    assertEquals("Fred", user.getIdentity());
     assertTrue(user.isActive());
     assertEquals(r1, user.getAdminRoles().get(0));
     assertEquals(r2, user.getUserRoles().get(0));
@@ -76,7 +76,7 @@ public class UserTest {
     user =
         User.builder()
             .id(UUID.randomUUID())
-            .name("Fred")
+            .identity("Fred")
             .active(true)
             .adminRoles(new ArrayList<>())
             .userRoles(new ArrayList<>())

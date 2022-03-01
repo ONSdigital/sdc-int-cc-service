@@ -52,8 +52,8 @@ public class RoleTest {
     String s = role.toString();
     assertTrue(s.contains("coder"));
     assertTrue(s.contains(role.getId().toString()));
-    assertFalse(s.contains(u1.getName()));
-    assertFalse(s.contains(u2.getName()));
+    assertFalse(s.contains(u1.getIdentity()));
+    assertFalse(s.contains(u2.getIdentity()));
     assertFalse(s.contains(PermissionType.SEARCH_CASES.name()));
     assertFalse(s.contains(PermissionType.VIEW_CASE.name()));
   }
@@ -91,7 +91,7 @@ public class RoleTest {
     User user =
         User.builder()
             .id(UUID.randomUUID())
-            .name(name)
+            .identity(name)
             .active(true)
             .adminRoles(new ArrayList<>())
             .userRoles(new ArrayList<>())

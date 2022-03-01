@@ -39,7 +39,9 @@ import lombok.ToString;
 @Table(name = "ccuser")
 public class User {
   @ToString.Include @Id private UUID id;
-  @ToString.Include private String name;
+  @ToString.Include private String identity;
+  @ToString.Include private String forename;
+  @ToString.Include private String surname;
 
   @Builder.Default @ToString.Include private boolean active = true;
 

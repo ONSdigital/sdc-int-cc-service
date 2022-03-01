@@ -23,8 +23,8 @@ public-pgp-key-2 : classpath:pgp/key2.asc
 
 dummy-user-config:
   allowed: false
-  user-id: 7704983d-89ea-4447-b681-e412c2a2610b
-  user-name: philip.whiles@ext.ons.gov.uk
+  user-id: 46e62d6a-479c-11ec-aab4-4c3275913db5
+  user-identity: philip.whiles@ext.ons.gov.uk
 
 management:
   health:

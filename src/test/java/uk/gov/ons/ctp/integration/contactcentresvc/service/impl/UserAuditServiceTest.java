@@ -39,9 +39,9 @@ public class UserAuditServiceTest {
 
   @Test
   public void correctUserIds() throws CTPException {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
-    when(userRepository.findByName("testUser"))
+    when(userRepository.findByIdentity("testUser"))
         .thenReturn(Optional.of(User.builder().id(TARGET_USER).build()));
 
     userAuditService.saveUserAudit(
@@ -67,7 +67,7 @@ public class UserAuditServiceTest {
 
   @Test
   public void correctRoleIds() throws CTPException {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
     when(roleRepository.findByName("testRole"))
         .thenReturn(Optional.of(Role.builder().id(TARGET_ROLE).build()));
@@ -99,9 +99,9 @@ public class UserAuditServiceTest {
 
   @Test
   public void correctUserAndRoleIds() throws CTPException {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
-    when(userRepository.findByName("testUser"))
+    when(userRepository.findByIdentity("testUser"))
         .thenReturn(Optional.of(User.builder().id(TARGET_USER).build()));
     when(roleRepository.findByName("testRole"))
         .thenReturn(Optional.of(Role.builder().id(TARGET_ROLE).build()));
@@ -129,7 +129,7 @@ public class UserAuditServiceTest {
 
   @Test
   public void incorrectUserIds_NoUserId() throws CTPException {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
 
     CTPException exception =
@@ -147,9 +147,9 @@ public class UserAuditServiceTest {
 
   @Test
   public void incorrectUserIds_UnwantedRoleId() {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
-    when(userRepository.findByName("testUser"))
+    when(userRepository.findByIdentity("testUser"))
         .thenReturn(Optional.of(User.builder().id(TARGET_USER).build()));
     when(roleRepository.findByName("testRole"))
         .thenReturn(Optional.of(Role.builder().id(TARGET_ROLE).build()));
@@ -169,7 +169,7 @@ public class UserAuditServiceTest {
 
   @Test
   public void incorrectRoleIds_NoRoleId() {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
 
     CTPException exception =
@@ -191,9 +191,9 @@ public class UserAuditServiceTest {
 
   @Test
   public void incorrectRoleIds_UnwantedUserId() {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
-    when(userRepository.findByName("testUser"))
+    when(userRepository.findByIdentity("testUser"))
         .thenReturn(Optional.of(User.builder().id(TARGET_USER).build()));
     when(roleRepository.findByName("testRole"))
         .thenReturn(Optional.of(Role.builder().id(TARGET_ROLE).build()));
@@ -217,9 +217,9 @@ public class UserAuditServiceTest {
 
   @Test
   public void incorrectUserAndRoleIds_NoRoleId() {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
-    when(userRepository.findByName("testUser"))
+    when(userRepository.findByIdentity("testUser"))
         .thenReturn(Optional.of(User.builder().id(TARGET_USER).build()));
 
     CTPException exception =
@@ -237,7 +237,7 @@ public class UserAuditServiceTest {
 
   @Test
   public void incorrectUserAndRoleIds_NoUserId() {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
     when(roleRepository.findByName("testRole"))
         .thenReturn(Optional.of(Role.builder().id(TARGET_ROLE).build()));
@@ -257,7 +257,7 @@ public class UserAuditServiceTest {
 
   @Test
   public void incorrectUserAndRoleIds_NoId() {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
     CTPException exception =
         assertThrows(
@@ -274,9 +274,9 @@ public class UserAuditServiceTest {
 
   @Test
   public void auditNotSavedIfUserIdNotFound() {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
-    when(userRepository.findByName("testUser")).thenReturn(Optional.empty());
+    when(userRepository.findByIdentity("testUser")).thenReturn(Optional.empty());
     CTPException exception =
         assertThrows(
             CTPException.class,
@@ -292,7 +292,7 @@ public class UserAuditServiceTest {
 
   @Test
   public void auditNotSavedIfRoleIdNotFound() {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
     when(roleRepository.findByName("testRole")).thenReturn(Optional.empty());
     CTPException exception =
@@ -310,9 +310,9 @@ public class UserAuditServiceTest {
 
   @Test
   public void auditSubTypeDoesNotMatchAuditType() {
-    when(userRepository.findByName(UserIdentityContext.get()))
+    when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
-    when(userRepository.findByName("targetUser"))
+    when(userRepository.findByIdentity("targetUser"))
         .thenReturn(Optional.of(User.builder().id(TARGET_USER).build()));
     CTPException exception =
         assertThrows(

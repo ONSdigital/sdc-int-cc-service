@@ -47,7 +47,7 @@ public class InteractionServiceImplTest {
   @Captor private ArgumentCaptor<CaseInteraction> interactionCaptor;
 
   private static final UUID USER_ID = UUID.fromString("382a8474-479c-11ec-a052-4c3275913db5");
-  private static final String USER_NAME = "philip.whiles@ext.ons.gov.uk";
+  private static final String USER_IDENTITY = "philip.whiles@ext.ons.gov.uk";
 
   @BeforeEach
   public void setup() {
@@ -122,7 +122,7 @@ public class InteractionServiceImplTest {
     DummyUserConfig dummyUserConfig = new DummyUserConfig();
     dummyUserConfig.setAllowed(true);
     dummyUserConfig.setUserId(USER_ID);
-    dummyUserConfig.setUserName(USER_NAME);
+    dummyUserConfig.setUserIdentity(USER_IDENTITY);
     when(rbacService.userActingAsAllowedDummy()).thenReturn(true);
     when(appConfig.getDummyUserConfig()).thenReturn(dummyUserConfig);
   }
