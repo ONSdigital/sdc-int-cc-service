@@ -15,6 +15,7 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.SurveyUsage;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserSurveyUsageRepository;
@@ -28,6 +29,7 @@ public class UserService {
   @Autowired private UserRepository userRepository;
   @Autowired private UserSurveyUsageRepository userSurveyUsageRepository;
   @Autowired private RoleRepository roleRepository;
+  @Autowired private CaseInteractionRepository caseInteractionRepository;
 
   @Transactional
   public UserDTO getUser(String userName) throws CTPException {
@@ -38,7 +40,11 @@ public class UserService {
             .findByName(userName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
-    return mapper.map(user, UserDTO.class);
+    UserDTO userDTO = mapper.map(user, UserDTO.class);
+
+    userDTO.setCanBeDeleted(caseInteractionRepository.countAllByCcuserName(userName) == 0);
+
+    return userDTO;
   }
 
   @Transactional
@@ -55,7 +61,14 @@ public class UserService {
   @Transactional
   public List<UserDTO> getUsers() throws CTPException {
     log.debug("Entering getUsers");
-    return mapper.mapAsList(userRepository.findAll(), UserDTO.class);
+
+    List<UserDTO> userDTOs = mapper.mapAsList(userRepository.findAll(), UserDTO.class);
+
+    userDTOs.forEach(
+        userDTO ->
+            userDTO.setCanBeDeleted(
+                caseInteractionRepository.countAllByCcuserName(userDTO.getName()) == 0));
+    return userDTOs;
   }
 
   @Transactional
