@@ -5,9 +5,13 @@ import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteracti
 import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.CALL_NUMBER_UNOBTAINABLE;
 import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.CALL_UNANSWERED;
 import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.CALL_VOICEMAIL;
+import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.EXTRAORDINARY_REFUSAL;
 import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.FULFILMENT_EMAIL;
 import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.FULFILMENT_PRINT;
 import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.FULFILMENT_SMS;
+import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.HARD_REFUSAL;
+import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.SOFT_REFUSAL;
+import static uk.gov.ons.ctp.integration.contactcentresvc.model.CaseSubInteractionType.WITHDRAWAL_REFUSAL;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -20,11 +24,11 @@ public enum CaseInteractionType {
   SCHEDULED_CASE_VIEW(false),
   SOFT_APPOINTMENT_MADE(false),
   HARD_APPOINTMENT_MADE(false),
-  REFUSAL_REQUESTED(false),
   CASE_UPDATE_REQUESTED(false),
   CONTACT_UPDATE_REQUESTED(false),
   DATA_REMOVAL_REQUESTED(false),
   TELEPHONE_CAPTURE_STARTED(false),
+  REFUSAL_REQUESTED(false, SOFT_REFUSAL, HARD_REFUSAL, EXTRAORDINARY_REFUSAL, WITHDRAWAL_REFUSAL),
 
   FULFILMENT_REQUESTED(false, FULFILMENT_PRINT, FULFILMENT_SMS, FULFILMENT_EMAIL),
 
@@ -62,5 +66,12 @@ public enum CaseInteractionType {
   private CaseInteractionType(boolean explicit, CaseSubInteractionType... subInteractions) {
     this.explicit = explicit;
     this.validSubInteractions = Arrays.asList(subInteractions).stream().collect(Collectors.toSet());
+  }
+
+  public boolean isValidSubType(CaseSubInteractionType subType) {
+    if (subType == null) {
+      return this.validSubInteractions.isEmpty();
+    }
+    return this.validSubInteractions.contains(subType);
   }
 }

@@ -272,8 +272,8 @@ public class CaseEndpoint implements CTPEndpoint {
     saveCaseInteraction(
         caseId,
         CaseInteractionType.REFUSAL_REQUESTED,
-        CaseSubInteractionType.valueOf("REFUSAL_" + requestBodyDTO.getReason().name()),
-        requestBodyDTO.getReason().name());
+        CaseSubInteractionType.valueOf(requestBodyDTO.getReason().name()),
+        requestBodyDTO.getNote());
 
     log.debug("Exiting reportRefusal", kv("caseId", caseId));
 
@@ -332,16 +332,14 @@ public class CaseEndpoint implements CTPEndpoint {
         kv("pathParam", caseId),
         kv("requestBody", requestBodyDTO));
 
-    rbacService.assertUserPermission(PermissionType.ADD_CASE_INTERACTION);
-
-    if (!validateInteractionType(requestBodyDTO)) {
-      String message = "The Interaction type failed validation";
+    if (!requestBodyDTO.getType().isExplicit()) {
+      String message = "The interaction must be an explicit type";
       log.warn(message, kv("caseId", caseId));
       throw new CTPException(Fault.VALIDATION_FAILED, message);
     }
 
+    rbacService.assertUserPermission(PermissionType.ADD_CASE_INTERACTION);
     ResponseDTO response = interactionService.saveCaseInteraction(caseId, requestBodyDTO);
-
     return ResponseEntity.ok(response);
   }
 
@@ -369,19 +367,6 @@ public class CaseEndpoint implements CTPEndpoint {
       log.warn(message, kv("caseId", caseId));
       throw new CTPException(Fault.BAD_REQUEST, message);
     }
-  }
-
-  private boolean validateInteractionType(CaseInteractionRequestDTO caseInteractionRequestDTO) {
-    CaseInteractionType type = caseInteractionRequestDTO.getType();
-    CaseSubInteractionType subtype = caseInteractionRequestDTO.getSubtype();
-    if (type.isExplicit()) {
-      if (!type.getValidSubInteractions().isEmpty()) {
-        return type.getValidSubInteractions().stream().anyMatch((t) -> t.equals(subtype));
-      } else {
-        return subtype == null;
-      }
-    }
-    return false;
   }
 
   private void saveCaseInteraction(

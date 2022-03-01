@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.postJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
@@ -20,6 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
@@ -97,6 +100,9 @@ public class CaseEndpointInteractionTest {
   @Test
   public void saveCaseInteraction_WrongSubTypeForInteraction() throws Exception {
     ObjectNode json = FixtureHelper.loadClassObjectNode("WrongSubtype");
+
+    when(interactionService.saveCaseInteraction(eq(uuid), any()))
+        .thenThrow(new CTPException(Fault.VALIDATION_FAILED));
 
     ResultActions actions =
         mockMvc.perform(postJson("/cases/" + uuid + "/interaction", json.toString()));
