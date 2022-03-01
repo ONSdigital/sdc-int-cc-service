@@ -31,7 +31,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
-import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RoleService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserAuditService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserService;
 
@@ -44,7 +43,6 @@ public class UserEndpoint {
   private RBACService rbacService;
   private UserService userService;
   private UserAuditService userAuditService;
-  private RoleService roleService;
 
   /**
    * Create the endpoint
@@ -56,12 +54,10 @@ public class UserEndpoint {
   public UserEndpoint(
       final RBACService rbacService,
       final UserService userService,
-      final UserAuditService userAuditService,
-      final RoleService roleService) {
+      final UserAuditService userAuditService) {
     this.rbacService = rbacService;
     this.userService = userService;
     this.userAuditService = userAuditService;
-    this.roleService = roleService;
   }
 
   @GetMapping("/{userName}")
