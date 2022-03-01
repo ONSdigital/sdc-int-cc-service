@@ -24,12 +24,12 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.RefusalType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Case;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseRepository;
 
 @ExtendWith(MockitoExtension.class)

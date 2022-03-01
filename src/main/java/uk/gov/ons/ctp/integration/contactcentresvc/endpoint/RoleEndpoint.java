@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,10 +15,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RoleService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserAuditService;
 
 @Slf4j
 @RestController
@@ -25,11 +29,16 @@ import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RoleService;
 public class RoleEndpoint {
   private RoleService roleService;
   private RBACService rbacService;
+  private UserAuditService userAuditService;
 
   @Autowired
-  public RoleEndpoint(final RoleService roleService, final RBACService rbacService) {
+  public RoleEndpoint(
+      final RoleService roleService,
+      final RBACService rbacService,
+      final UserAuditService userAuditService) {
     this.roleService = roleService;
     this.rbacService = rbacService;
+    this.userAuditService = userAuditService;
   }
 
   @GetMapping
@@ -68,11 +77,18 @@ public class RoleEndpoint {
   }
 
   @PostMapping
+  @Transactional
   public ResponseEntity<RoleDTO> createRole(@RequestBody RoleDTO roleDTO) throws CTPException {
 
     log.info("Entering createRole", kv("roleName", roleDTO.getName()));
     rbacService.assertUserPermission(PermissionType.CREATE_ROLE);
-    return ResponseEntity.ok(roleService.createRole(roleDTO));
+
+    RoleDTO createdRole = roleService.createRole(roleDTO);
+
+    userAuditService.saveUserAudit(
+        null, createdRole.getName(), AuditType.ROLE, AuditSubType.CREATED, null);
+
+    return ResponseEntity.ok(createdRole);
   }
 
   @PatchMapping("/{roleName}/addPermission/{permissionType}")
@@ -83,6 +99,10 @@ public class RoleEndpoint {
 
     log.info("Entering addPermission", kv("permissionType", permissionType));
     rbacService.assertUserPermission(PermissionType.MAINTAIN_PERMISSIONS);
+
+    userAuditService.saveUserAudit(
+        null, roleName, AuditType.PERMISSION, AuditSubType.ADDED, permissionType.name());
+
     return ResponseEntity.ok(roleService.addPermission(roleName, permissionType));
   }
 
@@ -94,6 +114,10 @@ public class RoleEndpoint {
 
     log.info("Entering removePermission", kv("permissionType", permissionType));
     rbacService.assertUserPermission(PermissionType.MAINTAIN_PERMISSIONS);
+
+    userAuditService.saveUserAudit(
+        null, roleName, AuditType.PERMISSION, AuditSubType.REMOVED, permissionType.name());
+
     return ResponseEntity.ok(roleService.removePermission(roleName, permissionType));
   }
 }

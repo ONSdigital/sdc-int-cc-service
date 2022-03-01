@@ -20,6 +20,7 @@ import lombok.ToString;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import uk.gov.ons.ctp.common.domain.RefusalType;
 
 /**
  * Representation of Case entity from database table.
