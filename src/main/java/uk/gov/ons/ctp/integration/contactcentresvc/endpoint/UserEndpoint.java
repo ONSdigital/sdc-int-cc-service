@@ -11,6 +11,7 @@ import javax.validation.constraints.Email;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,10 +25,13 @@ import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
+import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserAuditService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserService;
 
 @Slf4j
@@ -38,6 +42,7 @@ public class UserEndpoint {
 
   private RBACService rbacService;
   private UserService userService;
+  private UserAuditService userAuditService;
 
   /**
    * Create the endpoint
@@ -46,9 +51,13 @@ public class UserEndpoint {
    * @param userService
    */
   @Autowired
-  public UserEndpoint(final RBACService rbacService, final UserService userService) {
+  public UserEndpoint(
+      final RBACService rbacService,
+      final UserService userService,
+      final UserAuditService userAuditService) {
     this.rbacService = rbacService;
     this.userService = userService;
+    this.userAuditService = userAuditService;
   }
 
   @GetMapping("/{userName}")
@@ -98,17 +107,28 @@ public class UserEndpoint {
     rbacService.assertUserPermission(PermissionType.MODIFY_USER);
     rbacService.assertNotSelfModification(userName);
 
+    String status = userDTO.isActive() ? "ACTIVE" : "INACTIVE";
+
     userDTO.setName(userName);
+
+    userAuditService.saveUserAudit(userName, null, AuditType.USER, AuditSubType.MODIFIED, status);
+
     return ResponseEntity.ok(userService.modifyUser(userDTO));
   }
 
   @PostMapping
+  @Transactional
   public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) throws CTPException {
     log.info("Entering createUser", kv("userName", userDTO.getName()));
 
     rbacService.assertUserPermission(PermissionType.CREATE_USER);
 
-    return ResponseEntity.ok(userService.createUser(userDTO));
+    UserDTO createdUser = userService.createUser(userDTO);
+
+    userAuditService.saveUserAudit(
+        createdUser.getName(), null, AuditType.USER, AuditSubType.CREATED, null);
+
+    return ResponseEntity.ok(createdUser);
   }
 
   @PatchMapping("/{userName}/addSurvey/{surveyType}")
@@ -120,6 +140,9 @@ public class UserEndpoint {
 
     rbacService.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
     rbacService.assertNotSelfModification(userName);
+
+    userAuditService.saveUserAudit(
+        userName, null, AuditType.USER_SURVEY_USAGE, AuditSubType.ADDED, surveyType.name());
 
     return ResponseEntity.ok(userService.addUserSurvey(userName, surveyType));
   }
@@ -134,6 +157,9 @@ public class UserEndpoint {
     rbacService.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
     rbacService.assertNotSelfModification(userName);
 
+    userAuditService.saveUserAudit(
+        userName, null, AuditType.USER_SURVEY_USAGE, AuditSubType.REMOVED, surveyType.name());
+
     return ResponseEntity.ok(userService.removeUserSurvey(userName, surveyType));
   }
 
@@ -146,6 +172,9 @@ public class UserEndpoint {
     log.info("Entering addUserRole", kv("userName", userName), kv("roleName", roleName));
     rbacService.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userName);
+
+    userAuditService.saveUserAudit(
+        userName, roleName, AuditType.USER_ROLE, AuditSubType.ADDED, null);
 
     return ResponseEntity.ok(userService.addUserRole(userName, roleName));
   }
@@ -160,6 +189,9 @@ public class UserEndpoint {
     rbacService.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userName);
 
+    userAuditService.saveUserAudit(
+        userName, roleName, AuditType.USER_ROLE, AuditSubType.REMOVED, null);
+
     return ResponseEntity.ok(userService.removeUserRole(userName, roleName));
   }
 
@@ -173,6 +205,9 @@ public class UserEndpoint {
     rbacService.assertUserPermission(PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userName);
 
+    userAuditService.saveUserAudit(
+        userName, roleName, AuditType.ADMIN_ROLE, AuditSubType.REMOVED, null);
+
     return ResponseEntity.ok(userService.addAdminRole(userName, roleName));
   }
 
@@ -185,6 +220,9 @@ public class UserEndpoint {
     log.info("Entering removeAdminRole", kv("userName", userName), kv("roleName", roleName));
     rbacService.assertUserPermission(PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userName);
+
+    userAuditService.saveUserAudit(
+        userName, roleName, AuditType.ADMIN_ROLE, AuditSubType.REMOVED, null);
 
     return ResponseEntity.ok(userService.removeAdminRole(userName, roleName));
   }
