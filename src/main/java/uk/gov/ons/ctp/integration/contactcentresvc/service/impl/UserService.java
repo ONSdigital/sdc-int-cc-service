@@ -42,7 +42,7 @@ public class UserService {
 
     UserDTO userDTO = mapper.map(user, UserDTO.class);
 
-    userDTO.canBeDeleted(caseInteractionRepository.countAllByCcuserName(userName) == 0);
+    userDTO.setDeletable(caseInteractionRepository.countAllByCcuserName(userName) == 0);
 
     return userDTO;
   }
@@ -66,7 +66,7 @@ public class UserService {
 
     userDTOs.forEach(
         userDTO ->
-            userDTO.canBeDeleted(
+            userDTO.setDeletable(
                 caseInteractionRepository.countAllByCcuserName(userDTO.getName()) == 0));
     return userDTOs;
   }

@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
-
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +45,7 @@ public class UserServiceTest {
 
     UserDTO result = userService.getUser(TEST_USER);
 
-    assertTrue(result.canBeDeleted());
+    assertTrue(result.isDeletable());
   }
 
   @Test
@@ -57,7 +56,7 @@ public class UserServiceTest {
 
     UserDTO result = userService.getUser(TEST_USER);
 
-    assertFalse(result.canBeDeleted());
+    assertFalse(result.isDeletable());
   }
 
   @Test
@@ -77,8 +76,8 @@ public class UserServiceTest {
 
     List<UserDTO> results = userService.getUsers();
 
-    assertTrue(results.get(0).canBeDeleted());
-    assertFalse(results.get(1).canBeDeleted());
-    assertTrue(results.get(2).canBeDeleted());
+    assertTrue(results.get(0).isDeletable());
+    assertFalse(results.get(1).isDeletable());
+    assertTrue(results.get(2).isDeletable());
   }
 }
