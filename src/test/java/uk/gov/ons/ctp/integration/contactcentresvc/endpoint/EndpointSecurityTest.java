@@ -37,11 +37,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import uk.gov.ons.ctp.common.domain.RefusalType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.RefusalType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -141,7 +141,7 @@ public class EndpointSecurityTest {
     RefusalRequestDTO requestBody = new RefusalRequestDTO();
     requestBody.setCaseId(caseId);
     requestBody.setReason(RefusalType.HARD_REFUSAL);
-    requestBody.setDateTime(new Date());
+    requestBody.setEraseData(true);
     mockGetSurvey();
 
     ResponseEntity<String> response =
