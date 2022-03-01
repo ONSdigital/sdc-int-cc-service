@@ -4,10 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
@@ -75,11 +73,11 @@ public class UserAuditService {
   private void verifyAudit(UserAudit userAudit) throws CTPException {
 
     Set<AuditSubType> validSubTypes = userAudit.getAuditType().getValidSubTypes();
-	if (!validSubTypes.contains(userAudit.getAuditSubType())) {
-	  if (!validSubTypes.isEmpty() && userAudit.getAuditSubType() == null) {
+    if (!validSubTypes.contains(userAudit.getAuditSubType())) {
+      if (!validSubTypes.isEmpty() && userAudit.getAuditSubType() == null) {
         throw new CTPException(
-          CTPException.Fault.SYSTEM_ERROR, "Unexpected AuditSubType for given AuditType");
-	  }
+            CTPException.Fault.SYSTEM_ERROR, "Unexpected AuditSubType for given AuditType");
+      }
     }
 
     if (Arrays.asList(userAudit.getAuditType().getTargets()).contains(AuditTarget.USER)) {

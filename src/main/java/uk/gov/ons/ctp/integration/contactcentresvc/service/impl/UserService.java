@@ -93,7 +93,8 @@ public class UserService {
   @Transactional
   public UserDTO addUserSurvey(String userIdentity, SurveyType surveyType) throws CTPException {
 
-    log.debug("Entering addUserSurvey", kv("userIdentity", userIdentity), kv("surveyType", surveyType));
+    log.debug(
+        "Entering addUserSurvey", kv("userIdentity", userIdentity), kv("surveyType", surveyType));
     User user =
         userRepository
             .findByIdentity(userIdentity)
@@ -119,7 +120,10 @@ public class UserService {
   @Transactional
   public UserDTO removeUserSurvey(String userIdentity, SurveyType surveyType) throws CTPException {
 
-    log.debug("Entering removeUserSurvey", kv("userIdentity", userIdentity), kv("surveyType", surveyType));
+    log.debug(
+        "Entering removeUserSurvey",
+        kv("userIdentity", userIdentity),
+        kv("surveyType", surveyType));
     User user =
         userRepository
             .findByIdentity(userIdentity)
@@ -171,7 +175,8 @@ public class UserService {
   @Transactional
   public UserDTO removeUserRole(String userIdentity, String roleName) throws CTPException {
 
-    log.debug("Entering removeUserRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
+    log.debug(
+        "Entering removeUserRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
     User user =
         userRepository
             .findByIdentity(userIdentity)
@@ -223,7 +228,8 @@ public class UserService {
   @Transactional
   public UserDTO removeAdminRole(String userIdentity, String roleName) throws CTPException {
 
-    log.debug("Entering removeAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
+    log.debug(
+        "Entering removeAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
     User user =
         userRepository
             .findByIdentity(userIdentity)

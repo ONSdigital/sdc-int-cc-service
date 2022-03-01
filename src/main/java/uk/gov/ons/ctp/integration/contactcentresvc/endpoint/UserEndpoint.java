@@ -82,7 +82,7 @@ public class UserEndpoint {
     userService.modifyUser(userDTO);
 
     userAuditService.saveUserAudit(userDTO.getIdentity(), null, AuditType.LOGIN, null, null);
-    
+
     return ResponseEntity.ok(userDTO);
   }
 
@@ -158,7 +158,8 @@ public class UserEndpoint {
 
     // User audit
     String status = userDTO.isActive() ? "ACTIVE" : "INACTIVE";
-    userAuditService.saveUserAudit(userIdentity, null, AuditType.USER, AuditSubType.MODIFIED, status);
+    userAuditService.saveUserAudit(
+        userIdentity, null, AuditType.USER, AuditSubType.MODIFIED, status);
 
     return ResponseEntity.ok(updatedUser);
   }
