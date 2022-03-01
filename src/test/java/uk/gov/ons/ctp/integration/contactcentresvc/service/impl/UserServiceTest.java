@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
+
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +35,8 @@ public class UserServiceTest {
   @InjectMocks UserService userService;
 
   private final String TEST_USER = "testUser";
+  private final String TEST_USER_2 = "testUser2";
+  private final String TEST_USER_3 = "testUser3";
 
   @Test
   public void canBeDeletedTrueWhenZeroCaseInteractionsSpecificUser() throws CTPException {
@@ -42,7 +46,7 @@ public class UserServiceTest {
 
     UserDTO result = userService.getUser(TEST_USER);
 
-    assertTrue(result.isCanBeDeleted());
+    assertTrue(result.canBeDeleted());
   }
 
   @Test
@@ -53,12 +57,28 @@ public class UserServiceTest {
 
     UserDTO result = userService.getUser(TEST_USER);
 
-    assertFalse(result.isCanBeDeleted());
+    assertFalse(result.canBeDeleted());
   }
 
   @Test
-  public void canBeDeletedTrueWhenZeroCaseInteractionsMultipleUsers() {}
+  public void canBeDeletedCorrectForMultipleUsers() throws CTPException {
 
-  @Test
-  public void canBeDeletedFalseWhenSomeCaseInteractionsMultipleUsers() {}
+    User test1 = User.builder().name(TEST_USER).build();
+    User test2 = User.builder().name(TEST_USER_2).build();
+    User test3 = User.builder().name(TEST_USER_3).build();
+
+    List<User> users = List.of(test1, test2, test3);
+
+    when(userRepository.findAll()).thenReturn(users);
+
+    when(caseInteractionRepository.countAllByCcuserName(TEST_USER)).thenReturn(0);
+    when(caseInteractionRepository.countAllByCcuserName(TEST_USER_2)).thenReturn(1);
+    when(caseInteractionRepository.countAllByCcuserName(TEST_USER_3)).thenReturn(0);
+
+    List<UserDTO> results = userService.getUsers();
+
+    assertTrue(results.get(0).canBeDeleted());
+    assertFalse(results.get(1).canBeDeleted());
+    assertTrue(results.get(2).canBeDeleted());
+  }
 }
