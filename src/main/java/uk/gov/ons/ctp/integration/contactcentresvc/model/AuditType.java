@@ -17,8 +17,8 @@ public enum AuditType {
   ADMIN_ROLE(new AuditTarget[] {AuditTarget.USER, AuditTarget.ROLE}, ADDED, REMOVED),
   ROLE(new AuditTarget[] {AuditTarget.ROLE}, CREATED),
   PERMISSION(new AuditTarget[] {AuditTarget.ROLE}, ADDED, REMOVED),
-  LOGIN(new AuditTarget[] {AuditTarget.ROLE}),
-  LOGOUT(new AuditTarget[] {AuditTarget.ROLE});
+  LOGIN(new AuditTarget[] {AuditTarget.USER}),
+  LOGOUT(new AuditTarget[] {AuditTarget.USER});
 
   @Getter private Set<AuditSubType> validSubTypes;
 
