@@ -73,11 +73,10 @@ public class UserAuditService {
   private void verifyAudit(UserAudit userAudit) throws CTPException {
 
     Set<AuditSubType> validSubTypes = userAudit.getAuditType().getValidSubTypes();
-    if (!validSubTypes.contains(userAudit.getAuditSubType())) {
-      if (!validSubTypes.isEmpty() && userAudit.getAuditSubType() == null) {
-        throw new CTPException(
-            CTPException.Fault.SYSTEM_ERROR, "Unexpected AuditSubType for given AuditType");
-      }
+    boolean subTypeUsed = !validSubTypes.isEmpty() || userAudit.getAuditSubType() != null;
+    if (subTypeUsed && !validSubTypes.contains(userAudit.getAuditSubType())) {
+      throw new CTPException(
+          CTPException.Fault.SYSTEM_ERROR, "Unexpected AuditSubType for given AuditType");
     }
 
     if (Arrays.asList(userAudit.getAuditType().getTargets()).contains(AuditTarget.USER)) {
