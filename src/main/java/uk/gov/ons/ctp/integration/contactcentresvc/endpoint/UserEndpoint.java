@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -134,7 +135,14 @@ public class UserEndpoint {
     log.info("Entering getUsers");
     rbacService.assertUserPermission(PermissionType.READ_USER);
 
-    return ResponseEntity.ok(userService.getUsers());
+    List<UserDTO> users = userService.getUsers();
+
+    List<UserDTO> sortedUsers =
+        users.stream()
+            .sorted(Comparator.comparing(UserDTO::getIdentity))
+            .collect(Collectors.toList());
+
+    return ResponseEntity.ok(sortedUsers);
   }
 
   @PutMapping("/{userIdentity}")
