@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
@@ -43,6 +44,12 @@ public class InteractionService {
 
     caseInteraction.setCcuser(user);
 
+    if (!hasValidSubtype(interaction)) {
+      String message = "Wrong subtype supplied for interaction";
+      log.warn(message, kv("caseId", caseId));
+      throw new CTPException(Fault.VALIDATION_FAILED, message);
+    }
+
     log.debug("Saving interaction for case", kv("caseId", caseId));
 
     try {
@@ -55,5 +62,9 @@ public class InteractionService {
     log.debug("Returning response for case", kv("caseId", caseId));
     // Build response
     return ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
+  }
+
+  private boolean hasValidSubtype(CaseInteractionRequestDTO dto) {
+    return dto.getType().isValidSubType(dto.getSubtype());
   }
 }

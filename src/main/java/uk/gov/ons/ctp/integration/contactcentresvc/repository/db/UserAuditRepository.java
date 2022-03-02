@@ -1,13 +1,9 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
 
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.UserAudit;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
-
-  Optional<User> findByIdentity(String identity);
-}
+public interface UserAuditRepository extends JpaRepository<UserAudit, UUID> {}

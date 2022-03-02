@@ -49,10 +49,10 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   public void shouldFindUser() {
     txOps.createUser("Fred", FRED_UUID);
 
-    Optional<User> fredOpt = userRepo.findByName("Fred");
+    Optional<User> fredOpt = userRepo.findByIdentity("Fred");
     assert (fredOpt.isPresent());
     User fred = fredOpt.get();
-    assertEquals("Fred", fred.getName());
+    assertEquals("Fred", fred.getIdentity());
     assertEquals(FRED_UUID, fred.getId());
     assertTrue(fred.isActive());
   }
@@ -60,17 +60,17 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   @Test
   public void shouldCreateUser() {
     txOps.createUser("Joe", JOE_UUID);
-    assertEquals("Joe", userRepo.findByName("Joe").get().getName());
-    assertEquals("Joe", userRepo.getById(JOE_UUID).getName());
+    assertEquals("Joe", userRepo.findByIdentity("Joe").get().getIdentity());
+    assertEquals("Joe", userRepo.getById(JOE_UUID).getIdentity());
   }
 
   @Test
   public void shouldDeleteUser() {
     txOps.createUser("Joe", JOE_UUID);
-    Optional<User> joe = userRepo.findByName("Joe");
+    Optional<User> joe = userRepo.findByIdentity("Joe");
     assert (joe.isPresent());
     userRepo.delete(joe.get());
-    assert (userRepo.findByName("Joe").isEmpty());
+    assert (userRepo.findByIdentity("Joe").isEmpty());
   }
 
   @Test
@@ -186,7 +186,7 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
       User user =
           User.builder()
               .id(id)
-              .name(name)
+              .identity(name)
               .userRoles(userRoles == null ? Collections.emptyList() : userRoles)
               .adminRoles(adminRoles == null ? Collections.emptyList() : adminRoles)
               .build();
@@ -201,7 +201,7 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     }
 
     public void verifyJoeTheShopkeeper() {
-      Optional<User> joe = userRepo.findByName("Joe");
+      Optional<User> joe = userRepo.findByIdentity("Joe");
       Optional<Role> shopkeeper = roleRepo.findByName("shopkeeper");
       assertEquals(shopkeeper.get(), joe.get().getUserRoles().get(0));
       assertEquals(joe.get(), shopkeeper.get().getUsers().get(0));
@@ -215,7 +215,7 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     }
 
     public void verifyJoeTheShopkeeperAdmin() {
-      Optional<User> joe = userRepo.findByName("Joe");
+      Optional<User> joe = userRepo.findByIdentity("Joe");
       Optional<Role> shopkeeper = roleRepo.findByName("shopkeeper");
       assertEquals(shopkeeper.get(), joe.get().getAdminRoles().get(0));
       assertEquals(joe.get(), shopkeeper.get().getAdmins().get(0));

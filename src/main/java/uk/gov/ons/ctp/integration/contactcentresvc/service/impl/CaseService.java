@@ -313,14 +313,11 @@ public class CaseService {
 
   public ResponseDTO reportRefusal(UUID caseId, RefusalRequestDTO requestBodyDTO)
       throws CTPException {
-    String reportedDateTime = "null";
-    if (requestBodyDTO.getDateTime() != null) {
-      reportedDateTime = DateTimeUtil.formatDate(requestBodyDTO.getDateTime());
-    }
     log.debug(
-        "Processing refusal for case with reported dateTime",
+        "Processing refusal for case",
         kv("caseId", caseId),
-        kv("reportedDateTime", reportedDateTime));
+        kv("type", requestBodyDTO.getReason()),
+        kv("eraseData", requestBodyDTO.getEraseData()));
 
     // Create and publish a respondent refusal event
     RefusalDetails refusalPayload = createRespondentRefusalPayload(caseId, requestBodyDTO);
@@ -501,7 +498,7 @@ public class CaseService {
         .subInteraction(ccInteraction.getSubtype() != null ? ccInteraction.getSubtype().name() : "")
         .note(ccInteraction.getNote() != null ? ccInteraction.getNote() : "")
         .createdDateTime(ccInteraction.getCreatedDateTime())
-        .userName(ccInteraction.getCcuser().getName())
+        .userName(ccInteraction.getCcuser().getIdentity())
         .build();
   }
 
@@ -621,6 +618,7 @@ public class CaseService {
     RefusalDetails refusal = new RefusalDetails();
     refusal.setCaseId(caseId);
     refusal.setType(refusalRequest.getReason().name());
+    refusal.setEraseData(refusalRequest.getEraseData());
 
     // This code is intentionally commented out. Reinstate to active encryption in
     // outgoing events

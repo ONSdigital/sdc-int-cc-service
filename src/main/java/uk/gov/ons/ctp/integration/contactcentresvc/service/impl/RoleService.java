@@ -55,7 +55,7 @@ public class RoleService {
             .findByName(roleName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    return role.getUsers().stream().filter(u -> u.isActive()).map(u -> u.getName()).toList();
+    return role.getUsers().stream().filter(u -> u.isActive()).map(u -> u.getIdentity()).toList();
   }
 
   @Transactional
@@ -67,7 +67,7 @@ public class RoleService {
             .findByName(roleName)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found"));
 
-    return role.getAdmins().stream().filter(u -> u.isActive()).map(u -> u.getName()).toList();
+    return role.getAdmins().stream().filter(u -> u.isActive()).map(u -> u.getIdentity()).toList();
   }
 
   @Transactional

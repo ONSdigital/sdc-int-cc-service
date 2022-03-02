@@ -51,7 +51,7 @@ public class RBACServiceTest {
     User user = createUserWithoutPermissions(USER_NAME);
     addUserRoleWithPermission(user, PermissionType.SEARCH_CASES);
 
-    when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
+    when(userRepo.findByIdentity(USER_NAME)).thenReturn(Optional.of(user));
     rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
   }
 
@@ -61,7 +61,7 @@ public class RBACServiceTest {
     addUserRoleWithPermission(user, PermissionType.SEARCH_CASES);
     addSurveyUsage(user, SurveyType.SOCIAL);
 
-    when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
+    when(userRepo.findByIdentity(USER_NAME)).thenReturn(Optional.of(user));
     rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
   }
 
@@ -73,7 +73,7 @@ public class RBACServiceTest {
     addSurveyUsage(user, SurveyType.SOCIAL);
 
     mockSurveyRepoCall("social");
-    when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
+    when(userRepo.findByIdentity(USER_NAME)).thenReturn(Optional.of(user));
     rbacService.assertUserPermission(SURVEY_ID, PermissionType.SEARCH_CASES);
   }
 
@@ -85,7 +85,7 @@ public class RBACServiceTest {
     addSurveyUsage(user, SurveyType.SOCIAL);
 
     mockSurveyRepoCall("business");
-    when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
+    when(userRepo.findByIdentity(USER_NAME)).thenReturn(Optional.of(user));
     CTPException exception =
         assertThrows(
             CTPException.class,
@@ -101,7 +101,7 @@ public class RBACServiceTest {
     addSurveyUsage(user, SurveyType.SOCIAL);
 
     mockSurveyRepoCall("social");
-    when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
+    when(userRepo.findByIdentity(USER_NAME)).thenReturn(Optional.of(user));
     CTPException exception =
         assertThrows(
             CTPException.class,
@@ -118,7 +118,7 @@ public class RBACServiceTest {
     addUserRoleWithPermission(user, PermissionType.SEARCH_CASES);
     addSurveyUsage(user, SurveyType.SOCIAL);
 
-    when(userRepo.findByName(USER_NAME)).thenReturn(Optional.of(user));
+    when(userRepo.findByIdentity(USER_NAME)).thenReturn(Optional.of(user));
     CTPException exception =
         assertThrows(
             CTPException.class,
@@ -146,7 +146,7 @@ public class RBACServiceTest {
     User user =
         User.builder()
             .id(UUID.randomUUID())
-            .name(userName)
+            .identity(userName)
             .active(true)
             .adminRoles(new ArrayList<>())
             .userRoles(new ArrayList<>())
