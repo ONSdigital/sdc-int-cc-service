@@ -9,7 +9,6 @@ logging:
   level:
     uk.gov.ons.ctp: INFO
     org.springframework: INFO
-  profile: CLOUD
 
 case-service-settings:
   rest-client-config:
