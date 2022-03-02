@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.SurveyUsage;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
-import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserAuditRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserSurveyUsageRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
@@ -29,7 +31,7 @@ public class UserService {
   @Autowired private UserRepository userRepository;
   @Autowired private UserSurveyUsageRepository userSurveyUsageRepository;
   @Autowired private RoleRepository roleRepository;
-  @Autowired private CaseInteractionRepository caseInteractionRepository;
+  @Autowired private UserAuditRepository userAuditRepository;
 
   @Transactional
   public UserDTO getUser(String userIdentity) throws CTPException {
@@ -40,11 +42,7 @@ public class UserService {
             .findByIdentity(userIdentity)
             .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
-    UserDTO userDTO = mapper.map(user, UserDTO.class);
-
-    userDTO.setDeletable(caseInteractionRepository.countAllByCcuserName(userName) == 0);
-
-    return userDTO;
+    return createDTO(user);
   }
 
   @Transactional
@@ -62,12 +60,11 @@ public class UserService {
   public List<UserDTO> getUsers() throws CTPException {
     log.debug("Entering getUsers");
 
-    List<UserDTO> userDTOs = mapper.mapAsList(userRepository.findAll(), UserDTO.class);
+    List<User> users = userRepository.findAll();
+    List<UserDTO> userDTOs = new ArrayList<>();
 
-    userDTOs.forEach(
-        userDTO ->
-            userDTO.setDeletable(
-                caseInteractionRepository.countAllByCcuserName(userDTO.getName()) == 0));
+    users.forEach(user -> userDTOs.add(createDTO(user)));
+
     return userDTOs;
   }
 
@@ -84,7 +81,7 @@ public class UserService {
     user.setForename(userDTO.getForename());
     user.setSurname(userDTO.getSurname());
     userRepository.saveAndFlush(user);
-    return mapper.map(user, UserDTO.class);
+    return createDTO(user);
   }
 
   @Transactional
@@ -100,7 +97,7 @@ public class UserService {
     user.setIdentity(userDTO.getIdentity());
 
     userRepository.saveAndFlush(user);
-    return mapper.map(user, UserDTO.class);
+    return createDTO(user);
   }
 
   @Transactional
@@ -127,7 +124,7 @@ public class UserService {
     }
 
     userRepository.saveAndFlush(user);
-    return mapper.map(user, UserDTO.class);
+    return createDTO(user);
   }
 
   @Transactional
@@ -156,7 +153,7 @@ public class UserService {
     }
 
     userRepository.saveAndFlush(user);
-    return mapper.map(user, UserDTO.class);
+    return createDTO(user);
   }
 
   @Transactional
@@ -182,7 +179,7 @@ public class UserService {
     }
 
     userRepository.saveAndFlush(user);
-    return mapper.map(user, UserDTO.class);
+    return createDTO(user);
   }
 
   @Transactional
@@ -209,7 +206,7 @@ public class UserService {
     }
 
     userRepository.saveAndFlush(user);
-    return mapper.map(user, UserDTO.class);
+    return createDTO(user);
   }
 
   @Transactional
@@ -235,7 +232,7 @@ public class UserService {
     }
 
     userRepository.saveAndFlush(user);
-    return mapper.map(user, UserDTO.class);
+    return createDTO(user);
   }
 
   @Transactional
@@ -262,6 +259,13 @@ public class UserService {
     }
 
     userRepository.saveAndFlush(user);
-    return mapper.map(user, UserDTO.class);
+    return createDTO(user);
+  }
+
+  private UserDTO createDTO(User user) {
+    UserDTO userDTO = mapper.map(user, UserDTO.class);
+    userDTO.setDeletable(userAuditRepository.countAllByAndCcuserIdAndAuditType(user.getId(), AuditType.LOGIN) == 0);
+
+    return userDTO;
   }
 }

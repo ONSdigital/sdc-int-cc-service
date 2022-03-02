@@ -9,5 +9,4 @@ public interface CaseInteractionRepository extends JpaRepository<CaseInteraction
 
   List<CaseInteraction> findByCaseId(UUID caseId);
 
-  int countAllByCcuserName(String userName);
 }
