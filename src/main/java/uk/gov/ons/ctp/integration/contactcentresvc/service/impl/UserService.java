@@ -264,7 +264,7 @@ public class UserService {
 
   private UserDTO createDTO(User user) {
     UserDTO userDTO = mapper.map(user, UserDTO.class);
-    userDTO.setDeletable(userAuditRepository.countAllByAndCcuserIdAndAuditType(user.getId(), AuditType.LOGIN) == 0);
+    userDTO.setDeletable(userAuditRepository.countAllByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN) == 0);
 
     return userDTO;
   }

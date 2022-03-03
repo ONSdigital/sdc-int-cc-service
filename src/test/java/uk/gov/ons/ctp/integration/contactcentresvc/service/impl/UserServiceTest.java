@@ -46,7 +46,7 @@ public class UserServiceTest {
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
-    when(userAuditRepository.countAllByAndCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(0);
 
     UserDTO result = userService.getUser(TEST_USER);
 
@@ -59,7 +59,7 @@ public class UserServiceTest {
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
-    when(userAuditRepository.countAllByAndCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(1);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(1);
 
     UserDTO result = userService.getUser(TEST_USER);
 
@@ -77,9 +77,9 @@ public class UserServiceTest {
 
     when(userRepository.findAll()).thenReturn(users);
 
-    when(userAuditRepository.countAllByAndCcuserIdAndAuditType(test1.getId(), AuditType.LOGIN)).thenReturn(0);
-    when(userAuditRepository.countAllByAndCcuserIdAndAuditType(test2.getId(), AuditType.LOGIN)).thenReturn(1);
-    when(userAuditRepository.countAllByAndCcuserIdAndAuditType(test3.getId(), AuditType.LOGIN)).thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(test1.getId(), AuditType.LOGIN)).thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(test2.getId(), AuditType.LOGIN)).thenReturn(1);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(test3.getId(), AuditType.LOGIN)).thenReturn(0);
 
     List<UserDTO> results = userService.getUsers();
 
