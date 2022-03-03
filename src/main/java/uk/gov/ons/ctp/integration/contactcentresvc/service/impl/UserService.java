@@ -259,6 +259,6 @@ public class UserService {
                     .findByIdentity(userDTO.getIdentity())
                     .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
 
-    
+
   }
 }
