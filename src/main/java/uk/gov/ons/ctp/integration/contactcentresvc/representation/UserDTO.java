@@ -19,4 +19,5 @@ public class UserDTO {
   private List<String> userRoles;
   private List<String> adminRoles;
   private List<SurveyUsageDTO> surveyUsages;
+  private boolean isDeletable;
 }

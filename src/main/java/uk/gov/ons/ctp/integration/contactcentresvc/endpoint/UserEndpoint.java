@@ -76,14 +76,16 @@ public class UserEndpoint {
     rbacService.assertUserValidAndActive();
 
     String userIdentity = UserIdentityContext.get();
+
+    userAuditService.saveUserAudit(userIdentity, null, AuditType.LOGIN, null, null);
+
     UserDTO userDTO = userService.getUser(userIdentity);
 
     // Update users name
     userDTO.setForename(loginRequestDTO.getForename());
     userDTO.setSurname(loginRequestDTO.getSurname());
-    userService.modifyUser(userDTO);
 
-    userAuditService.saveUserAudit(userDTO.getIdentity(), null, AuditType.LOGIN, null, null);
+    userService.modifyUser(userDTO);
 
     return ResponseEntity.ok(userDTO);
   }
