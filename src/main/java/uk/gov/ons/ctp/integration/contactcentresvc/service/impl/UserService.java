@@ -251,4 +251,14 @@ public class UserService {
     userRepository.saveAndFlush(user);
     return mapper.map(user, UserDTO.class);
   }
+
+  @Transactional
+  public UserDTO deleteUser(UserDTO userDTO) throws CTPException {
+    User user =
+            userRepository
+                    .findByIdentity(userDTO.getIdentity())
+                    .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+
+    
+  }
 }

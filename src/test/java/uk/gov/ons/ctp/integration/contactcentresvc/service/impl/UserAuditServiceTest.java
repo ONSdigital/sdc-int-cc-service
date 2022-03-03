@@ -39,6 +39,8 @@ public class UserAuditServiceTest {
 
   @Test
   public void correctUserIds() throws CTPException {
+    System.out.println(UUID.randomUUID());
+    System.out.println(UUID.randomUUID());
     when(userRepository.findByIdentity(UserIdentityContext.get()))
         .thenReturn(Optional.of(User.builder().id(PRINCIPAL_ID).build()));
     when(userRepository.findByIdentity("testUser"))
