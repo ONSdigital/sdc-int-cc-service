@@ -191,13 +191,13 @@ public class UserEndpoint {
   }
 
   @DeleteMapping("/{userIdentity}")
-  public ResponseEntity<UserDTO> deleteUser(@PathVariable(value = "userIdentity") @Valid @Email String userIdentity) throws CTPException {
+  public ResponseEntity<UserDTO> deleteUser(
+      @PathVariable(value = "userIdentity") @Valid @Email String userIdentity) throws CTPException {
     log.info("Entering deleteUser", kv("userIdentity", userIdentity));
 
     rbacService.assertUserPermission(PermissionType.DELETE_USER);
 
-    userAuditService.saveUserAudit(
-            userIdentity, null, AuditType.USER, AuditSubType.REMOVED, null);
+    userAuditService.saveUserAudit(userIdentity, null, AuditType.USER, AuditSubType.REMOVED, null);
 
     return ResponseEntity.ok(userService.deleteUser(userIdentity));
   }
