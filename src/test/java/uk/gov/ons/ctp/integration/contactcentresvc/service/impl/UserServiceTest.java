@@ -1,7 +1,11 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -17,6 +21,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
@@ -86,5 +91,39 @@ public class UserServiceTest {
     assertTrue(results.get(0).isDeletable());
     assertFalse(results.get(1).isDeletable());
     assertTrue(results.get(2).isDeletable());
+  }
+
+  @Test
+  public void deleteUserWhoIsDeletable() throws CTPException {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(0);
+
+    userService.deleteUser(TEST_USER);
+
+    testUser.setDeleted(true);
+
+    verify(userRepository).saveAndFlush(testUser);
+
+  }
+
+  @Test
+  public void deleteUserWhoIsNotDeletable() throws CTPException {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(1);
+
+    CTPException exception =
+            assertThrows(
+                    CTPException.class, () -> {userService.deleteUser(TEST_USER);});
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+    assertEquals("User not deletable", exception.getMessage());
+
+    verify(userRepository, times(0)).saveAndFlush(testUser);
   }
 }

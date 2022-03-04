@@ -45,6 +45,8 @@ public class User {
 
   @Builder.Default @ToString.Include private boolean active = true;
 
+  @Builder.Default @ToString.Include private boolean deleted = false;
+
   @JsonIgnore
   @ManyToMany
   @JoinTable(

@@ -262,20 +262,28 @@ public class UserService {
     return createDTO(user);
   }
 
+  @Transactional
+  public UserDTO deleteUser(String userIdentity) throws CTPException {
+    User user =
+            userRepository
+                    .findByIdentity(userIdentity)
+                    .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+
+    UserDTO response = createDTO(user);
+
+    if (!response.isDeletable()) {
+      throw new CTPException(Fault.BAD_REQUEST, "User not deletable");
+    }
+
+    user.setDeleted(true);
+    userRepository.saveAndFlush(user);
+    return response;
+  }
+
   private UserDTO createDTO(User user) {
     UserDTO userDTO = mapper.map(user, UserDTO.class);
     userDTO.setDeletable(userAuditRepository.countAllByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN) == 0);
 
     return userDTO;
-  }
-
-  @Transactional
-  public UserDTO deleteUser(UserDTO userDTO) throws CTPException {
-    User user =
-            userRepository
-                    .findByIdentity(userDTO.getIdentity())
-                    .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
-
-
   }
 }
