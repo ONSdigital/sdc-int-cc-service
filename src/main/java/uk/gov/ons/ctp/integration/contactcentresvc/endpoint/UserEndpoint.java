@@ -2,14 +2,16 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -29,9 +35,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.UserAudit;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyUserRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserAuditService;
@@ -46,6 +54,9 @@ public class UserEndpoint {
   private RBACService rbacService;
   private UserService userService;
   private UserAuditService userAuditService;
+  
+  @Autowired private MapperFacade mapper;
+
 
   /**
    * Create the endpoint
@@ -286,5 +297,35 @@ public class UserEndpoint {
         userIdentity, roleName, AuditType.ADMIN_ROLE, AuditSubType.REMOVED, null);
 
     return ResponseEntity.ok(userService.removeAdminRole(userIdentity, roleName));
+  }
+  
+  @GetMapping("/audit")
+  public ResponseEntity<List<UserAuditDTO>> audit(@RequestParam(required = false) String principle, 
+		  @RequestParam(required = false) String targetUser) throws CTPException {
+
+	    log.info("Entering audit search");
+	    
+	    String userIdentity = UserIdentityContext.get();
+	    UserDTO userDTO = userService.getUser(userIdentity);
+
+	    // Search the audit table
+	    List<UserAudit> auditHistory;
+	    if (principle != null && targetUser == null) {
+          auditHistory = userAuditService.getAuditHistoryForPrinciple(principle);
+	    } else if (targetUser != null && principle == null) {
+          auditHistory = userAuditService.getAuditHistoryForTargetUser(targetUser);
+	    } else {
+          throw new CTPException(Fault.BAD_REQUEST, "Only one of 'principle' or 'targetUser' must be supplied");
+	    }
+	    
+	    // Convert results to response type
+	    List<UserAuditDTO> auditHistoryResponse = new ArrayList<>();
+	    for (UserAudit userAudit : auditHistory) {
+	    	UserAuditDTO userAuditDTO = mapper.map(userAudit, UserAuditDTO.class);
+	    	auditHistoryResponse.add(userAuditDTO);
+	    	//userService.addAdminRole(userIdentity, userIdentity)
+	    }
+	    
+	    return ResponseEntity.ok(auditHistoryResponse);
   }
 }

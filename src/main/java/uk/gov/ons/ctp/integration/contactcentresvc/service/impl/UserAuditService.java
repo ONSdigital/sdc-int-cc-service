@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,20 +32,12 @@ public class UserAuditService {
       String value)
       throws CTPException {
 
-    UUID principalId =
-        userRepository
-            .findByIdentity(UserIdentityContext.get())
-            .orElseThrow(() -> new CTPException(CTPException.Fault.BAD_REQUEST, "User not found"))
-            .getId();
+    UUID principalId = lookupUserId(UserIdentityContext.get());
     UUID targetUserId = null;
     UUID targetRoleId = null;
 
     if (targetUserName != null) {
-      targetUserId =
-          userRepository
-              .findByIdentity(targetUserName)
-              .orElseThrow(() -> new CTPException(CTPException.Fault.BAD_REQUEST, "User not found"))
-              .getId();
+      targetUserId = lookupUserId(targetUserName);
     }
     if (targetRoleName != null) {
       targetRoleId =
@@ -100,5 +93,31 @@ public class UserAuditService {
             CTPException.Fault.SYSTEM_ERROR, "Target roleId supplied but not expected");
       }
     }
+  }
+
+  public List<UserAudit> getAuditHistoryForPrinciple(String principle) throws CTPException {
+
+    UUID principleUserId = lookupUserId(principle);
+    List<UserAudit> auditHistory = userAuditRepository.findAllByCcuserId(principleUserId);
+
+    return auditHistory;
+  }
+  
+  public List<UserAudit> getAuditHistoryForTargetUser(String targetUser) throws CTPException {
+
+    UUID targetUserId = lookupUserId(targetUser);
+    List<UserAudit> auditHistory = userAuditRepository.findAllByTargetUserId(targetUserId);
+
+    return auditHistory;
+  }
+
+  private UUID lookupUserId(String userIdentity) throws CTPException {
+	UUID targetUserId =
+	      userRepository
+	          .findByIdentity(userIdentity)
+	          .orElseThrow(() -> new CTPException(CTPException.Fault.BAD_REQUEST, "User not found: " + userIdentity))
+	          .getId();
+	
+	return targetUserId;
   }
 }
