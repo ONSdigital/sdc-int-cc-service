@@ -190,6 +190,7 @@ public class UserEndpoint {
     return ResponseEntity.ok(createdUser);
   }
 
+  @Transactional
   @DeleteMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> deleteUser(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity) throws CTPException {

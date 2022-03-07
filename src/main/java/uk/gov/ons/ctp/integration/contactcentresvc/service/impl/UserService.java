@@ -276,14 +276,12 @@ public class UserService {
     }
 
     user.setDeleted(true);
-    userRepository.saveAndFlush(user);
     return response;
   }
 
   private UserDTO createDTO(User user) {
     UserDTO userDTO = mapper.map(user, UserDTO.class);
-    userDTO.setDeletable(
-        userAuditRepository.countAllByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN) == 0);
+    userDTO.setDeletable(!userAuditRepository.existsByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN));
 
     return userDTO;
   }
