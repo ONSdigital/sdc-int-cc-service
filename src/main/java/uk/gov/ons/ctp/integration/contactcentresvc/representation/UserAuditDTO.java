@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
 import java.util.Date;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,17 +14,17 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 @AllArgsConstructor
 public class UserAuditDTO {
 
-    String principalUserName;
-    
-    String targetUserName;
-    
-    String targetRoleName;
+  String principalUserName;
 
-    private Date createdDateTime;
-    
-    AuditType auditType;
-    
-    AuditSubType auditSubType;
-    
-    String auditValue;
+  String targetUserName;
+
+  String targetRoleName;
+
+  private Date createdDateTime;
+
+  AuditType auditType;
+
+  AuditSubType auditSubType;
+
+  String auditValue;
 }

@@ -40,9 +40,22 @@ public class UserService {
     User user =
         userRepository
             .findByIdentity(userIdentity)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+            .orElseThrow(
+                () -> new CTPException(Fault.BAD_REQUEST, "User not found: " + userIdentity));
 
     return createDTO(user);
+  }
+
+  public String getUserIdentity(UUID userUUID) throws CTPException {
+
+    log.debug("Entering getUser", kv("userUUID", userUUID));
+
+    User user =
+        userRepository
+            .findById(userUUID)
+            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found: " + userUUID));
+
+    return user.getIdentity();
   }
 
   @Transactional
@@ -264,7 +277,8 @@ public class UserService {
 
   private UserDTO createDTO(User user) {
     UserDTO userDTO = mapper.map(user, UserDTO.class);
-    userDTO.setDeletable(userAuditRepository.countAllByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN) == 0);
+    userDTO.setDeletable(
+        userAuditRepository.countAllByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN) == 0);
 
     return userDTO;
   }

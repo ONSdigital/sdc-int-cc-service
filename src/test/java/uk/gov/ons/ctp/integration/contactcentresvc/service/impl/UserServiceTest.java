@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +45,8 @@ public class UserServiceTest {
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN))
+        .thenReturn(0);
 
     UserDTO result = userService.getUser(TEST_USER);
 
@@ -59,7 +59,8 @@ public class UserServiceTest {
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(1);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN))
+        .thenReturn(1);
 
     UserDTO result = userService.getUser(TEST_USER);
 
@@ -77,9 +78,12 @@ public class UserServiceTest {
 
     when(userRepository.findAll()).thenReturn(users);
 
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(test1.getId(), AuditType.LOGIN)).thenReturn(0);
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(test2.getId(), AuditType.LOGIN)).thenReturn(1);
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(test3.getId(), AuditType.LOGIN)).thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(test1.getId(), AuditType.LOGIN))
+        .thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(test2.getId(), AuditType.LOGIN))
+        .thenReturn(1);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(test3.getId(), AuditType.LOGIN))
+        .thenReturn(0);
 
     List<UserDTO> results = userService.getUsers();
 

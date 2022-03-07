@@ -8,10 +8,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
-
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,9 +25,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -54,9 +51,8 @@ public class UserEndpoint {
   private RBACService rbacService;
   private UserService userService;
   private UserAuditService userAuditService;
-  
-  @Autowired private MapperFacade mapper;
 
+  @Autowired private MapperFacade mapper;
 
   /**
    * Create the endpoint
@@ -300,34 +296,45 @@ public class UserEndpoint {
 
     return ResponseEntity.ok(userService.removeAdminRole(userIdentity, roleName));
   }
-  
+
   @GetMapping("/audit")
-  public ResponseEntity<List<UserAuditDTO>> audit(@RequestParam(required = false) String principle, 
-		  @RequestParam(required = false) String targetUser) throws CTPException {
+  public ResponseEntity<List<UserAuditDTO>> audit(
+      @RequestParam(required = false) String principle,
+      @RequestParam(required = false) String targetUser)
+      throws CTPException {
 
-	    log.info("Entering audit search");
-	    
-	    String userIdentity = UserIdentityContext.get();
-	    UserDTO userDTO = userService.getUser(userIdentity);
+    log.info("Entering audit search", kv("principle", principle), kv("targetUser", targetUser));
 
-	    // Search the audit table
-	    List<UserAudit> auditHistory;
-	    if (principle != null && targetUser == null) {
-          auditHistory = userAuditService.getAuditHistoryForPrinciple(principle);
-	    } else if (targetUser != null && principle == null) {
-          auditHistory = userAuditService.getAuditHistoryForTargetUser(targetUser);
-	    } else {
-          throw new CTPException(Fault.BAD_REQUEST, "Only one of 'principle' or 'targetUser' must be supplied");
-	    }
-	    
-	    // Convert results to response type
-	    List<UserAuditDTO> auditHistoryResponse = new ArrayList<>();
-	    for (UserAudit userAudit : auditHistory) {
-	    	UserAuditDTO userAuditDTO = mapper.map(userAudit, UserAuditDTO.class);
-	    	auditHistoryResponse.add(userAuditDTO);
-	    	//userService.addAdminRole(userIdentity, userIdentity)
-	    }
-	    
-	    return ResponseEntity.ok(auditHistoryResponse);
+    // Verify that the caller can retrieve audit history
+    rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
+
+    // String userIdentity = UserIdentityContext.get();
+    // PMBUserDTO userDTO = userService.getUser(userIdentity);
+
+    // Search the audit table
+    List<UserAudit> auditHistory;
+    if (principle != null && targetUser == null) {
+      auditHistory = userAuditService.getAuditHistoryForPrinciple(principle);
+    } else if (targetUser != null && principle == null) {
+      auditHistory = userAuditService.getAuditHistoryForTargetUser(targetUser);
+    } else {
+      throw new CTPException(
+          Fault.BAD_REQUEST, "Only one of 'principle' or 'targetUser' must be supplied");
+    }
+
+    // Convert results to the response type
+    List<UserAuditDTO> auditHistoryResponse = new ArrayList<>();
+    for (UserAudit userAudit : auditHistory) {
+      UserAuditDTO userAuditDTO = mapper.map(userAudit, UserAuditDTO.class);
+      userAuditDTO.setPrincipalUserName(userService.getUserIdentity(userAudit.getCcuserId()));
+      userAuditDTO.setTargetUserName(userService.getUserIdentity(userAudit.getTargetUserId()));
+      userAuditDTO.setTargetRoleName(rbacService.getRoleNameForId(userAudit.getTargetRoleId()));
+      auditHistoryResponse.add(userAuditDTO);
+    }
+
+    // Sort from newest to oldest
+    auditHistoryResponse.sort(Comparator.comparing(UserAuditDTO::getCreatedDateTime).reversed());
+
+    return ResponseEntity.ok(auditHistoryResponse);
   }
 }

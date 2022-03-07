@@ -108,12 +108,18 @@ public class RBACService {
       }
     }
 
+    if (survey == null) {
+      throw new CTPException(
+            Fault.ACCESS_DENIED,
+            String.format("User not authorised for activity %s", permissionType.name()));
+    }
+    
     throw new CTPException(
-        Fault.ACCESS_DENIED,
-        String.format(
-            "User not authorised for activity %s for survey type %s",
-            permissionType.name(),
-            SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl())));
+            Fault.ACCESS_DENIED,
+            String.format(
+                    "User not authorised for activity %s for survey type %s",
+                    permissionType.name(),
+                    SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl())));
   }
 
   /**
@@ -207,5 +213,27 @@ public class RBACService {
           Fault.ACCESS_DENIED, String.format("User %s no longer active", principalIdentity));
     }
     return user;
+  }
+
+  /**
+   * Used to find out the name of a role.
+   *
+   * @param roleId is the uuid of the role to lookup.
+   * @return a String containing the name of the role, or return null if the supplied roleId is
+   *     null.
+   * @throws CTPException if there is no role for the supplied uuid.
+   */
+  public String getRoleNameForId(UUID roleId) throws CTPException {
+    String roleName = null;
+
+    if (roleId != null) {
+      Role role =
+          roleRepository
+              .findById(roleId)
+              .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "Role not found: " + roleId));
+      roleName = role.getName();
+    }
+
+    return roleName;
   }
 }

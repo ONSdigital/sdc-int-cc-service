@@ -102,7 +102,7 @@ public class UserAuditService {
 
     return auditHistory;
   }
-  
+
   public List<UserAudit> getAuditHistoryForTargetUser(String targetUser) throws CTPException {
 
     UUID targetUserId = lookupUserId(targetUser);
@@ -112,12 +112,15 @@ public class UserAuditService {
   }
 
   private UUID lookupUserId(String userIdentity) throws CTPException {
-	UUID targetUserId =
-	      userRepository
-	          .findByIdentity(userIdentity)
-	          .orElseThrow(() -> new CTPException(CTPException.Fault.BAD_REQUEST, "User not found: " + userIdentity))
-	          .getId();
-	
-	return targetUserId;
+    UUID targetUserId =
+        userRepository
+            .findByIdentity(userIdentity)
+            .orElseThrow(
+                () ->
+                    new CTPException(
+                        CTPException.Fault.BAD_REQUEST, "User not found: " + userIdentity))
+            .getId();
+
+    return targetUserId;
   }
 }

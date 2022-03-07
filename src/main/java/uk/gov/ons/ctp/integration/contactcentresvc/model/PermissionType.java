@@ -35,6 +35,7 @@ public enum PermissionType {
   CREATE_ROLE,
   READ_ROLE,
   MAINTAIN_PERMISSIONS,
+  READ_USER_AUDIT,
 
   // RESERVED_ permisions are those which we only want to assign to superusers
   // naming this way to call them out from other permissions
