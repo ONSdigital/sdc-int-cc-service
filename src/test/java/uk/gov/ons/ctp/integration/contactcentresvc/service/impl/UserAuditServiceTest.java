@@ -286,7 +286,8 @@ public class UserAuditServiceTest {
             });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
-    assertEquals("User not found", exception.getMessage());
+    exception.printStackTrace();
+    assertEquals("User not found: testUser", exception.getMessage());
     verify(auditRepository, times(0)).saveAndFlush(any());
   }
 

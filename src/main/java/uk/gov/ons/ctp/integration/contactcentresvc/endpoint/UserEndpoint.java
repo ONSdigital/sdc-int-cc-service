@@ -308,9 +308,6 @@ public class UserEndpoint {
     // Verify that the caller can retrieve audit history
     rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
 
-    // String userIdentity = UserIdentityContext.get();
-    // PMBUserDTO userDTO = userService.getUser(userIdentity);
-
     // Search the audit table
     List<UserAudit> auditHistory;
     if (principle != null && targetUser == null) {
