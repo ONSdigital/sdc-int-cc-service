@@ -6,6 +6,8 @@ import io.micrometer.core.annotation.Timed;
 import java.util.List;
 import java.util.UUID;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilme
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.UsersCaseInteractionDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
@@ -359,6 +362,16 @@ public class CaseEndpoint implements CTPEndpoint {
     CaseDTO caseDTO = caseService.enrol(caseId, enrolmentRequestDTO);
 
     return ResponseEntity.ok(caseDTO);
+  }
+
+  @RequestMapping(value = " /{username}/interactions", method = RequestMethod.GET)
+  @ResponseStatus(value = HttpStatus.OK)
+  public ResponseEntity<List<UsersCaseInteractionDTO>> getCaseInteractionsForUser(
+          @PathVariable(value = "username") @Valid @Email final String userIdentity)
+          throws CTPException {
+
+
+    return ResponseEntity.ok();
   }
 
   private void validateMatchingCaseId(UUID caseId, UUID dtoCaseId) throws CTPException {
