@@ -197,6 +197,7 @@ public class UserEndpoint {
     log.info("Entering deleteUser", kv("userIdentity", userIdentity));
 
     rbacService.assertUserPermission(PermissionType.DELETE_USER);
+    rbacService.assertNotSelfModification(userIdentity);
 
     userAuditService.saveUserAudit(userIdentity, null, AuditType.USER, AuditSubType.REMOVED, null);
 

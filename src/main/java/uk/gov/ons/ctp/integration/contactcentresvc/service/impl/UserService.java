@@ -63,7 +63,12 @@ public class UserService {
     List<User> users = userRepository.findAll();
     List<UserDTO> userDTOs = new ArrayList<>();
 
-    users.forEach(user -> userDTOs.add(createDTO(user)));
+    users.forEach(
+        user -> {
+          if (!user.isDeleted()) {
+            userDTOs.add(createDTO(user));
+          }
+        });
 
     return userDTOs;
   }
@@ -281,7 +286,8 @@ public class UserService {
 
   private UserDTO createDTO(User user) {
     UserDTO userDTO = mapper.map(user, UserDTO.class);
-    userDTO.setDeletable(!userAuditRepository.existsByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN));
+    userDTO.setDeletable(
+        !userAuditRepository.existsByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN));
 
     return userDTO;
   }

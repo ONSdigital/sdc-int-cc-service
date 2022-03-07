@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -97,22 +95,6 @@ public class UserServiceTest {
   }
 
   @Test
-  public void deleteUserWhoIsDeletable() throws CTPException {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
-
-    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
-
-    when(userAuditRepository.existsByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN))
-        .thenReturn(false);
-
-    userService.deleteUser(TEST_USER);
-
-    testUser.setDeleted(true);
-
-    verify(userRepository).saveAndFlush(testUser);
-  }
-
-  @Test
   public void deleteUserWhoIsNotDeletable() throws CTPException {
     User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
 
@@ -130,7 +112,5 @@ public class UserServiceTest {
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not deletable", exception.getMessage());
-
-    verify(userRepository, times(0)).saveAndFlush(testUser);
   }
 }

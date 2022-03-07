@@ -10,5 +10,4 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.UserAudit;
 public interface UserAuditRepository extends JpaRepository<UserAudit, UUID> {
 
   boolean existsByCcuserIdAndAuditType(UUID ccUserId, AuditType auditType);
-
 }
