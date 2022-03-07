@@ -110,16 +110,16 @@ public class RBACService {
 
     if (survey == null) {
       throw new CTPException(
-            Fault.ACCESS_DENIED,
-            String.format("User not authorised for activity %s", permissionType.name()));
+          Fault.ACCESS_DENIED,
+          String.format("User not authorised for activity %s", permissionType.name()));
     }
-    
+
     throw new CTPException(
-            Fault.ACCESS_DENIED,
-            String.format(
-                    "User not authorised for activity %s for survey type %s",
-                    permissionType.name(),
-                    SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl())));
+        Fault.ACCESS_DENIED,
+        String.format(
+            "User not authorised for activity %s for survey type %s",
+            permissionType.name(),
+            SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl())));
   }
 
   /**
