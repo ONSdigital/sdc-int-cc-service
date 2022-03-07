@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +20,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
@@ -51,7 +49,8 @@ public class UserServiceTest {
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN))
+        .thenReturn(0);
 
     UserDTO result = userService.getUser(TEST_USER);
 
@@ -64,7 +63,8 @@ public class UserServiceTest {
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(1);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN))
+        .thenReturn(1);
 
     UserDTO result = userService.getUser(TEST_USER);
 
@@ -82,9 +82,12 @@ public class UserServiceTest {
 
     when(userRepository.findAll()).thenReturn(users);
 
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(test1.getId(), AuditType.LOGIN)).thenReturn(0);
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(test2.getId(), AuditType.LOGIN)).thenReturn(1);
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(test3.getId(), AuditType.LOGIN)).thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(test1.getId(), AuditType.LOGIN))
+        .thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(test2.getId(), AuditType.LOGIN))
+        .thenReturn(1);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(test3.getId(), AuditType.LOGIN))
+        .thenReturn(0);
 
     List<UserDTO> results = userService.getUsers();
 
@@ -99,14 +102,14 @@ public class UserServiceTest {
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(0);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN))
+        .thenReturn(0);
 
     userService.deleteUser(TEST_USER);
 
     testUser.setDeleted(true);
 
     verify(userRepository).saveAndFlush(testUser);
-
   }
 
   @Test
@@ -115,11 +118,15 @@ public class UserServiceTest {
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
-    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN)).thenReturn(1);
+    when(userAuditRepository.countAllByCcuserIdAndAuditType(testUser.getId(), AuditType.LOGIN))
+        .thenReturn(1);
 
     CTPException exception =
-            assertThrows(
-                    CTPException.class, () -> {userService.deleteUser(TEST_USER);});
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userService.deleteUser(TEST_USER);
+            });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not deletable", exception.getMessage());
