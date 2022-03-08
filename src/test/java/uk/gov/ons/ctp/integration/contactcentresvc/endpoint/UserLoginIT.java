@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
+package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,11 +26,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserAuditRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
 /** Integration test for user login. */
-public class LoginIntegrationTest extends FullStackIntegrationTestBase {
+public class UserLoginIT extends FullStackIntegrationTestBase {
 
   private static UUID FRED_UUID = UUID.fromString("4f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
 
@@ -100,12 +102,15 @@ public class LoginIntegrationTest extends FullStackIntegrationTestBase {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public static class TransactionalOps {
     private UserRepository userRepo;
+    private UserAuditRepository auditRepository;
 
-    public TransactionalOps(UserRepository userRepo) {
+    public TransactionalOps(UserRepository userRepo, UserAuditRepository auditRepository) {
       this.userRepo = userRepo;
+      this.auditRepository = auditRepository;
     }
 
     public void deleteAll() {
+      auditRepository.deleteAll();
       userRepo.deleteAll();
     }
 
