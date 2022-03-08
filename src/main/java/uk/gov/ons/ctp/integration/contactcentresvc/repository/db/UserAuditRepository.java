@@ -15,4 +15,6 @@ public interface UserAuditRepository extends JpaRepository<UserAudit, UUID> {
   List<UserAudit> findAllByCcuserId(UUID identity);
 
   List<UserAudit> findAllByTargetUserId(UUID identity);
+
+  boolean existsByCcuserIdAndAuditType(UUID ccUserId, AuditType auditType);
 }

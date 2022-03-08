@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
+package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;

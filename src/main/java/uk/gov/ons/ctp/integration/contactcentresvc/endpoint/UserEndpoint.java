@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
+import com.google.api.client.util.Strings;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,9 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.google.api.client.util.Strings;
-
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -199,6 +198,20 @@ public class UserEndpoint {
     return ResponseEntity.ok(createdUser);
   }
 
+  @Transactional
+  @DeleteMapping("/{userIdentity}")
+  public ResponseEntity<UserDTO> deleteUser(
+      @PathVariable(value = "userIdentity") @Valid @Email String userIdentity) throws CTPException {
+    log.info("Entering deleteUser", kv("userIdentity", userIdentity));
+
+    rbacService.assertUserPermission(PermissionType.DELETE_USER);
+    rbacService.assertNotSelfModification(userIdentity);
+
+    userAuditService.saveUserAudit(userIdentity, null, AuditType.USER, AuditSubType.REMOVED, null);
+
+    return ResponseEntity.ok(userService.deleteUser(userIdentity));
+  }
+
   @PatchMapping("/{userIdentity}/addSurvey/{surveyType}")
   public ResponseEntity<UserDTO> addUserSurvey(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
@@ -309,7 +322,7 @@ public class UserEndpoint {
     log.info("Entering audit search", kv("principle", principle), kv("targetUser", targetUser));
 
     // Verify that the caller can retrieve audit history
-//PMB    rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
+    // PMB    rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
 
     // Search the audit table
     List<UserAudit> auditHistory;

@@ -76,7 +76,12 @@ public class UserService {
     List<User> users = userRepository.findAll();
     List<UserDTO> userDTOs = new ArrayList<>();
 
-    users.forEach(user -> userDTOs.add(createDTO(user)));
+    users.forEach(
+        user -> {
+          if (!user.isDeleted()) {
+            userDTOs.add(createDTO(user));
+          }
+        });
 
     return userDTOs;
   }
@@ -275,10 +280,27 @@ public class UserService {
     return createDTO(user);
   }
 
+  @Transactional
+  public UserDTO deleteUser(String userIdentity) throws CTPException {
+    User user =
+        userRepository
+            .findByIdentity(userIdentity)
+            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+
+    UserDTO response = createDTO(user);
+
+    if (!response.isDeletable()) {
+      throw new CTPException(Fault.BAD_REQUEST, "User not deletable");
+    }
+
+    user.setDeleted(true);
+    return response;
+  }
+
   private UserDTO createDTO(User user) {
     UserDTO userDTO = mapper.map(user, UserDTO.class);
     userDTO.setDeletable(
-        userAuditRepository.countAllByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN) == 0);
+        !userAuditRepository.existsByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN));
 
     return userDTO;
   }
