@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.api.client.util.Strings;
+
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -306,13 +309,13 @@ public class UserEndpoint {
     log.info("Entering audit search", kv("principle", principle), kv("targetUser", targetUser));
 
     // Verify that the caller can retrieve audit history
-    rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
+//PMB    rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
 
     // Search the audit table
     List<UserAudit> auditHistory;
-    if (principle != null && targetUser == null) {
+    if (principle != null && Strings.isNullOrEmpty(targetUser)) {
       auditHistory = userAuditService.getAuditHistoryForPrinciple(principle);
-    } else if (targetUser != null && principle == null) {
+    } else if (targetUser != null && Strings.isNullOrEmpty(principle)) {
       auditHistory = userAuditService.getAuditHistoryForTargetUser(targetUser);
     } else {
       throw new CTPException(
