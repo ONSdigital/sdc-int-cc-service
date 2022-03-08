@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
+package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.junit.jupiter.api.parallel.ResourceAccessMode.READ_WRITE;
 
@@ -34,4 +34,5 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 @Transactional
 @ResourceLock(value = ParallelTestLocks.SPRING_TEST, mode = READ_WRITE)
 @Tag("db")
+@Tag("fs")
 public abstract class FullStackIntegrationTestBase {}

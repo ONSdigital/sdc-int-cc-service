@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -187,6 +188,20 @@ public class UserEndpoint {
         createdUser.getIdentity(), null, AuditType.USER, AuditSubType.CREATED, null);
 
     return ResponseEntity.ok(createdUser);
+  }
+
+  @Transactional
+  @DeleteMapping("/{userIdentity}")
+  public ResponseEntity<UserDTO> deleteUser(
+      @PathVariable(value = "userIdentity") @Valid @Email String userIdentity) throws CTPException {
+    log.info("Entering deleteUser", kv("userIdentity", userIdentity));
+
+    rbacService.assertUserPermission(PermissionType.DELETE_USER);
+    rbacService.assertNotSelfModification(userIdentity);
+
+    userAuditService.saveUserAudit(userIdentity, null, AuditType.USER, AuditSubType.REMOVED, null);
+
+    return ResponseEntity.ok(userService.deleteUser(userIdentity));
   }
 
   @PatchMapping("/{userIdentity}/addSurvey/{surveyType}")
