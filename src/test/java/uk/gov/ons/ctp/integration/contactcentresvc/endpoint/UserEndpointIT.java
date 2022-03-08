@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
+package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,21 +26,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserAuditRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
-public class UserServiceIT extends FullStackIntegrationTestBase {
+public class UserEndpointIT extends FullStackIntegrationTestBase {
 
   private static final UUID USER_MANAGER = UUID.fromString("4f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
   private static final UUID DELETE_TARGET = UUID.fromString("5f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
+  private static final UUID DELETER_ROLE_ID =
+      UUID.fromString("7121e404-9ec0-11ec-a16c-4c3275913db5");
 
-  @Autowired private UserServiceIT.TransactionalOps txOps;
-
+  @Autowired private UserEndpointIT.TransactionalOps txOps;
   @Autowired private UserRepository userRepo;
-
-  @Autowired private RoleRepository roleRepository;
 
   TestRestTemplate restTemplate;
 
@@ -52,7 +57,8 @@ public class UserServiceIT extends FullStackIntegrationTestBase {
 
     restTemplate = new TestRestTemplate(new RestTemplateBuilder());
 
-    Role role = roleRepository.findByName("Super User").get();
+    var perms = List.of(PermissionType.DELETE_USER);
+    Role role = txOps.createRole("deleter", DELETER_ROLE_ID, perms);
 
     txOps.deleteAll();
     txOps.createUser("user.manager@ext.ons.gov.uk", USER_MANAGER, List.of(role), null);
@@ -76,6 +82,8 @@ public class UserServiceIT extends FullStackIntegrationTestBase {
             requestEntity,
             UserDTO.class,
             params);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
 
     User user = userRepo.findByIdentity("delete.target@ext.ons.gov.uk").get();
 
@@ -160,10 +168,15 @@ public class UserServiceIT extends FullStackIntegrationTestBase {
   public static class TransactionalOps {
     private UserRepository userRepo;
     private UserAuditRepository auditRepository;
+    private RoleRepository roleRepository;
 
-    public TransactionalOps(UserRepository userRepo, UserAuditRepository auditRepository) {
+    public TransactionalOps(
+        UserRepository userRepo,
+        UserAuditRepository auditRepository,
+        RoleRepository roleRepository) {
       this.userRepo = userRepo;
       this.auditRepository = auditRepository;
+      this.roleRepository = roleRepository;
     }
 
     public void deleteAll() {
@@ -173,6 +186,26 @@ public class UserServiceIT extends FullStackIntegrationTestBase {
 
     public void createUser(String name, UUID id) {
       createUser(name, id, null, null);
+    }
+
+    public Role createRole(String name, UUID id, List<PermissionType> permTypes) {
+      permTypes = permTypes == null ? new ArrayList<>() : permTypes;
+      Role role = Role.builder().id(id).name(name).permissions(new ArrayList<>()).build();
+
+      permTypes.stream()
+          .forEach(
+              type -> {
+                addPermission(role, type);
+              });
+      return roleRepository.save(role);
+    }
+
+    public Role addPermission(Role role, PermissionType type) {
+      Permission p =
+          Permission.builder().id(UUID.randomUUID()).permissionType(type).role(role).build();
+      role.getPermissions().add(p);
+      roleRepository.save(role);
+      return role;
     }
 
     public void createUser(String name, UUID id, List<Role> userRoles, List<Role> adminRoles) {
