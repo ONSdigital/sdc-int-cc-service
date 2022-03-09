@@ -8,5 +8,5 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 public class RoleDTO {
   private String name;
   private String description;
-  List<PermissionType> permissions;
+  private List<PermissionType> permissions;
 }

@@ -291,7 +291,7 @@ public class UserEndpoint {
     rbacService.assertNotSelfModification(userIdentity);
 
     userAuditService.saveUserAudit(
-        userIdentity, roleName, AuditType.ADMIN_ROLE, AuditSubType.REMOVED, null);
+        userIdentity, roleName, AuditType.ADMIN_ROLE, AuditSubType.ADDED, null);
 
     return ResponseEntity.ok(userService.addAdminRole(userIdentity, roleName));
   }
@@ -322,7 +322,7 @@ public class UserEndpoint {
     log.info("Entering audit search", kv("principle", principle), kv("targetUser", targetUser));
 
     // Verify that the caller can retrieve audit history
-    // PMB    rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
+    rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
 
     // Search the audit table
     List<UserAudit> auditHistory;

@@ -5,11 +5,13 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
@@ -17,6 +19,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.PermissionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CreateRoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
 
 @Slf4j
@@ -71,18 +74,19 @@ public class RoleService {
   }
 
   @Transactional
-  public RoleDTO createRole(RoleDTO roleDTO) throws CTPException {
+  public CreateRoleDTO createRole(CreateRoleDTO createRoleDTO) throws CTPException {
 
-    log.info("Entering createRole", kv("roleName", roleDTO.getName()));
-    if (roleRepository.findByName(roleDTO.getName()).isPresent()) {
+    log.info("Entering createRole", kv("roleName", createRoleDTO.getName()));
+    if (roleRepository.findByName(createRoleDTO.getName()).isPresent()) {
       throw new CTPException(Fault.BAD_REQUEST, "Role with that name already exists");
     }
     Role role = new Role();
     role.setId(UUID.randomUUID());
-    role.setName(roleDTO.getName());
+    role.setName(createRoleDTO.getName());
+    role.setDescription(createRoleDTO.getDescription());
 
     roleRepository.saveAndFlush(role);
-    return mapper.map(role, RoleDTO.class);
+    return mapper.map(role, CreateRoleDTO.class);
   }
 
   @Transactional

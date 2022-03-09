@@ -140,7 +140,7 @@ public class RBACService {
   /**
    * A special case assertion for the maintenance of user:role assignment It is required that they
    * themselves are in the admin roles for the target role. An exception is made if the user is a
-   * super user who will have the permission USER_ROLE_ADMIN. Otherwise Catch-22.
+   * super user who will have the permission RESERVED_USER_ROLE_ADMIN. Otherwise Catch-22.
    *
    * @param roleName the role being maintained
    * @param permissionType the specific permission

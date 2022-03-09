@@ -57,12 +57,11 @@ public class UserEndpointIT extends FullStackIntegrationTestBase {
 
     restTemplate = new TestRestTemplate(new RestTemplateBuilder());
 
+    txOps.deleteAll();
+
     var perms = List.of(PermissionType.DELETE_USER);
     Role role = txOps.createRole("deleter", DELETER_ROLE_ID, perms);
-
-    txOps.deleteAll();
     txOps.createUser("user.manager@ext.ons.gov.uk", USER_MANAGER, List.of(role), null);
-    txOps.createUser("delete.target@ext.ons.gov.uk", DELETE_TARGET);
   }
 
   @Test
