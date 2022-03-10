@@ -70,19 +70,15 @@ public class UserEndpointCaller {
     HttpHeaders headers = new HttpHeaders();
     headers.set("x-user-id", userIdentity);
 
-    LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
-    loginRequestDTO.setForename("John");
-    loginRequestDTO.setSurname("Smith");
-
     HttpEntity<LoginRequestDTO> requestEntity =
-        new HttpEntity<LoginRequestDTO>(loginRequestDTO, headers);
+        new HttpEntity<LoginRequestDTO>(headers);
 
     Map<String, String> params = new HashMap<String, String>();
 
     // Submit login request
     ResponseEntity<UserDTO> response =
         restTemplate.exchange(
-            baseURL.toString() + "/ccsvc/users/login",
+            baseURL.toString() + "/ccsvc/users/logout",
             HttpMethod.PUT,
             requestEntity,
             UserDTO.class,
@@ -179,8 +175,6 @@ public class UserEndpointCaller {
     // Submit login request
     ResponseEntity<UserDTO> response =
         restTemplate.exchange(
-//            baseURL.toString() + "/ccsvc/users/BossMan@ext.ons.gov.uk/addUserRole/Enquiries",
-//            baseURL.toString() + "/ccsvc/BossMan@ext.ons.gov.uk/addUserRole/Enquiries%20Operator",
             baseURL.toString() + "/ccsvc/users/{userIdentity}/addAdminRole/{roleName}",
             HttpMethod.PATCH,
             requestEntity,
@@ -194,38 +188,88 @@ public class UserEndpointCaller {
   
   /**
    * GET for /ccsvc/users/audit.
-   * 
-   * Searches user audit history.
-   * Only one of the principle or targetUser must be set.
-   * 
-   * @param userIdentity is the user running the search.
-   * @param principle is to be set if you want to search for audit's done by this user.
-   * @param targetUser is set to search for audit done to this user.
-   * @return List of audit entries.
+   */
+  public ResponseEntity<String> invokeAudit(HttpStatus expectedHttpStatus, String userIdentity, String principle, String targetUser) {
+
+    return doInvokeAudit(expectedHttpStatus, new ParameterizedTypeReference<String>() {}, userIdentity, principle, targetUser);
+//
+//    if (expectedHttpStatus != HttpStatus.OK) {
+//      HttpHeaders headers = new HttpHeaders();
+//      headers.set("x-user-id", userIdentity);
+//
+//      HttpEntity<Object> requestEntity = new HttpEntity<Object>(headers);
+//
+//      Map<String, String> params = new HashMap<String, String>();
+//      params.put("principle", principle);
+//      params.put("targetUser", targetUser);
+//
+//      ResponseEntity<String> response =
+//          restTemplate.exchange(
+//              baseURL.toString() + "/ccsvc/users/audit?principle={principle}&targetUser={targetUser}",
+//              HttpMethod.GET,
+//              requestEntity,
+//              new ParameterizedTypeReference<String>() {},
+//              params);
+//
+//      assertEquals(expectedHttpStatus, response.getStatusCode());
+//      
+//      return null;
+//    }
+//    
+//    HttpHeaders headers = new HttpHeaders();
+//    headers.set("x-user-id", userIdentity);
+//
+//    HttpEntity<Object> requestEntity = new HttpEntity<Object>(headers);
+//
+//    Map<String, String> params = new HashMap<String, String>();
+//    params.put("principle", principle);
+//    params.put("targetUser", targetUser);
+//
+//    ResponseEntity<List<UserAuditDTO>> response =
+//        restTemplate.exchange(
+//            baseURL.toString() + "/ccsvc/users/audit?principle={principle}&targetUser={targetUser}",
+//            HttpMethod.GET,
+//            requestEntity,
+//            new ParameterizedTypeReference<List<UserAuditDTO>>() {},
+//            params);
+//
+//    assertEquals(expectedHttpStatus, response.getStatusCode());
+//    
+//    return response;
+  }
+
+  /**
+   * 200 status GET for /ccsvc/users/audit.
    */
   public ResponseEntity<List<UserAuditDTO>> invokeAudit(String userIdentity, String principle, String targetUser) {
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("x-user-id", userIdentity);
-
-    HttpEntity<Object> requestEntity = new HttpEntity<Object>(headers);
-
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("principle", principle);
-    params.put("targetUser", targetUser);
-
-    ResponseEntity<List<UserAuditDTO>> response =
-        restTemplate.exchange(
-            baseURL.toString() + "/ccsvc/users/audit?principle={principle}&targetUser={targetUser}",
-            HttpMethod.GET,
-            requestEntity,
-            new ParameterizedTypeReference<List<UserAuditDTO>>() {},
-            params);
-
-    List<UserAuditDTO> body = response.getBody();
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    
-    return response;
+    return doInvokeAudit(HttpStatus.OK, new ParameterizedTypeReference<List<UserAuditDTO>>() {}, userIdentity, principle, targetUser);
   }
+    
+  //  public <T> ResponseEntity<T> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity,
+//  ParameterizedTypeReference<T> responseType, Map<String, ?> urlVariables) {
+
+  private <T> ResponseEntity<T> doInvokeAudit(HttpStatus expectedHttpStatus, ParameterizedTypeReference<T> responseType, String userIdentity, String principle, String targetUser) {
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.set("x-user-id", userIdentity);
+
+      HttpEntity<Object> requestEntity = new HttpEntity<Object>(headers);
+
+      Map<String, String> params = new HashMap<String, String>();
+      params.put("principle", principle);
+      params.put("targetUser", targetUser);
+
+      ResponseEntity<T> response =
+          restTemplate.exchange(
+              baseURL.toString() + "/ccsvc/users/audit?principle={principle}&targetUser={targetUser}",
+              HttpMethod.GET,
+              requestEntity,
+              responseType, //new ParameterizedTypeReference<List<UserAuditDTO>>() {},
+              params);
+
+      assertEquals(expectedHttpStatus, response.getStatusCode());
+      
+      return response;
+    }
 }

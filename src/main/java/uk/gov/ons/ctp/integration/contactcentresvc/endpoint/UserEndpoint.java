@@ -2,17 +2,17 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
-import com.google.api.client.util.Strings;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
-import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.MapperFacade;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +27,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.api.client.util.Strings;
+
+import lombok.extern.slf4j.Slf4j;
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -339,8 +344,8 @@ public class UserEndpoint {
     List<UserAuditDTO> auditHistoryResponse = new ArrayList<>();
     for (UserAudit userAudit : auditHistory) {
       UserAuditDTO userAuditDTO = mapper.map(userAudit, UserAuditDTO.class);
-      userAuditDTO.setPrincipalUserName(userService.getUserIdentity(userAudit.getCcuserId()));
-      userAuditDTO.setTargetUserName(userService.getUserIdentity(userAudit.getTargetUserId()));
+      userAuditDTO.setPrincipalUserName(getUser(userAudit.getCcuserId()));
+      userAuditDTO.setTargetUserName(getUser(userAudit.getTargetUserId()));
       userAuditDTO.setTargetRoleName(rbacService.getRoleNameForId(userAudit.getTargetRoleId()));
       auditHistoryResponse.add(userAuditDTO);
     }
@@ -349,5 +354,14 @@ public class UserEndpoint {
     auditHistoryResponse.sort(Comparator.comparing(UserAuditDTO::getCreatedDateTime).reversed());
 
     return ResponseEntity.ok(auditHistoryResponse);
+  }
+
+  // Null tolerant method to get the name of a user
+  private String getUser(UUID userUUID) throws CTPException {
+    if (userUUID == null) {
+      return null;
+    }
+    
+    return userService.getUserIdentity(userUUID);
   }
 }

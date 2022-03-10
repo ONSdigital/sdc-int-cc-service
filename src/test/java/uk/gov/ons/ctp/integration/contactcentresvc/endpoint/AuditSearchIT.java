@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +34,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 /** Integration test for user login. */
 public class AuditSearchIT extends FullStackIntegrationTestBase {
 
-  private static UUID SUPERUSER_UUID = UUID.fromString("SU");
+  private static UUID SUPERUSER_UUID = UUID.fromString("f26d0bd8-77ce-4eeb-860f-6ab52c355b7d");
   private static final UUID CREATOR_ROLE_ID = UUID.fromString("acaffd8b-66a2-4948-a0cc-f6536c8a9fe0");
 
   @Autowired
@@ -46,6 +49,8 @@ public class AuditSearchIT extends FullStackIntegrationTestBase {
 
   @BeforeEach
   public void setup() throws MalformedURLException {
+    super.init();
+    
     base = new URL("http://localhost:" + port);
 
     userEndpoint = new UserEndpointCaller(base);
@@ -54,7 +59,8 @@ public class AuditSearchIT extends FullStackIntegrationTestBase {
     txOps.deleteAll();
 
     // Bootstrap an initial user
-    List<PermissionType> permissions = List.of(PermissionType.CREATE_USER, 
+    List<PermissionType> permissions = List.of(
+        PermissionType.CREATE_USER, 
         PermissionType.CREATE_ROLE, 
         PermissionType.MAINTAIN_PERMISSIONS,
         PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE,
@@ -64,35 +70,28 @@ public class AuditSearchIT extends FullStackIntegrationTestBase {
   }
 
   @Test
-  public void login() throws Exception {
+  public void auditSearch() throws Exception {
     
     // Build some audit history:
-    SU | superuser@ext.ons.gov.uk | t      | [null]   | [null]  | f
-    TL | BossMan@ext.ons.gov.uk   | t      | John     | Smith   | f
-SU
+//SU
+//
+//RoleA = RoleAdmin
 
-RoleA = RoleAdmin
-
-
-    // SU TL null USER CREATED --
-    // SU -- RoleA ROLE CREATED -- 
-    // SU TL RoleA ADMIN_ROLE ADDED --
     // SU -- Admin ROLE CREATED --
     // SU -- Admin PERMISSION ADDED READ_USER_AUDIT
+    // SU TL null USER CREATED --
     // SU TL Admin USER_ROLE ADDED --
-    // SU TL TL -- LOGIN -- --
-LOGOUT ??? no-audit
-        
-    // Create some users
-    userEndpoint.invokeCreateUser("superuser@ext.ons.gov.uk", "BossMan@ext.ons.gov.uk");
-    
-    // Create group for role administration
-    roleEndpoint.invokeCreateRole("superuser@ext.ons.gov.uk", "RoleAdmin", "", PermissionType.USER_ROLE_MAINTENANCE);
-    userEndpoint.addAdminRole("superuser@ext.ons.gov.uk", "BossMan@ext.ons.gov.uk", "RoleAdmin");
+    // TL TL -- LOGIN -- --
+    // TL TL -- LOGOUT -- -- 
 
-    // Allow BossMan to use the audit endpoint
+    long start = System.currentTimeMillis();
+    
+    // Create group that allows invocation of audit endpoint
     roleEndpoint.invokeCreateRole("superuser@ext.ons.gov.uk", "Admin", "For administrators only");
-    roleEndpoint.invokeAddPermission("superuser@ext.ons.gov.uk", "Admin", PermissionType.READ_USER_AUDIT);
+    roleEndpoint().invokeAddPermission("superuser@ext.ons.gov.uk", "Admin", PermissionType.READ_USER_AUDIT);
+    
+    // Create a team leader and allow them to use the audit endpoint
+    userEndpoint().invokeCreateUser("superuser@ext.ons.gov.uk", "BossMan@ext.ons.gov.uk");
     userEndpoint.addUserRole("superuser@ext.ons.gov.uk", "BossMan@ext.ons.gov.uk", "Admin");
 
     // Create some user activity
@@ -100,7 +99,39 @@ LOGOUT ??? no-audit
     userEndpoint.invokeLogout("BossMan@ext.ons.gov.uk");
 
     List<UserAuditDTO> audit = userEndpoint.invokeAudit("BossMan@ext.ons.gov.uk", "BossMan@ext.ons.gov.uk", null).getBody();
-    assertEquals(1, audit.size());
+    assertEquals(2, audit.size());
+
+    List<UserAuditDTO> audit2 = userEndpoint.invokeAudit("BossMan@ext.ons.gov.uk", null, "BossMan@ext.ons.gov.uk").getBody();
+    assertEquals(4, audit2.size());
+
+    List<UserAuditDTO> audit3 = userEndpoint.invokeAudit("BossMan@ext.ons.gov.uk", "superuser@ext.ons.gov.uk", null).getBody();
+    assertEquals(4, audit3.size());
+
+    List<UserAuditDTO> audit4 = userEndpoint.invokeAudit("BossMan@ext.ons.gov.uk", null, "superuser@ext.ons.gov.uk").getBody();
+    assertEquals(0, audit4.size());
+
+    long end = System.currentTimeMillis();
+    long runTime = end - start;
+    System.out.println("Runtime: " + runTime);
+    assertTrue(runTime <1000);
+  }
+
+  @Test
+  public void noPermissionToAudit() throws Exception {
+    
+    long start = System.currentTimeMillis();
+    
+    // Create a team leader and allow them to use the audit endpoint
+    userEndpoint.invokeCreateUser("superuser@ext.ons.gov.uk", "BossMan@ext.ons.gov.uk");
+
+    ResponseEntity<String> audit = userEndpoint.invokeAudit(HttpStatus.UNAUTHORIZED, "BossMan@ext.ons.gov.uk", "BossMan@ext.ons.gov.uk", null);
+
+    long end = System.currentTimeMillis();
+    long runTime = end - start;
+    System.out.println("Not auth runtime: " + runTime);
+    assertTrue(runTime <100000);
+
+    assertTrue(audit.getBody().contains("User not authorised for activity READ_USER_AUDIT"), audit.getBody());
   }
 
   /**
@@ -122,8 +153,8 @@ LOGOUT ??? no-audit
     }
 
     public void deleteAll() {
-      userRepo.deleteAll();
       userAuditRepository.deleteAll();
+      userRepo.deleteAll();
       roleRepository.deleteAll();
     }
 
