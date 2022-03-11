@@ -56,6 +56,20 @@ public class RBACServiceTest {
   }
 
   @Test
+  public void disallowsNoRequestedSurveyWithoutPermissionAndNoSurveyUsage() throws CTPException {
+    User user = createUserWithoutPermissions(USER_NAME);
+
+    when(userRepo.findByIdentity(USER_NAME)).thenReturn(Optional.of(user));
+    CTPException exception =
+        assertThrows(
+            CTPException.class,
+            () -> {
+              rbacService.assertUserPermission(PermissionType.SEARCH_CASES);
+            });
+    assert (exception.getFault().equals(Fault.ACCESS_DENIED));
+  }
+
+  @Test
   public void allowsNoRequestedSurveyWithPermissionAndWithAnyOldSurveyUsage() throws CTPException {
     User user = createUserWithoutPermissions(USER_NAME);
     addUserRoleWithPermission(user, PermissionType.SEARCH_CASES);
