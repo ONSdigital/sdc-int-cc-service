@@ -46,11 +46,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 @Tag("fs")
 public abstract class FullStackIntegrationTestBase {
   
-  URL base;
-  @LocalServerPort int port;
+  private URL base;
+  private @LocalServerPort int port;
   
-  RoleEndpointCaller roleEndpoint;
-  UserEndpointCaller userEndpoint;
+  private RoleEndpointCaller roleEndpoint;
+  private UserEndpointCaller userEndpoint;
 
   public void init() throws MalformedURLException { 
     base = new URL("http://localhost:" + port);
