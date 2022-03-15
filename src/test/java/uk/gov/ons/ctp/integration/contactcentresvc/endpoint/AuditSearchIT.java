@@ -6,13 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import uk.gov.ons.ctp.integration.contactcentresvc.endpoint.support.TransactionalOps;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
@@ -65,15 +63,15 @@ public class AuditSearchIT extends FullStackIntegrationTestBase {
     // @formatter:on
 
     // Create group that allows invocation of audit endpoint
-    roleEndpoint().invokeCreateRole(USER_SU, "Admin", "For administrators only");
-    roleEndpoint().invokeAddPermission(USER_SU, "Admin", PermissionType.READ_USER_AUDIT);
+    roleEndpoint().createRole(USER_SU, "Admin", "For administrators only");
+    roleEndpoint().addPermission(USER_SU, "Admin", PermissionType.READ_USER_AUDIT);
 
     // Create a team leader and allow them to use the audit endpoint
     userEndpoint().createUser(USER_SU, USER_TL);
     userEndpoint().addUserRole(USER_SU, USER_TL, "Admin");
 
     // Create some user activity
-    userEndpoint().login(USER_TL);
+    userEndpoint().login(USER_TL, "John", "Smith");
     userEndpoint().logout(USER_TL);
 
     // Now that there is audit history, check audit on what TeamLeader has done

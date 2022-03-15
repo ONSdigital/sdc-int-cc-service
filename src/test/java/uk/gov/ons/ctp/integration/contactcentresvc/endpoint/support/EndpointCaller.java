@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
@@ -19,12 +18,12 @@ public class EndpointCaller {
 
   private URL baseURL;
   private TestRestTemplate restTemplate;
-  
+
   public EndpointCaller(URL baseURL) {
     this.baseURL = baseURL;
     this.restTemplate = new TestRestTemplate(new RestTemplateBuilder());
   }
-  
+
   public <T> ResponseEntity<T> invokeEndpoint(
       HttpStatus expectedHttpStatus,
       HttpMethod httpMethod,
@@ -41,17 +40,13 @@ public class EndpointCaller {
 
     ResponseEntity<T> response =
         restTemplate.exchange(
-            baseURL.toString() + url,
-            httpMethod,
-            requestEntity,
-            responseType,
-            params);
+            baseURL.toString() + url, httpMethod, requestEntity, responseType, params);
 
     assertEquals(expectedHttpStatus, response.getStatusCode());
 
     return response;
   }
-  
+
   // Variant with no params
   public <T> ResponseEntity<T> invokeEndpoint(
       HttpStatus expectedHttpStatus,
@@ -61,8 +56,9 @@ public class EndpointCaller {
       Object requestData,
       String userIdentity) {
 
-   Map<String, String> params = new HashMap<String, String>();
-    
-   return invokeEndpoint(expectedHttpStatus, httpMethod, url, responseType,  requestData, userIdentity, params);
+    Map<String, String> params = new HashMap<String, String>();
+
+    return invokeEndpoint(
+        expectedHttpStatus, httpMethod, url, responseType, requestData, userIdentity, params);
   }
 }

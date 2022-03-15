@@ -26,6 +26,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
@@ -62,10 +64,12 @@ public class UserEndpointIT extends FullStackIntegrationTestBase {
     var perms = List.of(PermissionType.DELETE_USER);
     Role role = txOps.createRole("deleter", DELETER_ROLE_ID, perms);
     txOps.createUser("user.manager@ext.ons.gov.uk", USER_MANAGER, List.of(role), null);
+    txOps.createUser("delete.target@ext.ons.gov.uk", DELETE_TARGET, List.of(role), null);
   }
 
   @Test
   public void deleteUser() {
+
     HttpHeaders headers = new HttpHeaders();
     headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
 
@@ -90,27 +94,30 @@ public class UserEndpointIT extends FullStackIntegrationTestBase {
   }
 
   @Test
-  public void deleteUserWhoIsUnDeletable() {
-    HttpHeaders loginHeaders = new HttpHeaders();
-    loginHeaders.set("x-user-id", "delete.target@ext.ons.gov.uk");
+  public void deleteUserWhoIsUnDeletable() throws CTPException {
+    
+    ResponseEntity<UserDTO> loginResponse = userEndpoint().login("delete.target@ext.ons.gov.uk", "delete", "target");
 
-    LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
-    loginRequestDTO.setForename("delete");
-    loginRequestDTO.setSurname("target");
-
-    HttpEntity<LoginRequestDTO> loginRequestEntity =
-        new HttpEntity<LoginRequestDTO>(loginRequestDTO, loginHeaders);
-
-    Map<String, String> params = new HashMap<String, String>();
-
-    // Submit login request
-    ResponseEntity<UserDTO> loginResponse =
-        restTemplate.exchange(
-            base.toString() + "/ccsvc/users/login",
-            HttpMethod.PUT,
-            loginRequestEntity,
-            UserDTO.class,
-            params);
+//    HttpHeaders loginHeaders = new HttpHeaders();
+//    loginHeaders.set("x-user-id", "delete.target@ext.ons.gov.uk");
+//
+//    LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
+//    loginRequestDTO.setForename("delete");
+//    loginRequestDTO.setSurname("target");
+//
+//    HttpEntity<LoginRequestDTO> loginRequestEntity =
+//        new HttpEntity<LoginRequestDTO>(loginRequestDTO, loginHeaders);
+//
+//    Map<String, String> params = new HashMap<String, String>();
+//
+//    // Submit login request
+//    ResponseEntity<UserDTO> loginResponse =
+//        restTemplate.exchange(
+//            base.toString() + "/ccsvc/users/login",
+//            HttpMethod.PUT,
+//            loginRequestEntity,
+//            UserDTO.class,
+//            params);
 
     assertFalse(loginResponse.getBody().isDeletable());
 

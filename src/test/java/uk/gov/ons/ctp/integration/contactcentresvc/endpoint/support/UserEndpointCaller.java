@@ -4,12 +4,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
@@ -17,7 +15,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 public class UserEndpointCaller {
 
   private EndpointCaller endpointCaller;
-  
+
   public UserEndpointCaller(URL baseURL) {
     this.endpointCaller = new EndpointCaller(baseURL);
   }
@@ -25,22 +23,19 @@ public class UserEndpointCaller {
   /*
    * 200 status PUT for /ccsvc/users/login
    */
-  public ResponseEntity<UserDTO> login(String userIdentity) {
-
-    return doLogin(HttpStatus.OK,
-        new ParameterizedTypeReference<UserDTO>() {}, userIdentity, "John", "Smith");
-  }
-
-  private <T> ResponseEntity<T> doLogin(
-      HttpStatus expectedHttpStatus,
-      ParameterizedTypeReference<T> responseType,
-      String userIdentity, String forename, String surname) {
+  public ResponseEntity<UserDTO> login(String userIdentity, String forename, String surname) {
 
     LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
     loginRequestDTO.setForename(forename);
     loginRequestDTO.setSurname(surname);
 
-    return endpointCaller.invokeEndpoint(expectedHttpStatus, HttpMethod.PUT, "/ccsvc/users/login", responseType, loginRequestDTO, userIdentity);
+    return endpointCaller.invokeEndpoint(
+        HttpStatus.OK,
+        HttpMethod.PUT,
+        "/ccsvc/users/login",
+        new ParameterizedTypeReference<UserDTO>() {},
+        loginRequestDTO,
+        userIdentity);
   }
 
   /*
@@ -48,37 +43,30 @@ public class UserEndpointCaller {
    */
   public ResponseEntity<UserDTO> logout(String userIdentity) {
 
-    return doLogout(HttpStatus.OK,
-        new ParameterizedTypeReference<UserDTO>() {}, userIdentity);
-  }
-
-  private <T> ResponseEntity<T> doLogout(
-      HttpStatus expectedHttpStatus,
-      ParameterizedTypeReference<T> responseType,
-      String userIdentity) {
-
-    return endpointCaller.invokeEndpoint(expectedHttpStatus, HttpMethod.PUT, "/ccsvc/users/logout", responseType, null, userIdentity);
+    return endpointCaller.invokeEndpoint(
+        HttpStatus.OK,
+        HttpMethod.PUT,
+        "/ccsvc/users/logout",
+        new ParameterizedTypeReference<UserDTO>() {},
+        null,
+        userIdentity);
   }
 
   /*
    * 200 status POST to /ccsvc/users
    */
-  public ResponseEntity<UserDTO> createUser(
-      String principle, String userIdentity) {
-
-    return doCreateUser(HttpStatus.OK,
-        new ParameterizedTypeReference<UserDTO>() {}, principle, userIdentity);
-  }
-
-  private <T> ResponseEntity<T> doCreateUser(
-      HttpStatus expectedHttpStatus,
-      ParameterizedTypeReference<T> responseType,
-      String principle, String userIdentity) {
+  public ResponseEntity<UserDTO> createUser(String principle, String userIdentity) {
 
     UserDTO userDTO = new UserDTO();
     userDTO.setIdentity(userIdentity);
 
-    return endpointCaller.invokeEndpoint(expectedHttpStatus, HttpMethod.POST, "/ccsvc/users", responseType, userDTO, principle);
+    return endpointCaller.invokeEndpoint(
+        HttpStatus.OK,
+        HttpMethod.POST,
+        "/ccsvc/users",
+        new ParameterizedTypeReference<UserDTO>() {},
+        userDTO,
+        principle);
   }
 
   /*
@@ -87,20 +75,18 @@ public class UserEndpointCaller {
   public ResponseEntity<UserDTO> addUserRole(
       String principle, String userIdentity, String roleName) {
 
-    return doAddUserRole(HttpStatus.OK,
-        new ParameterizedTypeReference<UserDTO>() {}, principle, userIdentity, roleName);
-  }
-
-  private <T> ResponseEntity<T> doAddUserRole(
-      HttpStatus expectedHttpStatus,
-      ParameterizedTypeReference<T> responseType,
-      String principle, String userIdentity, String roleName) {
-
     Map<String, String> params = new HashMap<String, String>();
     params.put("userIdentity", userIdentity);
     params.put("roleName", roleName);
-    
-    return endpointCaller.invokeEndpoint(expectedHttpStatus, HttpMethod.PATCH, "/ccsvc/users/{userIdentity}/addUserRole/{roleName}", responseType, null, principle, params);
+
+    return endpointCaller.invokeEndpoint(
+        HttpStatus.OK,
+        HttpMethod.PATCH,
+        "/ccsvc/users/{userIdentity}/addUserRole/{roleName}",
+        new ParameterizedTypeReference<UserDTO>() {},
+        null,
+        principle,
+        params);
   }
 
   /*
@@ -109,20 +95,18 @@ public class UserEndpointCaller {
   public ResponseEntity<UserDTO> addAdminRole(
       String principle, String userIdentity, String roleName) {
 
-    return doAddAdminRole(HttpStatus.OK,
-        new ParameterizedTypeReference<UserDTO>() {}, principle, userIdentity, roleName);
-  }
-
-  private <T> ResponseEntity<T> doAddAdminRole(
-      HttpStatus expectedHttpStatus,
-      ParameterizedTypeReference<T> responseType,
-      String principle, String userIdentity, String roleName) {
-
     Map<String, String> params = new HashMap<String, String>();
     params.put("userIdentity", userIdentity);
     params.put("roleName", roleName);
-    
-    return endpointCaller.invokeEndpoint(expectedHttpStatus, HttpMethod.PATCH, "/ccsvc/users/{userIdentity}/addAdminRole/{roleName}", responseType, null, principle, params);
+
+    return endpointCaller.invokeEndpoint(
+        HttpStatus.OK,
+        HttpMethod.PATCH,
+        "/ccsvc/users/{userIdentity}/addAdminRole/{roleName}",
+        new ParameterizedTypeReference<UserDTO>() {},
+        null,
+        principle,
+        params);
   }
 
   /*
@@ -140,11 +124,11 @@ public class UserEndpointCaller {
   }
 
   /*
-   * Failure path GET for /ccsvc/users/audit. 
+   * Failure path GET for /ccsvc/users/audit.
    */
   public ResponseEntity<String> searchAudit(
       HttpStatus expectedHttpStatus, String userIdentity, String principle, String targetUser) {
-    
+
     return doInvokeAudit(
         expectedHttpStatus,
         new ParameterizedTypeReference<String>() {},
@@ -152,7 +136,7 @@ public class UserEndpointCaller {
         principle,
         targetUser);
   }
-  
+
   private <T> ResponseEntity<T> doInvokeAudit(
       HttpStatus expectedHttpStatus,
       ParameterizedTypeReference<T> responseType,
@@ -164,6 +148,13 @@ public class UserEndpointCaller {
     params.put("principle", principle);
     params.put("targetUser", targetUser);
 
-    return endpointCaller.invokeEndpoint(expectedHttpStatus, HttpMethod.GET, "/ccsvc/users/audit?principle={principle}&targetUser={targetUser}", responseType, null, userIdentity, params);
+    return endpointCaller.invokeEndpoint(
+        expectedHttpStatus,
+        HttpMethod.GET,
+        "/ccsvc/users/audit?principle={principle}&targetUser={targetUser}",
+        responseType,
+        null,
+        userIdentity,
+        params);
   }
 }
