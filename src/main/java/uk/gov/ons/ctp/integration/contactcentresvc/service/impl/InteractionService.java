@@ -3,7 +3,6 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -81,21 +80,8 @@ public class InteractionService {
 
     List<CaseInteraction> caseInteractions = interactionRepository.findAllByCcuserId(user.getId());
 
-    List<UsersCaseInteractionDTO> response = new ArrayList<>();
-
-    for (CaseInteraction interaction : caseInteractions) {
-      Case caze = interaction.getCaze();
-      UsersCaseInteractionDTO usersCaseInteractionDTO = new UsersCaseInteractionDTO();
-      usersCaseInteractionDTO.setCaseId(caze.getId());
-      usersCaseInteractionDTO.setCaseRef(caze.getCaseRef());
-      usersCaseInteractionDTO.setInteraction(interaction.getType());
-      usersCaseInteractionDTO.setSubInteraction(interaction.getSubtype());
-      usersCaseInteractionDTO.setNote(interaction.getNote());
-      usersCaseInteractionDTO.setSurveyType(caze.getCollectionExercise().getSurvey().surveyType());
-      usersCaseInteractionDTO.setCreatedDateTime(interaction.getCreatedDateTime());
-
-      response.add(usersCaseInteractionDTO);
-    }
+    List<UsersCaseInteractionDTO> response =
+        mapper.mapAsList(caseInteractions, UsersCaseInteractionDTO.class);
 
     return response.stream()
         .sorted(Comparator.comparing(UsersCaseInteractionDTO::getCreatedDateTime).reversed())
