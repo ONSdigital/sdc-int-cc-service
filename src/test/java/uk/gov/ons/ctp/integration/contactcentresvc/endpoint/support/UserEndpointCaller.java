@@ -68,7 +68,43 @@ public class UserEndpointCaller {
         userDTO,
         principle);
   }
+  
+  /*
+   * 200 status DELETE to /ccsvc/users/
+   */
+  public ResponseEntity<UserDTO> deleteUser(String principle, String userIdentity) {
 
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("userIdentity", userIdentity);
+
+    return endpointCaller.invokeEndpoint(
+        HttpStatus.OK,
+        HttpMethod.DELETE,
+        "/ccsvc/users/{userIdentity}",
+        new ParameterizedTypeReference<UserDTO>() {},
+        null,
+        principle,
+        params);
+  }
+  
+  /*
+   * Error response for DELETE to /ccsvc/users/
+   */
+  public ResponseEntity<String> deleteUser(HttpStatus expectedHttpStatus, String principle, String userIdentity) {
+
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("userIdentity", userIdentity);
+
+    return endpointCaller.invokeEndpoint(
+        expectedHttpStatus,
+        HttpMethod.DELETE,
+        "/ccsvc/users/{userIdentity}",
+        new ParameterizedTypeReference<String>() {},
+        null,
+        principle,
+        params);
+  }
+  
   /*
    * 200 status PATCH for /ccsvc/users/{userIdentity}/addUserRole/{roleName}
    */

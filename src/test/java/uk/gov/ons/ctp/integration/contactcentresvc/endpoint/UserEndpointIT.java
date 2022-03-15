@@ -1,26 +1,17 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -35,133 +26,62 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserAuditRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
 public class UserEndpointIT extends FullStackIntegrationTestBase {
 
-  private static final UUID USER_MANAGER = UUID.fromString("4f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
-  private static final UUID DELETE_TARGET = UUID.fromString("5f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
   private static final UUID DELETER_ROLE_ID =
       UUID.fromString("7121e404-9ec0-11ec-a16c-4c3275913db5");
 
   @Autowired private UserEndpointIT.TransactionalOps txOps;
   @Autowired private UserRepository userRepo;
 
-  TestRestTemplate restTemplate;
-
-  URL base;
-  @LocalServerPort int port;
-
   @BeforeEach
   public void setup() throws MalformedURLException {
-    base = new URL("http://localhost:" + port);
-
-    restTemplate = new TestRestTemplate(new RestTemplateBuilder());
+    super.init();
 
     txOps.deleteAll();
 
     var perms = List.of(PermissionType.DELETE_USER);
     Role role = txOps.createRole("deleter", DELETER_ROLE_ID, perms);
-    txOps.createUser("user.manager@ext.ons.gov.uk", USER_MANAGER, List.of(role), null);
-    txOps.createUser("delete.target@ext.ons.gov.uk", DELETE_TARGET, List.of(role), null);
+    txOps.createUser("user.manager@ext.ons.gov.uk", UUID.randomUUID(), List.of(role), null);
+    txOps.createUser("delete.target@ext.ons.gov.uk", UUID.randomUUID(), List.of(role), null);
   }
 
   @Test
-  public void deleteUser() {
+  public void deleteUser() throws CTPException {
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
-
-    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
-
-    Map<String, String> params = new HashMap<String, String>();
-
-    // Submit delete request
-    ResponseEntity<UserDTO> response =
-        restTemplate.exchange(
-            base.toString() + "/ccsvc/users/delete.target@ext.ons.gov.uk",
-            HttpMethod.DELETE,
-            requestEntity,
-            UserDTO.class,
-            params);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-
+    userEndpoint().deleteUser("user.manager@ext.ons.gov.uk", "delete.target@ext.ons.gov.uk");
+    
+    // Confirm user no longer exists
     User user = userRepo.findByIdentity("delete.target@ext.ons.gov.uk").get();
-
     assertTrue(user.isDeleted());
   }
 
   @Test
   public void deleteUserWhoIsUnDeletable() throws CTPException {
-    
+
+    // Make sure user under test can login
     ResponseEntity<UserDTO> loginResponse = userEndpoint().login("delete.target@ext.ons.gov.uk", "delete", "target");
-
-//    HttpHeaders loginHeaders = new HttpHeaders();
-//    loginHeaders.set("x-user-id", "delete.target@ext.ons.gov.uk");
-//
-//    LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
-//    loginRequestDTO.setForename("delete");
-//    loginRequestDTO.setSurname("target");
-//
-//    HttpEntity<LoginRequestDTO> loginRequestEntity =
-//        new HttpEntity<LoginRequestDTO>(loginRequestDTO, loginHeaders);
-//
-//    Map<String, String> params = new HashMap<String, String>();
-//
-//    // Submit login request
-//    ResponseEntity<UserDTO> loginResponse =
-//        restTemplate.exchange(
-//            base.toString() + "/ccsvc/users/login",
-//            HttpMethod.PUT,
-//            loginRequestEntity,
-//            UserDTO.class,
-//            params);
-
     assertFalse(loginResponse.getBody().isDeletable());
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
-
-    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
-
-    // Submit delete request
-    ResponseEntity<UserDTO> response =
-        restTemplate.exchange(
-            base.toString() + "/ccsvc/users/delete.target@ext.ons.gov.uk",
-            HttpMethod.DELETE,
-            requestEntity,
-            UserDTO.class,
-            params);
-
+    // Attempt to delete the user
+    ResponseEntity<String> response = userEndpoint().deleteUser(HttpStatus.BAD_REQUEST, "user.manager@ext.ons.gov.uk", "delete.target@ext.ons.gov.uk");
+    assertTrue(response.getBody().contains("User not deletable"), response.getBody());
+    
+    // Confirm user still exists
     User user = userRepo.findByIdentity("delete.target@ext.ons.gov.uk").get();
-
-    assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
     assertFalse(user.isDeleted());
   }
 
   @Test
-  public void deleteUserSelfDeleteBlocked() {
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+  public void deleteUserSelfDeleteBlocked() throws CTPException {
+    // Attempt to delete the user
+    ResponseEntity<String> response = userEndpoint().deleteUser(HttpStatus.UNAUTHORIZED, "user.manager@ext.ons.gov.uk", "user.manager@ext.ons.gov.uk");
+    assertTrue(response.getBody().contains("Self modification of user account not allowed"), response.getBody());
 
-    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
-
-    Map<String, String> params = new HashMap<String, String>();
-
-    // Submit delete request
-    ResponseEntity<UserDTO> response =
-        restTemplate.exchange(
-            base.toString() + "/ccsvc/users/user.manager@ext.ons.gov.uk",
-            HttpMethod.DELETE,
-            requestEntity,
-            UserDTO.class,
-            params);
-
+    // Confirm user still exists
     User user = userRepo.findByIdentity("user.manager@ext.ons.gov.uk").get();
-
-    assertEquals(response.getStatusCode(), HttpStatus.UNAUTHORIZED);
     assertFalse(user.isDeleted());
   }
 
