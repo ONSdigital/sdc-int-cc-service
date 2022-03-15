@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
@@ -15,24 +14,26 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
 public class UserEndpointCaller {
 
-  URL baseURL;
-  TestRestTemplate restTemplate; 
+  private URL baseURL;
+  TestRestTemplate restTemplate;
+  
+  private EndpointCaller endpointCaller;
   
   public UserEndpointCaller(URL baseURL) {
     this.baseURL = baseURL;
     this.restTemplate = new TestRestTemplate(new RestTemplateBuilder());
+    this.endpointCaller = new EndpointCaller(baseURL, restTemplate);
   }
 
   /**
    * PUT to /ccsvc/users/login.
-   *  
+   *
    * @param userIdentity is the user logging in.
    * @return UserDTO for the user.
    */
@@ -59,10 +60,10 @@ public class UserEndpointCaller {
             params);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    
+
     return response;
   }
-  
+
   /*
    * PUT to /ccsvc/users/login.
    */
@@ -70,8 +71,7 @@ public class UserEndpointCaller {
     HttpHeaders headers = new HttpHeaders();
     headers.set("x-user-id", userIdentity);
 
-    HttpEntity<LoginRequestDTO> requestEntity =
-        new HttpEntity<LoginRequestDTO>(headers);
+    HttpEntity<LoginRequestDTO> requestEntity = new HttpEntity<LoginRequestDTO>(headers);
 
     Map<String, String> params = new HashMap<String, String>();
 
@@ -85,15 +85,15 @@ public class UserEndpointCaller {
             params);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    
+
     return response;
   }
-  
+
   /**
    * POST to /ccsvc/users.
-   * 
-   * This creates a new user.
-   * 
+   *
+   * <p>This creates a new user.
+   *
    * @param principle is the user doing the creation.
    * @param userIdentity is the name of the user to create.
    * @return UserDTO for the new user.
@@ -112,21 +112,17 @@ public class UserEndpointCaller {
     // Submit login request
     ResponseEntity<UserDTO> response =
         restTemplate.exchange(
-            baseURL.toString() + "/ccsvc/users",
-            HttpMethod.POST,
-            requestEntity,
-            UserDTO.class);
+            baseURL.toString() + "/ccsvc/users", HttpMethod.POST, requestEntity, UserDTO.class);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    
+
     return response;
   }
-  
-  /**
-   * PATCH for /ccsvc/users/{userIdentity}/addUserRole/{roleName}
-   */
-  public ResponseEntity<UserDTO> addUserRole(String principle, String userIdentity, String roleName) {
-    
+
+  /** PATCH for /ccsvc/users/{userIdentity}/addUserRole/{roleName} */
+  public ResponseEntity<UserDTO> addUserRole(
+      String principle, String userIdentity, String roleName) {
+
     HttpHeaders headers = new HttpHeaders();
     headers.set("x-user-id", principle);
 
@@ -149,15 +145,14 @@ public class UserEndpointCaller {
             params);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    
+
     return response;
   }
 
-  /**
-   * PATCH for /ccsvc/users/{userIdentity}/addAdminRole/{roleName}
-   */
-  public ResponseEntity<UserDTO> addAdminRole(String principle, String userIdentity, String roleName) {
-    
+  /** PATCH for /ccsvc/users/{userIdentity}/addAdminRole/{roleName} */
+  public ResponseEntity<UserDTO> addAdminRole(
+      String principle, String userIdentity, String roleName) {
+
     HttpHeaders headers = new HttpHeaders();
     headers.set("x-user-id", principle);
 
@@ -180,53 +175,45 @@ public class UserEndpointCaller {
             params);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    
+
     return response;
   }
-  
-  /**
-   * GET for /ccsvc/users/audit.
-   */
-  public ResponseEntity<String> invokeAudit(HttpStatus expectedHttpStatus, String userIdentity, String principle, String targetUser) {
 
-    return doInvokeAudit(expectedHttpStatus, new ParameterizedTypeReference<String>() {}, userIdentity, principle, targetUser);
+  /** GET for /ccsvc/users/audit. */
+  public ResponseEntity<String> invokeAudit(
+      HttpStatus expectedHttpStatus, String userIdentity, String principle, String targetUser) {
+
+    return doInvokeAudit(
+        expectedHttpStatus,
+        new ParameterizedTypeReference<String>() {},
+        userIdentity,
+        principle,
+        targetUser);
   }
 
-  /**
-   * 200 status GET for /ccsvc/users/audit.
-   */
-  public ResponseEntity<List<UserAuditDTO>> invokeAudit(String userIdentity, String principle, String targetUser) {
+  /** 200 status GET for /ccsvc/users/audit. */
+  public ResponseEntity<List<UserAuditDTO>> invokeAudit(
+      String userIdentity, String principle, String targetUser) {
 
-    return doInvokeAudit(HttpStatus.OK, new ParameterizedTypeReference<List<UserAuditDTO>>() {}, userIdentity, principle, targetUser);
+    return doInvokeAudit(
+        HttpStatus.OK,
+        new ParameterizedTypeReference<List<UserAuditDTO>>() {},
+        userIdentity,
+        principle,
+        targetUser);
   }
-    
-  private <T> ResponseEntity<T> doInvokeAudit(HttpStatus expectedHttpStatus, ParameterizedTypeReference<T> responseType, String userIdentity, String principle, String targetUser) {
+
+  private <T> ResponseEntity<T> doInvokeAudit(
+      HttpStatus expectedHttpStatus,
+      ParameterizedTypeReference<T> responseType,
+      String userIdentity,
+      String principle,
+      String targetUser) {
 
     Map<String, String> params = new HashMap<String, String>();
     params.put("principle", principle);
     params.put("targetUser", targetUser);
-    
-    return invokeEndpoint(expectedHttpStatus, responseType, userIdentity, params);
-  }
 
-
-  private <T> ResponseEntity<T> invokeEndpoint(HttpStatus expectedHttpStatus, ParameterizedTypeReference<T> responseType, String userIdentity, Map<String, String> params) {
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("x-user-id", userIdentity);
-
-    HttpEntity<Object> requestEntity = new HttpEntity<Object>(headers);
-
-    ResponseEntity<T> response =
-        restTemplate.exchange(
-            baseURL.toString() + "/ccsvc/users/audit?principle={principle}&targetUser={targetUser}",
-            HttpMethod.GET,
-            requestEntity,
-            responseType, //new ParameterizedTypeReference<List<UserAuditDTO>>() {},
-            params);
-
-    assertEquals(expectedHttpStatus, response.getStatusCode());
-    
-    return response;
+    return endpointCaller.invokeEndpoint(expectedHttpStatus, responseType, userIdentity, params);
   }
 }
