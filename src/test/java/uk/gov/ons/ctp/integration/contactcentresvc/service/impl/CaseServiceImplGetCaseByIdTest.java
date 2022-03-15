@@ -101,19 +101,20 @@ public class CaseServiceImplGetCaseByIdTest extends CaseServiceImplTestBase {
   }
 
   @Test
-  public void testNotLaunchableBeforeFirstWave() throws Exception {
-    checkCanLaunchFlag(2088, 2089, 100, false);
-  }
-
-  @Test
   public void testCanLaunchableCase() throws Exception {
     checkCanLaunchFlag(1970, 2189, 999999, true);
   }
 
-  @Test
-  public void testNotLaunchableAfterLastWave() throws Exception {
-    checkCanLaunchFlag(2000, 2001, 122, false);
-  }
+  // SOCINT-432
+  // @Test
+  // public void testNotLaunchableAfterLastWave() throws Exception {
+  //  checkCanLaunchFlag(2000, 2001, 122, false);
+  // }
+  //
+  // @Test
+  // public void testNotLaunchableBeforeFirstWave() throws Exception {
+  //  checkCanLaunchFlag(2088, 2089, 100, false);
+  // }
 
   private void checkCanLaunchFlag(
       int startYear, int endYear, int waveLength, boolean expectedCanLaunch)

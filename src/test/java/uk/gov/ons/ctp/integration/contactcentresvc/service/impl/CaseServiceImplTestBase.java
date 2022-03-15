@@ -146,7 +146,7 @@ public abstract class CaseServiceImplTestBase {
             .sample(new HashMap<>(caseFromDb.getSample()))
             .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))
             .interactions(Collections.emptyList())
-            .canLaunch(false)
+            .canLaunch(true)
             .build();
     return expectedCaseResult;
   }
