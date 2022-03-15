@@ -7,5 +7,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.CaseInteraction;
 
 public interface CaseInteractionRepository extends JpaRepository<CaseInteraction, UUID> {
 
-  List<CaseInteraction> findByCaseId(UUID caseId);
+  List<CaseInteraction> findByCaze_Id(UUID caseId);
+
+  List<CaseInteraction> findAllByCcuserId(UUID ccuserId);
 }
