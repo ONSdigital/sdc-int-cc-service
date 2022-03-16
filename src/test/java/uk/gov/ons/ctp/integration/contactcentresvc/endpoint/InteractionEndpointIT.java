@@ -47,7 +47,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.UsersCaseInter
 public class InteractionEndpointIT extends FullStackIntegrationTestBase {
 
   private static final UUID TARGET_USER = UUID.fromString("4f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
-  private static final UUID OTHER_USER = UUID.fromString("3f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
+  private static final UUID PRINCIPAL_USER = UUID.fromString("3f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
   private static final UUID CASE_ID = UUID.fromString("5f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
   private static final UUID CASE_ID_2 = UUID.fromString("6f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
 
@@ -72,9 +72,9 @@ public class InteractionEndpointIT extends FullStackIntegrationTestBase {
   public void getCorrectCaseInteractionsByUser() {
     var perms = List.of(PermissionType.READ_USER_INTERACTIONS);
     Role role = txOps.createRole("interaction_reader", TARGET_USER, perms);
-    User targetUser =
-        txOps.createUser("target.user@ext.ons.gov.uk", TARGET_USER, List.of(role), null);
-    User otherUser = txOps.createUser("other.user@ext.ons.gov.uk", OTHER_USER);
+    User otherUser =
+        txOps.createUser("principal.user@ext.ons.gov.uk", TARGET_USER, List.of(role), null);
+    User targetUser = txOps.createUser("target.user@ext.ons.gov.uk", PRINCIPAL_USER);
     Case case1 = txOps.createCase(CASE_ID);
     Case case2 = txOps.createCase(CASE_ID_2);
 
@@ -86,7 +86,7 @@ public class InteractionEndpointIT extends FullStackIntegrationTestBase {
     txOps.createInteraction(case1, targetUser, LocalDateTime.of(2022, 3, 3, 3, 3));
 
     HttpHeaders headers = new HttpHeaders();
-    headers.set("x-user-id", "target.user@ext.ons.gov.uk");
+    headers.set("x-user-id", "principal.user@ext.ons.gov.uk");
 
     HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
 

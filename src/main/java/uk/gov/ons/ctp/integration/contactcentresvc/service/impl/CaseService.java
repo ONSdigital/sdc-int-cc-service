@@ -468,7 +468,7 @@ public class CaseService {
       }
 
       // Add in interactions recorded by CC
-      List<CaseInteraction> ccInteractions = caseInteractionRepository.findByCaze_Id(caseId);
+      List<CaseInteraction> ccInteractions = caseInteractionRepository.findAllByCazeId(caseId);
       for (CaseInteraction ccInteraction : ccInteractions) {
         interactions.add(createCcInteraction(ccInteraction));
       }
