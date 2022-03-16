@@ -11,6 +11,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CreateRoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
 
+/**
+ * Utility class which allows integration tests to easily call the Role based endpoints.
+ */
 public class RoleEndpointCaller {
 
   private EndpointCaller endpointCaller;

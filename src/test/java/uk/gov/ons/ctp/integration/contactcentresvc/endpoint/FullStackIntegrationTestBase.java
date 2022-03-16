@@ -44,32 +44,33 @@ import uk.gov.ons.ctp.integration.contactcentresvc.event.EventToSendPoller;
 @Tag("fs")
 public abstract class FullStackIntegrationTestBase {
 
-  private URL base;
   private @LocalServerPort int port;
 
   private RoleEndpointCaller roleEndpoint;
   private UserEndpointCaller userEndpoint;
 
   public void init() throws MalformedURLException {
-    base = new URL("http://localhost:" + port);
+    URL base = new URL("http://localhost:" + port);
 
     userEndpoint = new UserEndpointCaller(base);
     roleEndpoint = new RoleEndpointCaller(base);
   }
 
   public UserEndpointCaller userEndpoint() throws CTPException {
-    if (userEndpoint == null) {
-      throw new CTPException(Fault.SYSTEM_ERROR, "Test class has not initialised the test base");
-    }
+    verifyInitialisationDone();
 
     return userEndpoint;
   }
 
   public RoleEndpointCaller roleEndpoint() throws CTPException {
-    if (roleEndpoint == null) {
-      throw new CTPException(Fault.SYSTEM_ERROR, "Test class has not initialised the test base");
-    }
+    verifyInitialisationDone();
 
     return roleEndpoint;
+  }
+
+  private void verifyInitialisationDone() throws CTPException {
+    if (userEndpoint == null || roleEndpoint == null) {
+      throw new CTPException(Fault.SYSTEM_ERROR, "Test class has not initialised the test base");
+    }
   }
 }

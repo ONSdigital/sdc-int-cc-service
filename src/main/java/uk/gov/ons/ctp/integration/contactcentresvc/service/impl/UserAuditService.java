@@ -95,7 +95,7 @@ public class UserAuditService {
     }
   }
 
-  public List<UserAudit> getAuditHistoryForPrinciple(String principle) throws CTPException {
+  public List<UserAudit> getAuditHistoryForPerformedBy(String principle) throws CTPException {
 
     UUID principleUserId = lookupUserId(principle);
     List<UserAudit> auditHistory = userAuditRepository.findAllByCcuserId(principleUserId);
@@ -103,7 +103,7 @@ public class UserAuditService {
     return auditHistory;
   }
 
-  public List<UserAudit> getAuditHistoryForTargetUser(String targetUser) throws CTPException {
+  public List<UserAudit> getAuditHistoryForPerformedOn(String targetUser) throws CTPException {
 
     UUID targetUserId = lookupUserId(targetUser);
     List<UserAudit> auditHistory = userAuditRepository.findAllByTargetUserId(targetUserId);

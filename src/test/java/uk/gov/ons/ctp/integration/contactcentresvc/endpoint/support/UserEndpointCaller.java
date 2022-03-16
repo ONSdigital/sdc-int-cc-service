@@ -12,6 +12,9 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDT
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
+/**
+ * Utility class which allows integration tests to easily call the User based endpoints.
+ */
 public class UserEndpointCaller {
 
   private EndpointCaller endpointCaller;
@@ -68,7 +71,7 @@ public class UserEndpointCaller {
         userDTO,
         principle);
   }
-  
+
   /*
    * 200 status DELETE to /ccsvc/users/
    */
@@ -86,11 +89,12 @@ public class UserEndpointCaller {
         principle,
         params);
   }
-  
+
   /*
    * Error response for DELETE to /ccsvc/users/
    */
-  public ResponseEntity<String> deleteUser(HttpStatus expectedHttpStatus, String principle, String userIdentity) {
+  public ResponseEntity<String> deleteUser(
+      HttpStatus expectedHttpStatus, String principle, String userIdentity) {
 
     Map<String, String> params = new HashMap<String, String>();
     params.put("userIdentity", userIdentity);
@@ -104,7 +108,7 @@ public class UserEndpointCaller {
         principle,
         params);
   }
-  
+
   /*
    * 200 status PATCH for /ccsvc/users/{userIdentity}/addUserRole/{roleName}
    */
@@ -149,48 +153,48 @@ public class UserEndpointCaller {
    * 200 status GET for /ccsvc/users/audit
    */
   public ResponseEntity<List<UserAuditDTO>> searchAudit(
-      String userIdentity, String principle, String targetUser) {
+      String principle, String performedBy, String performedOn) {
 
     return doInvokeAudit(
         HttpStatus.OK,
         new ParameterizedTypeReference<List<UserAuditDTO>>() {},
-        userIdentity,
         principle,
-        targetUser);
+        performedBy,
+        performedOn);
   }
 
   /*
    * Failure path GET for /ccsvc/users/audit.
    */
   public ResponseEntity<String> searchAudit(
-      HttpStatus expectedHttpStatus, String userIdentity, String principle, String targetUser) {
+      HttpStatus expectedHttpStatus, String principle, String performedBy, String performedOn) {
 
     return doInvokeAudit(
         expectedHttpStatus,
         new ParameterizedTypeReference<String>() {},
-        userIdentity,
         principle,
-        targetUser);
+        performedBy,
+        performedOn);
   }
 
   private <T> ResponseEntity<T> doInvokeAudit(
       HttpStatus expectedHttpStatus,
       ParameterizedTypeReference<T> responseType,
-      String userIdentity,
       String principle,
-      String targetUser) {
+      String performedBy,
+      String performedOn) {
 
     Map<String, String> params = new HashMap<String, String>();
-    params.put("principle", principle);
-    params.put("targetUser", targetUser);
+    params.put("performedBy", performedBy);
+    params.put("performedOn", performedOn);
 
     return endpointCaller.invokeEndpoint(
         expectedHttpStatus,
         HttpMethod.GET,
-        "/ccsvc/users/audit?principle={principle}&targetUser={targetUser}",
+        "/ccsvc/users/audit?performedBy={performedBy}&performedOn={performedOn}",
         responseType,
         null,
-        userIdentity,
+        principle,
         params);
   }
 }

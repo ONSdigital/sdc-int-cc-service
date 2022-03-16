@@ -16,8 +16,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserAuditReposi
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 
 /**
- * Separate class that can create/update database items and commit the results so that subsequent
- * operations can see the effect.
+ * Separate class that can create/update database items and commit the results, so that
+ * tests can manipluate the database state.
  */
 @Component
 @Transactional(propagation = Propagation.REQUIRES_NEW)

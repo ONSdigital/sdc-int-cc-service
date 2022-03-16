@@ -18,7 +18,13 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 
-/** Integration test for user login. */
+/**
+ * Integration test for audit search endpoint. This test produces code coverage which goes from the
+ * endpoints down to the database.
+ *
+ * <p>In general this uses the endpoints to create the required users with the relevant permission.
+ * It then hits the audit enpoint and checks the returned audit information.
+ */
 public class AuditSearchIT extends FullStackIntegrationTestBase {
 
   private static final String USER_SU = "SuperUser@ext.ons.gov.uk";
@@ -50,15 +56,18 @@ public class AuditSearchIT extends FullStackIntegrationTestBase {
     // @formatter:off
     // Build some audit history:
     //
-    //  Principle    Target    Role     Audit   AuditSub    Audit
-    //    user        user     Name     type      type      value
-    // -----------+----------+-------+--------+----------+---------
-    //  SuperUser      --     Admin   ROLE       CREATED        --
-    //  SuperUser      --     Admin   PERMISSION ADDED    READ_USER_AUDIT
-    //  SuperUser  TeamLeader   --    USER       CREATED        --
-    //  SuperUser  TeamLeader Admin   USER_ROLE  ADDED          --
-    // TeamLeader  TeamLeader   --    LOGIN       --            --
-    // TeamLeader  TeamLeader   --    LOGOUT      --            --
+    //  Principle   Performed   Performed Audit     AuditSub    Audit
+    //    user        by           on     type       type       value
+    // -----------+------------+--------+----------+----------+---------
+    //  SuperUser      --        Admin   ROLE        CREATED       --
+    //  SuperUser      --        Admin   PERMISSION  ADDED     READ_USER_AUDIT
+    //  SuperUser   TeamLeader    --     USER        CREATED       --
+    //  SuperUser   TeamLeader   Admin   USER_ROLE   ADDED         --
+    // TeamLeader   TeamLeader    --     LOGIN        --           --
+    // TeamLeader   TeamLeader    --     LOGOUT       --           --
+    //
+    // Note that this history is in creation order, whereas the audit will
+    // return them in reverse chronological order.
     //
     // @formatter:on
 
@@ -112,18 +121,18 @@ public class AuditSearchIT extends FullStackIntegrationTestBase {
   private void verifyAudit(
       List<UserAuditDTO> auditList,
       int index,
-      String expectedPrincipalUserName,
-      String expectedTargetUserName,
-      String expectedTargetRoleName,
+      String expectedPerformedByUserName,
+      String expectedPerformedOnUserName,
+      String expectedRoleName,
       AuditType expectedAuditType,
       AuditSubType expectedAuditSubType,
       String expectedAuditValue) {
 
     UserAuditDTO audit = auditList.get(index);
 
-    assertEquals(expectedPrincipalUserName, audit.getPrincipalUserName());
-    assertEquals(expectedTargetUserName, audit.getTargetUserName());
-    assertEquals(expectedTargetRoleName, audit.getTargetRoleName());
+    assertEquals(expectedPerformedByUserName, audit.getPerformedByUser());
+    assertEquals(expectedPerformedOnUserName, audit.getPerformedOnUser());
+    assertEquals(expectedRoleName, audit.getRoleName());
     assertEquals(expectedAuditType, audit.getAuditType());
     assertEquals(expectedAuditSubType, audit.getAuditSubType());
     assertEquals(expectedAuditValue, audit.getAuditValue());

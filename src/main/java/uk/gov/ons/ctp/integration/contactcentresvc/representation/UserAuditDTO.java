@@ -14,11 +14,11 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 @AllArgsConstructor
 public class UserAuditDTO {
 
-  String principalUserName;
+  String performedByUser;
 
-  String targetUserName;
+  String performedOnUser;
 
-  String targetRoleName;
+  String roleName;
 
   private Date createdDateTime;
 

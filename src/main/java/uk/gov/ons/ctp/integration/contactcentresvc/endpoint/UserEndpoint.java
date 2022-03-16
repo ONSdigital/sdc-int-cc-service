@@ -316,33 +316,34 @@ public class UserEndpoint {
 
   @GetMapping("/audit")
   public ResponseEntity<List<UserAuditDTO>> audit(
-      @RequestParam(required = false) String principle,
-      @RequestParam(required = false) String targetUser)
+      @RequestParam(required = false) String performedBy,
+      @RequestParam(required = false) String performedOn)
       throws CTPException {
 
-    log.info("Entering audit search", kv("principle", principle), kv("targetUser", targetUser));
+    log.info(
+        "Entering audit search", kv("performedBy", performedBy), kv("performedOn", performedOn));
 
     // Verify that the caller can retrieve audit history
     rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
 
     // Search the audit table
     List<UserAudit> auditHistory;
-    if (principle != null && Strings.isNullOrEmpty(targetUser)) {
-      auditHistory = userAuditService.getAuditHistoryForPrinciple(principle);
-    } else if (targetUser != null && Strings.isNullOrEmpty(principle)) {
-      auditHistory = userAuditService.getAuditHistoryForTargetUser(targetUser);
+    if (performedBy != null && Strings.isNullOrEmpty(performedOn)) {
+      auditHistory = userAuditService.getAuditHistoryForPerformedBy(performedBy);
+    } else if (performedOn != null && Strings.isNullOrEmpty(performedBy)) {
+      auditHistory = userAuditService.getAuditHistoryForPerformedOn(performedOn);
     } else {
       throw new CTPException(
-          Fault.BAD_REQUEST, "Only one of 'principle' or 'targetUser' must be supplied");
+          Fault.BAD_REQUEST, "Only one of 'performedByUser' or 'performedOnUser' must be supplied");
     }
 
     // Convert results to the response type
     List<UserAuditDTO> auditHistoryResponse = new ArrayList<>();
     for (UserAudit userAudit : auditHistory) {
       UserAuditDTO userAuditDTO = mapper.map(userAudit, UserAuditDTO.class);
-      userAuditDTO.setPrincipalUserName(getUser(userAudit.getCcuserId()));
-      userAuditDTO.setTargetUserName(getUser(userAudit.getTargetUserId()));
-      userAuditDTO.setTargetRoleName(rbacService.getRoleNameForId(userAudit.getTargetRoleId()));
+      userAuditDTO.setPerformedByUser(getUser(userAudit.getCcuserId()));
+      userAuditDTO.setPerformedOnUser(getUser(userAudit.getTargetUserId()));
+      userAuditDTO.setRoleName(rbacService.getRoleNameForId(userAudit.getTargetRoleId()));
       auditHistoryResponse.add(userAuditDTO);
     }
 
