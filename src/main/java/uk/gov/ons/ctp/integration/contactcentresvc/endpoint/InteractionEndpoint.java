@@ -7,7 +7,6 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,7 +37,6 @@ public class InteractionEndpoint {
    * @param interactionService is a service layer object that we be doing the processing on behalf
    *     of this endpoint.
    */
-  @Autowired
   public InteractionEndpoint(
       final RBACService rbacService, final InteractionService interactionService) {
     this.rbacService = rbacService;

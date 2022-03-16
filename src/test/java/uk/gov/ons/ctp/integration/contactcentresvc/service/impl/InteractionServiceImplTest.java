@@ -142,8 +142,6 @@ public class InteractionServiceImplTest {
 
     assertTrue(response.get(0).getCreatedDateTime().isAfter(response.get(1).getCreatedDateTime()));
     assertTrue(response.get(1).getCreatedDateTime().isAfter(response.get(2).getCreatedDateTime()));
-
-    // TODO TEST retreiving caseInteractionas by caseId
   }
 
   private CaseInteraction createCaseInteraction(User user, LocalDateTime localDateTime) {

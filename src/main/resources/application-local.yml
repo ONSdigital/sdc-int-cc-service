@@ -3,7 +3,7 @@ spring:
     gcp:
       pubsub:
         project-id: local
-        emulator-host: localhost:9808
+        emulator-host: localhost:8085
 
 logging:
   level:
