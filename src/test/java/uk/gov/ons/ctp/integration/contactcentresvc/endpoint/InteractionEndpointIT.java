@@ -47,7 +47,8 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.UsersCaseInter
 public class InteractionEndpointIT extends FullStackIntegrationTestBase {
 
   private static final UUID TARGET_USER = UUID.fromString("4f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
-  private static final UUID PRINCIPAL_USER = UUID.fromString("3f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
+  private static final UUID PRINCIPAL_USER =
+      UUID.fromString("3f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
   private static final UUID CASE_ID = UUID.fromString("5f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
   private static final UUID CASE_ID_2 = UUID.fromString("6f27ee97-7ba7-4979-b9e8-bfe3063b41e8");
 

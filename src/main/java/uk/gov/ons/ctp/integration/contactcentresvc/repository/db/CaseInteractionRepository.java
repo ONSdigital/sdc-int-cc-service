@@ -10,5 +10,4 @@ public interface CaseInteractionRepository extends JpaRepository<CaseInteraction
   List<CaseInteraction> findAllByCazeId(UUID caseId);
 
   List<CaseInteraction> findAllByCcuserId(UUID ccuserId);
-
 }
