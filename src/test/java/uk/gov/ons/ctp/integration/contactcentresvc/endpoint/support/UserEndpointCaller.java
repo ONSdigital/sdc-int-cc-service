@@ -12,9 +12,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDT
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 
-/**
- * Utility class which allows integration tests to easily call the User based endpoints.
- */
+/** Utility class which allows integration tests to easily call the User based endpoints. */
 public class UserEndpointCaller {
 
   private EndpointCaller endpointCaller;
