@@ -236,7 +236,7 @@ public abstract class CaseServiceImplTestBase {
     List<CaseInteraction> caseInteractions =
         FixtureHelper.loadPackageFixtures(CaseInteraction[].class);
 
-    lenient().when(caseInteractionRepo.findByCaseId(id)).thenReturn(caseInteractions);
+    lenient().when(caseInteractionRepo.findAllByCazeId(id)).thenReturn(caseInteractions);
   }
 
   void mockCaseEventWhiteList() {

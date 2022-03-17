@@ -30,6 +30,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserAuditRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
@@ -168,19 +169,23 @@ public class UserEndpointIT extends FullStackIntegrationTestBase {
   public static class TransactionalOps {
     private UserRepository userRepo;
     private UserAuditRepository auditRepository;
+    private CaseInteractionRepository interactionRepository;
     private RoleRepository roleRepository;
 
     public TransactionalOps(
         UserRepository userRepo,
         UserAuditRepository auditRepository,
-        RoleRepository roleRepository) {
+        RoleRepository roleRepository,
+        CaseInteractionRepository interactionRepository) {
       this.userRepo = userRepo;
       this.auditRepository = auditRepository;
       this.roleRepository = roleRepository;
+      this.interactionRepository = interactionRepository;
     }
 
     public void deleteAll() {
       auditRepository.deleteAll();
+      interactionRepository.deleteAll();
       userRepo.deleteAll();
     }
 

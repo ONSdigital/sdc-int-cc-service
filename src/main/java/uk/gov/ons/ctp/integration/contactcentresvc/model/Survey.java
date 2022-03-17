@@ -20,6 +20,7 @@ import lombok.ToString;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 
 /**
  * Representation of Survey from database table.
@@ -54,4 +55,8 @@ public class Survey {
   @JsonIgnore
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Product> allowedFulfilments;
+
+  public SurveyType surveyType() {
+    return SurveyType.fromSampleDefinitionUrl(sampleDefinitionUrl);
+  }
 }

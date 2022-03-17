@@ -7,6 +7,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,9 @@ public class CaseInteraction {
 
   @GeneratedValue @ToString.Include @Id private UUID id;
 
-  @ToString.Include private UUID caseId;
+  @JoinColumn(name = "case_id", nullable = false)
+  @ManyToOne(optional = false)
+  private Case caze;
 
   @ManyToOne(optional = false)
   private User ccuser;

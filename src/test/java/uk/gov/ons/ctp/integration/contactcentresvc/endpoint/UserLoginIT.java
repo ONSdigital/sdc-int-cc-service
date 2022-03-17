@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserAuditRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
@@ -103,14 +104,20 @@ public class UserLoginIT extends FullStackIntegrationTestBase {
   public static class TransactionalOps {
     private UserRepository userRepo;
     private UserAuditRepository auditRepository;
+    private CaseInteractionRepository interactionRepository;
 
-    public TransactionalOps(UserRepository userRepo, UserAuditRepository auditRepository) {
+    public TransactionalOps(
+        UserRepository userRepo,
+        UserAuditRepository auditRepository,
+        CaseInteractionRepository interactionRepository) {
       this.userRepo = userRepo;
       this.auditRepository = auditRepository;
+      this.interactionRepository = interactionRepository;
     }
 
     public void deleteAll() {
       auditRepository.deleteAll();
+      interactionRepository.deleteAll();
       userRepo.deleteAll();
     }
 
