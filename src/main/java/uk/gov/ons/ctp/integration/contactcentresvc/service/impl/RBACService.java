@@ -108,18 +108,18 @@ public class RBACService {
       }
     }
 
-    if (survey == null) {
-      throw new CTPException(
-          Fault.ACCESS_DENIED,
-          String.format("User not authorised for activity %s", permissionType.name()));
+    StringBuffer msg =
+        new StringBuffer(
+            String.format("User not authorised for activity %s", permissionType.name()));
+    if (survey != null) {
+      msg.append(
+          String.format(
+              " for survey type %s",
+              SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl())));
     }
 
-    throw new CTPException(
-        Fault.ACCESS_DENIED,
-        String.format(
-            "User not authorised for activity %s for survey type %s",
-            permissionType.name(),
-            SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl())));
+    // SurveyType.fromSampleDefinitionUrl(survey.getSampleDefinitionUrl()))
+    throw new CTPException(Fault.ACCESS_DENIED, msg.toString());
   }
 
   /**

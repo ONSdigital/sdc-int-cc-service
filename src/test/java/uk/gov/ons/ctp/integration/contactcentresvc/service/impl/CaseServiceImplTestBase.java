@@ -146,7 +146,7 @@ public abstract class CaseServiceImplTestBase {
             .sample(new HashMap<>(caseFromDb.getSample()))
             .sampleSensitive(new HashMap<>(caseFromDb.getSampleSensitive()))
             .interactions(Collections.emptyList())
-            .canLaunch(false)
+            .canLaunch(true)
             .build();
     return expectedCaseResult;
   }
@@ -236,7 +236,7 @@ public abstract class CaseServiceImplTestBase {
     List<CaseInteraction> caseInteractions =
         FixtureHelper.loadPackageFixtures(CaseInteraction[].class);
 
-    lenient().when(caseInteractionRepo.findByCaseId(id)).thenReturn(caseInteractions);
+    lenient().when(caseInteractionRepo.findAllByCazeId(id)).thenReturn(caseInteractions);
   }
 
   void mockCaseEventWhiteList() {

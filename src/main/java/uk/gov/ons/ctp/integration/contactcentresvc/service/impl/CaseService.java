@@ -207,9 +207,13 @@ public class CaseService {
       log.debug("Returning case details for caseId", kv("caseId", caseId));
     }
 
+    // BEGIN SOCINT-432 temporarily commenting out this check as it breaks due to missing metadata
+    // in collex
     // Indicate to UI if this case can be launched
-    Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDb);
-    caseServiceResponse.setCanLaunch(waveNumOpt.isPresent());
+    // Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDb);
+    // caseServiceResponse.setCanLaunch(waveNumOpt.isPresent());
+    caseServiceResponse.setCanLaunch(true);
+    // END SOCINT-432
 
     return caseServiceResponse;
   }
@@ -259,9 +263,13 @@ public class CaseService {
         buildInteractionHistory(caseServiceResponse.getId(), requestParamsDTO.getCaseEvents());
     caseServiceResponse.setInteractions(interactions);
 
+    // BEGIN SOCINT-432 temporarily commenting out this check as it breaks due to missing metadata
+    // in collex
     // Indicate to UI if this case can be launched
-    Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDetails);
-    caseServiceResponse.setCanLaunch(waveNumOpt.isPresent());
+    // Optional<Integer> waveNumOpt = getWaveNumberForCase(caseDetails);
+    // caseServiceResponse.setCanLaunch(waveNumOpt.isPresent());
+    caseServiceResponse.setCanLaunch(true);
+    // END SOCINT-432
 
     // Return a 404 if the UPRN is blacklisted
     UniquePropertyReferenceNumber foundUprn =
@@ -460,7 +468,7 @@ public class CaseService {
       }
 
       // Add in interactions recorded by CC
-      List<CaseInteraction> ccInteractions = caseInteractionRepository.findByCaseId(caseId);
+      List<CaseInteraction> ccInteractions = caseInteractionRepository.findAllByCazeId(caseId);
       for (CaseInteraction ccInteraction : ccInteractions) {
         interactions.add(createCcInteraction(ccInteraction));
       }

@@ -41,6 +41,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractionRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.UsersCaseInteractionDTO;
 
 /** The bean mapper that maps to/from DTOs and JPA entity types. */
 @Component
@@ -168,6 +169,26 @@ public class CCSvcBeanMapper extends ConfigurableMapper {
                   Survey survey, SurveyDTO surveyDTO, MappingContext mappingContext) {
                 String sampleDefinitionUrl = survey.getSampleDefinitionUrl();
                 surveyDTO.setSurveyType(SurveyType.fromSampleDefinitionUrl(sampleDefinitionUrl));
+              }
+            })
+        .byDefault()
+        .register();
+
+    factory
+        .classMap(CaseInteraction.class, UsersCaseInteractionDTO.class)
+        .field("caze.id", "caseId")
+        .field("caze.caseRef", "caseRef")
+        .field("type", "interaction")
+        .field("subtype", "subInteraction")
+        .customize(
+            new CustomMapper<CaseInteraction, UsersCaseInteractionDTO>() {
+              @Override
+              public void mapAtoB(
+                  CaseInteraction interaction,
+                  UsersCaseInteractionDTO interactionDTO,
+                  MappingContext mappingContext) {
+                interactionDTO.setSurveyType(
+                    interaction.getCaze().getCollectionExercise().getSurvey().surveyType());
               }
             })
         .byDefault()
