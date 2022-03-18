@@ -12,10 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.contactcentresvc.endpoint.support.TransactionalOps;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.TransactionalOps;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 

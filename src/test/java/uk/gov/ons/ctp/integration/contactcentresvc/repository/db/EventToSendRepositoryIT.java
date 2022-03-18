@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -12,10 +11,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.EventToSend;
 
 public class EventToSendRepositoryIT extends PostgresTestBase {
@@ -83,35 +78,5 @@ public class EventToSendRepositoryIT extends PostgresTestBase {
 
   private LocalDateTime parseDateTime(String dateTime) {
     return LocalDateTime.parse(dateTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-  }
-
-  /**
-   * Separate class that can create/update database items and commit the results so that subsequent
-   * operations can see the effect.
-   */
-  @Component
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public static class TransactionalOps {
-    private EventToSendRepository repo;
-
-    public TransactionalOps(EventToSendRepository repo) {
-      this.repo = repo;
-    }
-
-    public void deleteAll() {
-      repo.deleteAll();
-    }
-
-    public void createEvent(LocalDateTime created) {
-      EventToSend event =
-          EventToSend.builder()
-              .id(UUID.randomUUID())
-              .payload("payload")
-              .type(TopicType.EQ_LAUNCH.name())
-              .createdDateTime(created)
-              .build();
-
-      repo.save(event);
-    }
   }
 }

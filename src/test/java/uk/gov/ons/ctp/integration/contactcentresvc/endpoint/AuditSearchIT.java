@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import uk.gov.ons.ctp.integration.contactcentresvc.endpoint.support.TransactionalOps;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
+import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.TransactionalOps;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 
 /**
