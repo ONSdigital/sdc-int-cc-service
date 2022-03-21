@@ -107,7 +107,7 @@ public class UserAuditService {
 
   public List<UserAuditDTO> searchAuditHistory(String performedBy, String performedOn)
       throws CTPException {
-    
+
     // Search the audit table
     List<UserAudit> auditHistory;
     if (Strings.isNotBlank(performedBy)) {

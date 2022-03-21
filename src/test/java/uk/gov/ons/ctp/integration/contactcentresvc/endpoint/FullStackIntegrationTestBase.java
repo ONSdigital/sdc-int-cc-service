@@ -6,6 +6,7 @@ import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.annotation.PostConstruct;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,7 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.utility.ParallelTestLocks;
 import uk.gov.ons.ctp.integration.contactcentresvc.endpoint.support.RoleEndpointCaller;
@@ -49,6 +49,7 @@ public abstract class FullStackIntegrationTestBase {
   private RoleEndpointCaller roleEndpoint;
   private UserEndpointCaller userEndpoint;
 
+  @PostConstruct
   public void init() throws MalformedURLException {
     URL base = new URL("http://localhost:" + port);
 
@@ -57,20 +58,10 @@ public abstract class FullStackIntegrationTestBase {
   }
 
   public UserEndpointCaller userEndpoint() throws CTPException {
-    verifyInitialisationDone();
-
     return userEndpoint;
   }
 
   public RoleEndpointCaller roleEndpoint() throws CTPException {
-    verifyInitialisationDone();
-
     return roleEndpoint;
-  }
-
-  private void verifyInitialisationDone() throws CTPException {
-    if (userEndpoint == null || roleEndpoint == null) {
-      throw new CTPException(Fault.SYSTEM_ERROR, "Test class has not initialised the test base");
-    }
   }
 }

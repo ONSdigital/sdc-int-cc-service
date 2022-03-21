@@ -34,7 +34,6 @@ public class AuditSearchIT extends FullStackIntegrationTestBase {
 
   @BeforeEach
   public void setup() throws MalformedURLException {
-    super.init();
 
     txOps.deleteAll();
 
