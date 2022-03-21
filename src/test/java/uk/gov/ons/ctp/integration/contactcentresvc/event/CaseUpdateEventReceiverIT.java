@@ -47,7 +47,8 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldReceiveCase() throws CTPException {
-    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+    survey =
+        txOps.createSurvey(UUID.fromString(SURVEY_ID), "LMS", "https://some.domain/social.json");
     txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
 
     assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
@@ -63,7 +64,7 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldRejectCaseForIgnoredSurveyType() throws CTPException {
-    survey = txOps.createSurveyWeFilterOut(UUID.fromString(SURVEY_ID));
+    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID), "LMS", "https://some.domain/test.json");
     txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
 
     assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
@@ -85,7 +86,8 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldRejectCaseForMissingCollectionExercise() {
-    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+    survey =
+        txOps.createSurvey(UUID.fromString(SURVEY_ID), "LMS", "https://some.domain/social.json");
 
     assertFalse(caseRepo.existsById(UUID.fromString(CASE_ID)));
 
@@ -97,7 +99,8 @@ public class CaseUpdateEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldPopulateSkeletonCase() throws CTPException {
-    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+    survey =
+        txOps.createSurvey(UUID.fromString(SURVEY_ID), "LMS", "https://some.domain/social.json");
     collectionExercise = txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
     txOps.createSkeletonCase(collectionExercise, UUID.fromString(CASE_ID));
 

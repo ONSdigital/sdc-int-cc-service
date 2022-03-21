@@ -93,11 +93,6 @@ public class TransactionalOps {
     surveyRepository.deleteAll();
     eventToSendRepository.deleteAll();
   }
-  // auditRepo.deleteAll();
-  // interactionRepo.deleteAll();
-  // userRepo.deleteAll();
-  // roleRepo.deleteAll();
-  // permRepo.deleteAll();
 
   public User createUser(String name, UUID id) {
     return createUser(name, id, null, null);
@@ -154,25 +149,12 @@ public class TransactionalOps {
     interactionRepository.save(interaction);
   }
 
-  public Survey createSurvey(UUID id) {
+  public Survey createSurvey(UUID id, String name, String sampleDefinitionURL) {
     Survey survey =
         Survey.builder()
             .id(id)
-            .name("LMS")
-            .sampleDefinitionUrl("https://some.domain/social.json")
-            .sampleDefinition("{}")
-            .build();
-    surveyRepository.save(survey);
-
-    return survey;
-  }
-
-  public Survey createSurveyWeFilterOut(UUID id) {
-    Survey survey =
-        Survey.builder()
-            .id(id)
-            .name("LMS")
-            .sampleDefinitionUrl("https://some.domain/test.json")
+            .name(name)
+            .sampleDefinitionUrl(sampleDefinitionURL)
             .sampleDefinition("{}")
             .build();
     surveyRepository.save(survey);
@@ -301,31 +283,17 @@ public class TransactionalOps {
     uacUpdateEventReceiver.acceptEvent(event);
   }
 
-  public void createJoeTheShopkeeper(UUID shopkeeperUUID, UUID joeUUID) {
-    var role = createRole("shopkeeper", shopkeeperUUID, null);
-    var roles = new ArrayList<Role>();
-    roles.add(role);
-    createUser("Joe", joeUUID, roles, null);
+  public void verifyNormalUserAndRole(String userName, String roleName) {
+    Optional<User> user = userRepo.findByIdentity(userName);
+    Optional<Role> role = roleRepository.findByName(roleName);
+    assertEquals(role.get(), user.get().getUserRoles().get(0));
+    assertEquals(user.get(), role.get().getUsers().get(0));
   }
 
-  public void verifyJoeTheShopkeeper() {
-    Optional<User> joe = userRepo.findByIdentity("Joe");
-    Optional<Role> shopkeeper = roleRepository.findByName("shopkeeper");
-    assertEquals(shopkeeper.get(), joe.get().getUserRoles().get(0));
-    assertEquals(joe.get(), shopkeeper.get().getUsers().get(0));
-  }
-
-  public void createJoeTheShopkeeperAdmin(UUID shopkeeperUUID, UUID joeUUID) {
-    var role = createRole("shopkeeper", shopkeeperUUID, null);
-    var roles = new ArrayList<Role>();
-    roles.add(role);
-    createUser("Joe", joeUUID, null, roles);
-  }
-
-  public void verifyJoeTheShopkeeperAdmin() {
-    Optional<User> joe = userRepo.findByIdentity("Joe");
-    Optional<Role> shopkeeper = roleRepository.findByName("shopkeeper");
-    assertEquals(shopkeeper.get(), joe.get().getAdminRoles().get(0));
-    assertEquals(joe.get(), shopkeeper.get().getAdmins().get(0));
+  public void verifyAdminUserAndRole(String userName, String roleName) {
+    Optional<User> user = userRepo.findByIdentity(userName);
+    Optional<Role> role = roleRepository.findByName(roleName);
+    assertEquals(role.get(), user.get().getAdminRoles().get(0));
+    assertEquals(user.get(), role.get().getAdmins().get(0));
   }
 }

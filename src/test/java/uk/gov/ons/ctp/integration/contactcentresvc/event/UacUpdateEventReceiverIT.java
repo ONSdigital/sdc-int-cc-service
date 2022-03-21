@@ -55,7 +55,8 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldReceiveUac() throws CTPException {
-    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+    survey =
+        txOps.createSurvey(UUID.fromString(SURVEY_ID), "LMS", "https://some.domain/social.json");
     collectionExercise = txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
     txOps.createCase(collectionExercise, UUID.fromString(CASE_ID));
 
@@ -85,7 +86,7 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldDiscardUacForIgnoredSurveyType() throws CTPException {
-    survey = txOps.createSurveyWeFilterOut(UUID.fromString(SURVEY_ID));
+    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID), "LMS", "https://some.domain/test.json");
 
     assertTrue(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isEmpty());
 
@@ -106,7 +107,8 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldRejectUacMessageForMissingCollectionExercise() {
-    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+    survey =
+        txOps.createSurvey(UUID.fromString(SURVEY_ID), "LMS", "https://some.domain/social.json");
 
     assertTrue(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isEmpty());
 
@@ -118,7 +120,8 @@ public class UacUpdateEventReceiverIT extends PostgresTestBase {
 
   @Test
   public void shouldSaveUacAndSkeletonCaseWhenCaseNotFound() throws CTPException {
-    survey = txOps.createSurvey(UUID.fromString(SURVEY_ID));
+    survey =
+        txOps.createSurvey(UUID.fromString(SURVEY_ID), "LMS", "https://some.domain/social.json");
     collectionExercise = txOps.createCollex(survey, UUID.fromString(COLLECTION_EX_ID));
 
     assertTrue(uacRepository.findByCaseId(UUID.fromString(CASE_ID)).isEmpty());
