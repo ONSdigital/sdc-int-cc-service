@@ -51,8 +51,6 @@ public class UserEndpoint {
   private UserService userService;
   private UserAuditService userAuditService;
 
-  private MapperFacade mapper;
-
   /**
    * Create the endpoint
    *
@@ -64,7 +62,6 @@ public class UserEndpoint {
       final RBACService rbacService,
       final UserService userService,
       final UserAuditService userAuditService) {
-    this.mapper = mapper;
     this.rbacService = rbacService;
     this.userService = userService;
     this.userAuditService = userAuditService;

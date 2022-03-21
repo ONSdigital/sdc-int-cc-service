@@ -42,12 +42,12 @@ public class UserAuditService {
       String value)
       throws CTPException {
 
-    UUID principalId = lookupUserId(UserIdentityContext.get());
+    UUID principalId = getUserIdByIdentity(UserIdentityContext.get());
     UUID targetUserId = null;
     UUID targetRoleId = null;
 
     if (targetUserName != null) {
-      targetUserId = lookupUserId(targetUserName);
+      targetUserId = getUserIdByIdentity(targetUserName);
     }
     if (targetRoleName != null) {
       targetRoleId =
@@ -107,13 +107,14 @@ public class UserAuditService {
 
   public List<UserAuditDTO> searchAuditHistory(String performedBy, String performedOn)
       throws CTPException {
+    
     // Search the audit table
     List<UserAudit> auditHistory;
     if (Strings.isNotBlank(performedBy)) {
-      UUID performedByUser = lookupUserId(performedBy);
+      UUID performedByUser = getUserIdByIdentity(performedBy);
       auditHistory = userAuditRepository.findAllByCcuserId(performedByUser);
     } else {
-      UUID performedOnUser = lookupUserId(performedOn);
+      UUID performedOnUser = getUserIdByIdentity(performedOn);
       auditHistory = userAuditRepository.findAllByTargetUserId(performedOnUser);
     }
 
@@ -121,8 +122,8 @@ public class UserAuditService {
     List<UserAuditDTO> auditHistoryResponse = new ArrayList<>();
     for (UserAudit userAudit : auditHistory) {
       UserAuditDTO userAuditDTO = mapper.map(userAudit, UserAuditDTO.class);
-      userAuditDTO.setPerformedByUser(getUser(userAudit.getCcuserId()));
-      userAuditDTO.setPerformedOnUser(getUser(userAudit.getTargetUserId()));
+      userAuditDTO.setPerformedByUser(getUserIdentityById(userAudit.getCcuserId()));
+      userAuditDTO.setPerformedOnUser(getUserIdentityById(userAudit.getTargetUserId()));
       userAuditDTO.setRoleName(rbacService.getRoleNameForId(userAudit.getTargetRoleId()));
       auditHistoryResponse.add(userAuditDTO);
     }
@@ -132,7 +133,7 @@ public class UserAuditService {
     return auditHistoryResponse;
   }
 
-  private UUID lookupUserId(String userIdentity) throws CTPException {
+  private UUID getUserIdByIdentity(String userIdentity) throws CTPException {
     UUID targetUserId =
         userRepository
             .findByIdentity(userIdentity)
@@ -146,7 +147,7 @@ public class UserAuditService {
   }
 
   // Null tolerant method to get the name of a user
-  private String getUser(UUID userUUID) throws CTPException {
+  private String getUserIdentityById(UUID userUUID) throws CTPException {
     if (userUUID == null) {
       return null;
     }

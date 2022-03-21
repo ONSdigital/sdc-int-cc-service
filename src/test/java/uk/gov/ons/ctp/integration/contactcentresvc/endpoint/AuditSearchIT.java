@@ -56,8 +56,8 @@ public class AuditSearchIT extends FullStackIntegrationTestBase {
     // @formatter:off
     // Build some audit history:
     //
-    //  Principle   Performed   Performed Audit     AuditSub    Audit
-    //    user        by           on     type       type       value
+    //  Performed   Performed    Role     Audit      AuditSub    Audit
+    //    by           on        name     type        type       value
     // -----------+------------+--------+----------+----------+---------
     //  SuperUser      --        Admin   ROLE        CREATED       --
     //  SuperUser      --        Admin   PERMISSION  ADDED     READ_USER_AUDIT
