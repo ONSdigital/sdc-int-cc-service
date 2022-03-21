@@ -2,19 +2,16 @@ package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
-import com.google.api.client.util.Strings;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +32,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.UserIdentityContext;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.UserAudit;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyUserRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
@@ -55,7 +51,7 @@ public class UserEndpoint {
   private UserService userService;
   private UserAuditService userAuditService;
 
-  @Autowired private MapperFacade mapper;
+  private MapperFacade mapper;
 
   /**
    * Create the endpoint
@@ -63,11 +59,12 @@ public class UserEndpoint {
    * @param rbacService used for
    * @param userService
    */
-  @Autowired
   public UserEndpoint(
+      final MapperFacade mapper,
       final RBACService rbacService,
       final UserService userService,
       final UserAuditService userAuditService) {
+    this.mapper = mapper;
     this.rbacService = rbacService;
     this.userService = userService;
     this.userAuditService = userAuditService;
@@ -326,39 +323,19 @@ public class UserEndpoint {
     // Verify that the caller can retrieve audit history
     rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
 
-    // Search the audit table
-    List<UserAudit> auditHistory;
-    if (performedBy != null && Strings.isNullOrEmpty(performedOn)) {
-      auditHistory = userAuditService.getAuditHistoryForPerformedBy(performedBy);
-    } else if (performedOn != null && Strings.isNullOrEmpty(performedBy)) {
-      auditHistory = userAuditService.getAuditHistoryForPerformedOn(performedOn);
-    } else {
+    // Validate the arguments
+    if (Strings.isBlank(performedBy) && Strings.isBlank(performedOn)) {
       throw new CTPException(
-          Fault.BAD_REQUEST, "Only one of 'performedByUser' or 'performedOnUser' must be supplied");
+          Fault.BAD_REQUEST,
+          "Nothing to search for. Either 'performedBy' or 'performedOn' must be supplied");
+    } else if (Strings.isNotBlank(performedBy) && Strings.isNotBlank(performedOn)) {
+      throw new CTPException(
+          Fault.BAD_REQUEST, "Only one of 'performedBy' or 'performedOn' must be supplied");
     }
 
-    // Convert results to the response type
-    List<UserAuditDTO> auditHistoryResponse = new ArrayList<>();
-    for (UserAudit userAudit : auditHistory) {
-      UserAuditDTO userAuditDTO = mapper.map(userAudit, UserAuditDTO.class);
-      userAuditDTO.setPerformedByUser(getUser(userAudit.getCcuserId()));
-      userAuditDTO.setPerformedOnUser(getUser(userAudit.getTargetUserId()));
-      userAuditDTO.setRoleName(rbacService.getRoleNameForId(userAudit.getTargetRoleId()));
-      auditHistoryResponse.add(userAuditDTO);
-    }
+    // Search the audit table
+    List<UserAuditDTO> auditHistory = userAuditService.searchAuditHistory(performedBy, performedOn);
 
-    // Sort from newest to oldest
-    auditHistoryResponse.sort(Comparator.comparing(UserAuditDTO::getCreatedDateTime).reversed());
-
-    return ResponseEntity.ok(auditHistoryResponse);
-  }
-
-  // Null tolerant method to get the name of a user
-  private String getUser(UUID userUUID) throws CTPException {
-    if (userUUID == null) {
-      return null;
-    }
-
-    return userService.getUserIdentity(userUUID);
+    return ResponseEntity.ok(auditHistory);
   }
 }

@@ -30,11 +30,11 @@ public class EndpointCaller {
       String url,
       ParameterizedTypeReference<T> responseType,
       Object requestData,
-      String userIdentity,
+      String principle,
       Map<String, String> params) {
 
     HttpHeaders headers = new HttpHeaders();
-    headers.set("x-user-id", userIdentity);
+    headers.set("x-user-id", principle);
 
     HttpEntity<?> requestEntity = new HttpEntity<Object>(requestData, headers);
 

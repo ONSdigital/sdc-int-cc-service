@@ -1,10 +1,14 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import ma.glasnost.orika.MapperFacade;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -16,13 +20,19 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.UserAudit;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.RoleRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserAuditRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 
 @Service
 public class UserAuditService {
 
+  @Autowired private RBACService rbacService;
+  @Autowired private UserService userService;
+
   @Autowired UserAuditRepository userAuditRepository;
   @Autowired UserRepository userRepository;
   @Autowired RoleRepository roleRepository;
+
+  @Autowired private MapperFacade mapper;
 
   public void saveUserAudit(
       String targetUserName,
@@ -95,20 +105,31 @@ public class UserAuditService {
     }
   }
 
-  public List<UserAudit> getAuditHistoryForPerformedBy(String principle) throws CTPException {
+  public List<UserAuditDTO> searchAuditHistory(String performedBy, String performedOn)
+      throws CTPException {
+    // Search the audit table
+    List<UserAudit> auditHistory;
+    if (Strings.isNotBlank(performedBy)) {
+      UUID performedByUser = lookupUserId(performedBy);
+      auditHistory = userAuditRepository.findAllByCcuserId(performedByUser);
+    } else {
+      UUID performedOnUser = lookupUserId(performedOn);
+      auditHistory = userAuditRepository.findAllByTargetUserId(performedOnUser);
+    }
 
-    UUID principleUserId = lookupUserId(principle);
-    List<UserAudit> auditHistory = userAuditRepository.findAllByCcuserId(principleUserId);
+    // Convert results to the response type
+    List<UserAuditDTO> auditHistoryResponse = new ArrayList<>();
+    for (UserAudit userAudit : auditHistory) {
+      UserAuditDTO userAuditDTO = mapper.map(userAudit, UserAuditDTO.class);
+      userAuditDTO.setPerformedByUser(getUser(userAudit.getCcuserId()));
+      userAuditDTO.setPerformedOnUser(getUser(userAudit.getTargetUserId()));
+      userAuditDTO.setRoleName(rbacService.getRoleNameForId(userAudit.getTargetRoleId()));
+      auditHistoryResponse.add(userAuditDTO);
+    }
 
-    return auditHistory;
-  }
-
-  public List<UserAudit> getAuditHistoryForPerformedOn(String targetUser) throws CTPException {
-
-    UUID targetUserId = lookupUserId(targetUser);
-    List<UserAudit> auditHistory = userAuditRepository.findAllByTargetUserId(targetUserId);
-
-    return auditHistory;
+    // Sort from newest to oldest
+    auditHistoryResponse.sort(Comparator.comparing(UserAuditDTO::getCreatedDateTime).reversed());
+    return auditHistoryResponse;
   }
 
   private UUID lookupUserId(String userIdentity) throws CTPException {
@@ -122,5 +143,14 @@ public class UserAuditService {
             .getId();
 
     return targetUserId;
+  }
+
+  // Null tolerant method to get the name of a user
+  private String getUser(UUID userUUID) throws CTPException {
+    if (userUUID == null) {
+      return null;
+    }
+
+    return userService.getUserIdentity(userUUID);
   }
 }
