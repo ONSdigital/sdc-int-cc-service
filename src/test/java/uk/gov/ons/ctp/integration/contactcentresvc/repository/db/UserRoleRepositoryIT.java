@@ -137,22 +137,30 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public static class TransactionalOps {
     private UserRepository userRepo;
+    private UserSurveyUsageRepository userSurveyUsageRepository;
     private RoleRepository roleRepo;
     private PermissionRepository permRepo;
     private UserAuditRepository auditRepo;
+    private CaseInteractionRepository interactionRepository;
 
     public TransactionalOps(
         UserRepository userRepo,
+        UserSurveyUsageRepository userSurveyUsageRepository,
+        CaseInteractionRepository interactionRepository,
         RoleRepository roleRepo,
         PermissionRepository permRepo,
         UserAuditRepository auditRepo) {
       this.userRepo = userRepo;
+      this.userSurveyUsageRepository = userSurveyUsageRepository;
       this.roleRepo = roleRepo;
       this.permRepo = permRepo;
       this.auditRepo = auditRepo;
+      this.interactionRepository = interactionRepository;
     }
 
     public void deleteAll() {
+      userSurveyUsageRepository.deleteAll();
+      interactionRepository.deleteAll();
       auditRepo.deleteAll();
       userRepo.deleteAll();
       roleRepo.deleteAll();

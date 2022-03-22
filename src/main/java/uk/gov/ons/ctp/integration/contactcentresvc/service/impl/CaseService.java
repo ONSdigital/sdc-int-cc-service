@@ -46,6 +46,8 @@ import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
+import uk.gov.ons.ctp.common.event.model.InvalidCase;
+import uk.gov.ons.ctp.common.event.model.InvalidCasePayload;
 import uk.gov.ons.ctp.common.event.model.NewCasePayloadContent;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
@@ -73,6 +75,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractio
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -415,6 +418,28 @@ public class CaseService {
     newCaseDTO.setInteractions(new ArrayList<CaseInteractionDTO>());
 
     return newCaseDTO;
+  }
+
+  public ResponseDTO invalidateCase(UUID caseId, InvalidateCaseDTO invalidateCaseDTO) {
+
+    log.debug(
+            "Processing invalidation for case",
+            kv("caseId", caseId),
+            kv("reason", invalidateCaseDTO.getNote()));
+
+    // Create and publish an invalidate case event
+    InvalidCase invalidCasePayload = new InvalidCase();
+    invalidCasePayload.setCaseId(caseId);
+    invalidCasePayload.setReason(invalidateCaseDTO.getNote());
+
+    sendEvent(TopicType.INVALID_CASE, invalidCasePayload, caseId);
+
+    // Build response
+    ResponseDTO response =
+            ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
+
+    log.debug("Returning invalidation response for case", kv("caseId", caseId));
+    return response;
   }
 
   private Optional<Integer> getWaveNumberForCase(Case caseDetails) {
