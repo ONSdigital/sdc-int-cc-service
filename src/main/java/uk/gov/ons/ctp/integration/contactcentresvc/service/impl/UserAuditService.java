@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import ma.glasnost.orika.MapperFacade;
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -108,6 +110,15 @@ public class UserAuditService {
   public List<UserAuditDTO> searchAuditHistory(String performedBy, String performedOn)
       throws CTPException {
 
+    // This is a fairly simple algorithm and could benefit from upgrading to a pure JPA solution.
+    // In the meanwhile performance is improved by using a cache to hold the results of frequent
+    // name/role
+    // lookups. It tends to be the same set of small originating data, so this simple change makes a
+    // huge improvement to the run time. eg, Request time for about 200 audit records which was
+    // 800ms drops to 45ms (empty response is 38ms).
+    Map<UUID, String> userNameCache = new HashedMap<>();
+    Map<UUID, String> roleNameCache = new HashedMap<>();
+
     // Search the audit table
     List<UserAudit> auditHistory;
     if (Strings.isNotBlank(performedBy)) {
@@ -122,9 +133,10 @@ public class UserAuditService {
     List<UserAuditDTO> auditHistoryResponse = new ArrayList<>();
     for (UserAudit userAudit : auditHistory) {
       UserAuditDTO userAuditDTO = mapper.map(userAudit, UserAuditDTO.class);
-      userAuditDTO.setPerformedByUser(getUserIdentityById(userAudit.getCcuserId()));
-      userAuditDTO.setPerformedOnUser(getUserIdentityById(userAudit.getTargetUserId()));
-      userAuditDTO.setRoleName(rbacService.getRoleNameForId(userAudit.getTargetRoleId()));
+      userAuditDTO.setPerformedByUser(getUserIdentityById(userNameCache, userAudit.getCcuserId()));
+      userAuditDTO.setPerformedOnUser(
+          getUserIdentityById(userNameCache, userAudit.getTargetUserId()));
+      userAuditDTO.setRoleName(getRoleNameById(roleNameCache, userAudit.getTargetRoleId()));
       auditHistoryResponse.add(userAuditDTO);
     }
 
@@ -133,7 +145,21 @@ public class UserAuditService {
     return auditHistoryResponse;
   }
 
+  private String getRoleNameById(Map<UUID, String> roleNameCache, UUID roleId) throws CTPException {
+
+    // Attempt to get name from cache
+    if (roleNameCache.containsKey(roleId)) {
+      return roleNameCache.get(roleId);
+    }
+
+    String roleName = rbacService.getRoleNameForId(roleId);
+    roleNameCache.put(roleId, roleName);
+
+    return roleName;
+  }
+
   private UUID getUserIdByIdentity(String userIdentity) throws CTPException {
+
     UUID targetUserId =
         userRepository
             .findByIdentity(userIdentity)
@@ -147,11 +173,20 @@ public class UserAuditService {
   }
 
   // Null tolerant method to get the name of a user
-  private String getUserIdentityById(UUID userUUID) throws CTPException {
+  private String getUserIdentityById(Map<UUID, String> userNameCache, UUID userUUID)
+      throws CTPException {
     if (userUUID == null) {
       return null;
     }
 
-    return userService.getUserIdentity(userUUID);
+    // Attempt to get name from cache
+    if (userNameCache.containsKey(userUUID)) {
+      return userNameCache.get(userUUID);
+    }
+
+    String userIdentity = userService.getUserIdentity(userUUID);
+    userNameCache.put(userUUID, userIdentity);
+
+    return userIdentity;
   }
 }
