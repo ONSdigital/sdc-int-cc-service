@@ -5,17 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
@@ -119,112 +113,21 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
 
   @Test
   public void shouldAssignRoleToUser() {
-    txOps.createJoeTheShopkeeper();
-    txOps.verifyJoeTheShopkeeper();
+    Role role = txOps.createRole("shopkeeper", SHOPKEEPER_UUID, null);
+    ArrayList<Role> roles = new ArrayList<>();
+    roles.add(role);
+    txOps.createUser("Joe", SHOPKEEPER_UUID, roles, null);
+
+    txOps.verifyNormalUserAndRole("Joe", "shopkeeper");
   }
 
   @Test
   public void shouldAssignAdminRoleToUser() {
-    txOps.createJoeTheShopkeeperAdmin();
-    txOps.verifyJoeTheShopkeeperAdmin();
-  }
+    Role role = txOps.createRole("shopkeeper", SHOPKEEPER_UUID, null);
+    ArrayList<Role> roles = new ArrayList<>();
+    roles.add(role);
+    txOps.createUser("Joe", SHOPKEEPER_UUID, null, roles);
 
-  /**
-   * Separate class that can create/update database items and commit the results so that subsequent
-   * operations can see the effect.
-   */
-  @Component
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public static class TransactionalOps {
-    private UserRepository userRepo;
-    private RoleRepository roleRepo;
-    private PermissionRepository permRepo;
-    private UserAuditRepository auditRepo;
-
-    public TransactionalOps(
-        UserRepository userRepo,
-        RoleRepository roleRepo,
-        PermissionRepository permRepo,
-        UserAuditRepository auditRepo) {
-      this.userRepo = userRepo;
-      this.roleRepo = roleRepo;
-      this.permRepo = permRepo;
-      this.auditRepo = auditRepo;
-    }
-
-    public void deleteAll() {
-      auditRepo.deleteAll();
-      userRepo.deleteAll();
-      roleRepo.deleteAll();
-      permRepo.deleteAll();
-    }
-
-    public void createUser(String name, UUID id) {
-      createUser(name, id, null, null);
-    }
-
-    public Role addPermission(Role role, PermissionType type) {
-      Permission p =
-          Permission.builder().id(UUID.randomUUID()).permissionType(type).role(role).build();
-      role.getPermissions().add(p);
-      roleRepo.save(role);
-      return role;
-    }
-
-    public void removePermission(Role role, PermissionType type) {
-      Optional<Permission> p = permRepo.findByPermissionTypeAndRole(type, role);
-      permRepo.delete(p.get());
-    }
-
-    public Role createRole(String name, UUID id, List<PermissionType> permTypes) {
-      permTypes = permTypes == null ? new ArrayList<>() : permTypes;
-      Role role = Role.builder().id(id).name(name).permissions(new ArrayList<>()).build();
-
-      permTypes.stream()
-          .forEach(
-              type -> {
-                addPermission(role, type);
-              });
-      return roleRepo.save(role);
-    }
-
-    public void createUser(String name, UUID id, List<Role> userRoles, List<Role> adminRoles) {
-      User user =
-          User.builder()
-              .id(id)
-              .identity(name)
-              .userRoles(userRoles == null ? Collections.emptyList() : userRoles)
-              .adminRoles(adminRoles == null ? Collections.emptyList() : adminRoles)
-              .build();
-      userRepo.save(user);
-    }
-
-    public void createJoeTheShopkeeper() {
-      var role = createRole("shopkeeper", SHOPKEEPER_UUID, null);
-      var roles = new ArrayList<Role>();
-      roles.add(role);
-      createUser("Joe", JOE_UUID, roles, null);
-    }
-
-    public void verifyJoeTheShopkeeper() {
-      Optional<User> joe = userRepo.findByIdentity("Joe");
-      Optional<Role> shopkeeper = roleRepo.findByName("shopkeeper");
-      assertEquals(shopkeeper.get(), joe.get().getUserRoles().get(0));
-      assertEquals(joe.get(), shopkeeper.get().getUsers().get(0));
-    }
-
-    public void createJoeTheShopkeeperAdmin() {
-      var role = createRole("shopkeeper", SHOPKEEPER_UUID, null);
-      var roles = new ArrayList<Role>();
-      roles.add(role);
-      createUser("Joe", JOE_UUID, null, roles);
-    }
-
-    public void verifyJoeTheShopkeeperAdmin() {
-      Optional<User> joe = userRepo.findByIdentity("Joe");
-      Optional<Role> shopkeeper = roleRepo.findByName("shopkeeper");
-      assertEquals(shopkeeper.get(), joe.get().getAdminRoles().get(0));
-      assertEquals(joe.get(), shopkeeper.get().getAdmins().get(0));
-    }
+    txOps.verifyAdminUserAndRole("Joe", "shopkeeper");
   }
 }
