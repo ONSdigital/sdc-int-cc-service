@@ -1,5 +1,16 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,18 +45,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.UserSurveyUsageRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CaseEndpointInvalidateIT extends FullStackIntegrationTestBase {
 

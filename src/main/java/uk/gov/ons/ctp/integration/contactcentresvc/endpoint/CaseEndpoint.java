@@ -175,15 +175,17 @@ public class CaseEndpoint implements CTPEndpoint {
    */
   @RequestMapping(value = "/{caseId}/invalidate", method = RequestMethod.POST)
   public ResponseEntity<ResponseDTO> invalidateCaseById(
-          @PathVariable("caseId") final UUID caseId, @Valid @RequestBody InvalidateCaseDTO invalidateCaseDTO)
-          throws CTPException {
+      @PathVariable("caseId") final UUID caseId,
+      @Valid @RequestBody InvalidateCaseDTO invalidateCaseDTO)
+      throws CTPException {
     log.info("Entering POST getCaseById", kv("pathParam", caseId));
 
     rbacService.assertUserPermission(
-            caseService.getSurveyForCase(caseId).getId(), PermissionType.INVALIDATE_CASE);
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.INVALIDATE_CASE);
 
-    //TODO new interaction type?
-    saveCaseInteraction(caseId, CaseInteractionType.CASE_INVALIDATED, null, invalidateCaseDTO.getNote());
+    // TODO new interaction type?
+    saveCaseInteraction(
+        caseId, CaseInteractionType.CASE_INVALIDATED, null, invalidateCaseDTO.getNote());
 
     ResponseDTO response = caseService.invalidateCase(caseId, invalidateCaseDTO);
 

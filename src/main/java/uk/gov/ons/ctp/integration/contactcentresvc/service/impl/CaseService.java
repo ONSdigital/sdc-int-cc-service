@@ -47,7 +47,6 @@ import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.common.event.model.InvalidCase;
-import uk.gov.ons.ctp.common.event.model.InvalidCasePayload;
 import uk.gov.ons.ctp.common.event.model.NewCasePayloadContent;
 import uk.gov.ons.ctp.common.event.model.RefusalDetails;
 import uk.gov.ons.ctp.common.event.model.UacUpdate;
@@ -423,9 +422,9 @@ public class CaseService {
   public ResponseDTO invalidateCase(UUID caseId, InvalidateCaseDTO invalidateCaseDTO) {
 
     log.debug(
-            "Processing invalidation for case",
-            kv("caseId", caseId),
-            kv("reason", invalidateCaseDTO.getNote()));
+        "Processing invalidation for case",
+        kv("caseId", caseId),
+        kv("reason", invalidateCaseDTO.getNote()));
 
     // Create and publish an invalidate case event
     InvalidCase invalidCasePayload = new InvalidCase();
@@ -436,7 +435,7 @@ public class CaseService {
 
     // Build response
     ResponseDTO response =
-            ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
+        ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
 
     log.debug("Returning invalidation response for case", kv("caseId", caseId));
     return response;
