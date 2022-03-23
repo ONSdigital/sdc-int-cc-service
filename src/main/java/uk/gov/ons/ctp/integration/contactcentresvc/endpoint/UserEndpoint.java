@@ -7,10 +7,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -22,7 +23,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -33,6 +37,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LoginRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyUserRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserAuditDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.UserDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.UserAuditService;
@@ -54,7 +59,6 @@ public class UserEndpoint {
    * @param rbacService used for
    * @param userService
    */
-  @Autowired
   public UserEndpoint(
       final RBACService rbacService,
       final UserService userService,
@@ -283,7 +287,7 @@ public class UserEndpoint {
     rbacService.assertNotSelfModification(userIdentity);
 
     userAuditService.saveUserAudit(
-        userIdentity, roleName, AuditType.ADMIN_ROLE, AuditSubType.REMOVED, null);
+        userIdentity, roleName, AuditType.ADMIN_ROLE, AuditSubType.ADDED, null);
 
     return ResponseEntity.ok(userService.addAdminRole(userIdentity, roleName));
   }
@@ -303,5 +307,33 @@ public class UserEndpoint {
         userIdentity, roleName, AuditType.ADMIN_ROLE, AuditSubType.REMOVED, null);
 
     return ResponseEntity.ok(userService.removeAdminRole(userIdentity, roleName));
+  }
+
+  @GetMapping("/audit")
+  public ResponseEntity<List<UserAuditDTO>> audit(
+      @RequestParam(required = false) String performedBy,
+      @RequestParam(required = false) String performedOn)
+      throws CTPException {
+
+    log.info(
+        "Entering audit search", kv("performedBy", performedBy), kv("performedOn", performedOn));
+
+    // Verify that the caller can retrieve audit history
+    rbacService.assertUserPermission(PermissionType.READ_USER_AUDIT);
+
+    // Validate the arguments
+    if (Strings.isBlank(performedBy) && Strings.isBlank(performedOn)) {
+      throw new CTPException(
+          Fault.BAD_REQUEST,
+          "Nothing to search for. Either 'performedBy' or 'performedOn' must be supplied");
+    } else if (Strings.isNotBlank(performedBy) && Strings.isNotBlank(performedOn)) {
+      throw new CTPException(
+          Fault.BAD_REQUEST, "Only one of 'performedBy' or 'performedOn' must be supplied");
+    }
+
+    // Search the audit table
+    List<UserAuditDTO> auditHistory = userAuditService.searchAuditHistory(performedBy, performedOn);
+
+    return ResponseEntity.ok(auditHistory);
   }
 }

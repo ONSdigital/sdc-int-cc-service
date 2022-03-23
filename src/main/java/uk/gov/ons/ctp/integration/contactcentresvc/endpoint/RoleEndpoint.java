@@ -18,6 +18,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditSubType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.CreateRoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RoleDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RoleService;
@@ -78,12 +79,13 @@ public class RoleEndpoint {
 
   @PostMapping
   @Transactional
-  public ResponseEntity<RoleDTO> createRole(@RequestBody RoleDTO roleDTO) throws CTPException {
+  public ResponseEntity<CreateRoleDTO> createRole(@RequestBody CreateRoleDTO createRoleDTO)
+      throws CTPException {
 
-    log.info("Entering createRole", kv("roleName", roleDTO.getName()));
+    log.info("Entering createRole", kv("roleName", createRoleDTO.getName()));
     rbacService.assertUserPermission(PermissionType.CREATE_ROLE);
 
-    RoleDTO createdRole = roleService.createRole(roleDTO);
+    CreateRoleDTO createdRole = roleService.createRole(createRoleDTO);
 
     userAuditService.saveUserAudit(
         null, createdRole.getName(), AuditType.ROLE, AuditSubType.CREATED, null);
