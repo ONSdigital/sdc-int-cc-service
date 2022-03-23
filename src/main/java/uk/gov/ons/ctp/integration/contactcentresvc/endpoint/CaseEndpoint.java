@@ -183,7 +183,7 @@ public class CaseEndpoint implements CTPEndpoint {
             caseService.getSurveyForCase(caseId).getId(), PermissionType.INVALIDATE_CASE);
 
     //TODO new interaction type?
-    saveCaseInteraction(caseId, CaseInteractionType.CASE_NOTE_ADDED, null, invalidateCaseDTO.getNote());
+    saveCaseInteraction(caseId, CaseInteractionType.CASE_INVALIDATED, null, invalidateCaseDTO.getNote());
 
     ResponseDTO response = caseService.invalidateCase(caseId, invalidateCaseDTO);
 
