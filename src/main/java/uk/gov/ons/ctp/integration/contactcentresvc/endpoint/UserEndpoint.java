@@ -105,7 +105,6 @@ public class UserEndpoint {
     return ResponseEntity.ok().build();
   }
 
-  // TODO
   @GetMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> getUserByName(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity) throws CTPException {
@@ -194,7 +193,6 @@ public class UserEndpoint {
     return ResponseEntity.ok(createdUser);
   }
 
-  // TODO
   @Transactional
   @DeleteMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> deleteUser(
