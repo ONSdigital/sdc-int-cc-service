@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.InvalidCase;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,9 +21,10 @@ public class CaseServiceInvalidateCaseTest extends CaseServiceImplTestBase {
   public void invalidateCase() throws Exception {
     UUID caseId = UUID.randomUUID();
     String expectedResponseCaseId = caseId.toString();
-    InvalidateCaseDTO invalidateCaseDTO = InvalidateCaseDTO.builder().note(A_NOTE).build();
+    InvalidateCaseRequestDTO invalidateCaseRequestDTO =
+        InvalidateCaseRequestDTO.builder().note(A_NOTE).build();
 
-    ResponseDTO responseDTO = target.invalidateCase(caseId, invalidateCaseDTO);
+    ResponseDTO responseDTO = target.invalidateCase(caseId, invalidateCaseRequestDTO);
 
     InvalidCase invalidCasePayload = new InvalidCase();
     invalidCasePayload.setCaseId(caseId);

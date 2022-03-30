@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InvalidateCaseDTO {
+public class InvalidateCaseRequestDTO {
   private String note;
 }

@@ -23,7 +23,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.CaseInteractionRepository;
 import uk.gov.ons.ctp.integration.contactcentresvc.repository.db.TransactionalOps;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
 
 public class CaseEndpointInvalidateIT extends FullStackIntegrationTestBase {
@@ -61,10 +61,10 @@ public class CaseEndpointInvalidateIT extends FullStackIntegrationTestBase {
     HttpHeaders headers = new HttpHeaders();
     headers.set("x-user-id", "principal.user@ext.ons.gov.uk");
 
-    InvalidateCaseDTO invalidateCaseDTO = new InvalidateCaseDTO();
-    invalidateCaseDTO.setNote(NOTE);
+    InvalidateCaseRequestDTO invalidateCaseRequestDTO = new InvalidateCaseRequestDTO();
+    invalidateCaseRequestDTO.setNote(NOTE);
 
-    HttpEntity<?> requestEntity = new HttpEntity<>(invalidateCaseDTO, headers);
+    HttpEntity<?> requestEntity = new HttpEntity<>(invalidateCaseRequestDTO, headers);
 
     Map<String, String> params = new HashMap<String, String>();
 

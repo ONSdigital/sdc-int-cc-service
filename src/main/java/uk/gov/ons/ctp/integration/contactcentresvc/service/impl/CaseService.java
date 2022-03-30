@@ -74,7 +74,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractio
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -419,17 +419,18 @@ public class CaseService {
     return newCaseDTO;
   }
 
-  public ResponseDTO invalidateCase(UUID caseId, InvalidateCaseDTO invalidateCaseDTO) {
+  public ResponseDTO invalidateCase(
+      UUID caseId, InvalidateCaseRequestDTO invalidateCaseRequestDTO) {
 
     log.debug(
         "Processing invalidation for case",
         kv("caseId", caseId),
-        kv("reason", invalidateCaseDTO.getNote()));
+        kv("reason", invalidateCaseRequestDTO.getNote()));
 
     // Create and publish an invalidate case event
     InvalidCase invalidCasePayload = new InvalidCase();
     invalidCasePayload.setCaseId(caseId);
-    invalidCasePayload.setReason(invalidateCaseDTO.getNote());
+    invalidCasePayload.setReason(invalidateCaseRequestDTO.getNote());
 
     sendEvent(TopicType.INVALID_CASE, invalidCasePayload, caseId);
 
