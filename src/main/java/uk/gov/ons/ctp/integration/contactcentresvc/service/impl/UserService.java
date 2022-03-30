@@ -326,9 +326,9 @@ public class UserService {
   }
 
   private void checkIfDeleted(User user) throws CTPException {
-    if (user.isDeleted()){
+    if (user.isDeleted()) {
       throw new CTPException(
-              Fault.BAD_REQUEST, String.format("User not found: " + user.getIdentity()));
+          Fault.BAD_REQUEST, String.format("User not found: " + user.getIdentity()));
     }
   }
 }

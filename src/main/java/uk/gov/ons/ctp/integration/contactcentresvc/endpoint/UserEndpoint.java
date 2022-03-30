@@ -105,7 +105,7 @@ public class UserEndpoint {
     return ResponseEntity.ok().build();
   }
 
-  //TODO
+  // TODO
   @GetMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> getUserByName(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity) throws CTPException {
@@ -189,12 +189,12 @@ public class UserEndpoint {
     UserDTO createdUser = userService.createUser(userDTO);
 
     userAuditService.saveUserAudit(
-            createdUser.getIdentity(), null, AuditType.USER, AuditSubType.CREATED, null);
+        createdUser.getIdentity(), null, AuditType.USER, AuditSubType.CREATED, null);
 
     return ResponseEntity.ok(createdUser);
   }
 
-  //TODO
+  // TODO
   @Transactional
   @DeleteMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> deleteUser(
@@ -302,7 +302,6 @@ public class UserEndpoint {
     rbacService.assertUserPermission(PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
-
     UserDTO response = userService.addAdminRole(userIdentity, roleName);
     userAuditService.saveUserAudit(
         userIdentity, roleName, AuditType.ADMIN_ROLE, AuditSubType.ADDED, null);
@@ -321,7 +320,6 @@ public class UserEndpoint {
         "Entering removeAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
     rbacService.assertUserPermission(PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
-
 
     UserDTO response = userService.removeAdminRole(userIdentity, roleName);
 

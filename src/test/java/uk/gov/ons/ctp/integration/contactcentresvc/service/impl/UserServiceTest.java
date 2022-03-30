@@ -126,11 +126,11 @@ public class UserServiceTest {
     UserDTO dto = mapper.map(testUser, UserDTO.class);
 
     CTPException exception =
-            assertThrows(
-                    CTPException.class,
-                    () -> {
-                      userService.modifyUser(dto);
-                    });
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userService.modifyUser(dto);
+            });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not found: " + TEST_USER, exception.getMessage());
@@ -145,11 +145,11 @@ public class UserServiceTest {
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
     CTPException exception =
-            assertThrows(
-                    CTPException.class,
-                    () -> {
-                      userService.addUserSurvey(TEST_USER, SurveyType.SOCIAL);
-                    });
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userService.addUserSurvey(TEST_USER, SurveyType.SOCIAL);
+            });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not found: " + TEST_USER, exception.getMessage());
@@ -164,11 +164,11 @@ public class UserServiceTest {
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
     CTPException exception =
-            assertThrows(
-                    CTPException.class,
-                    () -> {
-                      userService.removeUserSurvey(TEST_USER, SurveyType.SOCIAL);
-                    });
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userService.removeUserSurvey(TEST_USER, SurveyType.SOCIAL);
+            });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not found: " + TEST_USER, exception.getMessage());
@@ -183,11 +183,11 @@ public class UserServiceTest {
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
     CTPException exception =
-            assertThrows(
-                    CTPException.class,
-                    () -> {
-                      userService.addUserRole(TEST_USER, "a role");
-                    });
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userService.addUserRole(TEST_USER, "a role");
+            });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not found: " + TEST_USER, exception.getMessage());
@@ -202,11 +202,11 @@ public class UserServiceTest {
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
     CTPException exception =
-            assertThrows(
-                    CTPException.class,
-                    () -> {
-                      userService.removeUserRole(TEST_USER, "a role");
-                    });
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userService.removeUserRole(TEST_USER, "a role");
+            });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not found: " + TEST_USER, exception.getMessage());
@@ -221,11 +221,11 @@ public class UserServiceTest {
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
     CTPException exception =
-            assertThrows(
-                    CTPException.class,
-                    () -> {
-                      userService.addAdminRole(TEST_USER, "a role");
-                    });
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userService.addAdminRole(TEST_USER, "a role");
+            });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not found: " + TEST_USER, exception.getMessage());
@@ -240,11 +240,11 @@ public class UserServiceTest {
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
     CTPException exception =
-            assertThrows(
-                    CTPException.class,
-                    () -> {
-                      userService.removeAdminRole(TEST_USER, "a role");
-                    });
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userService.removeAdminRole(TEST_USER, "a role");
+            });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not found: " + TEST_USER, exception.getMessage());
@@ -259,15 +259,13 @@ public class UserServiceTest {
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
     CTPException exception =
-            assertThrows(
-                    CTPException.class,
-                    () -> {
-                      userService.deleteUser(TEST_USER);
-                    });
+        assertThrows(
+            CTPException.class,
+            () -> {
+              userService.deleteUser(TEST_USER);
+            });
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not found: " + TEST_USER, exception.getMessage());
   }
-
-
 }

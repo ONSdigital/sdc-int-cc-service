@@ -215,7 +215,7 @@ public class RBACService {
 
     if (user.isDeleted()) {
       throw new CTPException(
-              Fault.ACCESS_DENIED, String.format("User %s has been deleted", principalIdentity));
+          Fault.ACCESS_DENIED, String.format("User %s has been deleted", principalIdentity));
     }
     return user;
   }
