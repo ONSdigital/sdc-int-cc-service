@@ -27,6 +27,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseInteractio
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseQueryRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.CaseSummaryDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.EnrolmentRequestDTO;
+import uk.gov.ons.ctp.integration.contactcentresvc.representation.InvalidateCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.LaunchRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
@@ -162,6 +163,35 @@ public class CaseEndpoint implements CTPEndpoint {
     saveCaseInteraction(caseId, CaseInteractionType.TELEPHONE_CAPTURE_STARTED, null, null);
 
     return ResponseEntity.ok(launchURL);
+  }
+
+  /**
+   * the POST end point to invalidate a Case by caseId
+   *
+   * @param caseId the id of the case
+   * @param invalidateCaseRequestDTO contains invalidation reason
+   * @return responseDto
+   * @throws CTPException something went wrong
+   */
+  @RequestMapping(value = "/{caseId}/invalidate", method = RequestMethod.POST)
+  public ResponseEntity<ResponseDTO> invalidateCaseById(
+      @PathVariable("caseId") final UUID caseId,
+      @Valid @RequestBody InvalidateCaseRequestDTO invalidateCaseRequestDTO)
+      throws CTPException {
+    log.info("Entering POST getCaseById", kv("pathParam", caseId));
+
+    rbacService.assertUserPermission(
+        caseService.getSurveyForCase(caseId).getId(), PermissionType.INVALIDATE_CASE);
+
+    saveCaseInteraction(
+        caseId,
+        CaseInteractionType.CASE_INVALIDATION_REQUESTED,
+        null,
+        invalidateCaseRequestDTO.getNote());
+
+    ResponseDTO response = caseService.invalidateCase(caseId, invalidateCaseRequestDTO);
+
+    return ResponseEntity.ok(response);
   }
 
   /**
