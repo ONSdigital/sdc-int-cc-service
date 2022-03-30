@@ -66,6 +66,7 @@ public class UserEndpoint {
   }
 
   @PutMapping("/login")
+  @Transactional
   public ResponseEntity<UserDTO> login(@RequestBody LoginRequestDTO loginRequestDTO)
       throws CTPException {
 
@@ -104,6 +105,7 @@ public class UserEndpoint {
     return ResponseEntity.ok().build();
   }
 
+  //TODO
   @GetMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> getUserByName(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity) throws CTPException {
@@ -149,6 +151,7 @@ public class UserEndpoint {
     return ResponseEntity.ok(sortedUsers);
   }
 
+  @Transactional
   @PutMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> modifyUser(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
@@ -176,8 +179,8 @@ public class UserEndpoint {
     return ResponseEntity.ok(updatedUser);
   }
 
-  @PostMapping
   @Transactional
+  @PostMapping
   public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) throws CTPException {
     log.info("Entering createUser", kv("userIdentity", userDTO.getIdentity()));
 
@@ -186,11 +189,12 @@ public class UserEndpoint {
     UserDTO createdUser = userService.createUser(userDTO);
 
     userAuditService.saveUserAudit(
-        createdUser.getIdentity(), null, AuditType.USER, AuditSubType.CREATED, null);
+            createdUser.getIdentity(), null, AuditType.USER, AuditSubType.CREATED, null);
 
     return ResponseEntity.ok(createdUser);
   }
 
+  //TODO
   @Transactional
   @DeleteMapping("/{userIdentity}")
   public ResponseEntity<UserDTO> deleteUser(
@@ -200,11 +204,14 @@ public class UserEndpoint {
     rbacService.assertUserPermission(PermissionType.DELETE_USER);
     rbacService.assertNotSelfModification(userIdentity);
 
+    UserDTO response = userService.deleteUser(userIdentity);
+
     userAuditService.saveUserAudit(userIdentity, null, AuditType.USER, AuditSubType.REMOVED, null);
 
-    return ResponseEntity.ok(userService.deleteUser(userIdentity));
+    return ResponseEntity.ok(response);
   }
 
+  @Transactional
   @PatchMapping("/{userIdentity}/addSurvey/{surveyType}")
   public ResponseEntity<UserDTO> addUserSurvey(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
@@ -216,12 +223,15 @@ public class UserEndpoint {
     rbacService.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
+    UserDTO response = userService.addUserSurvey(userIdentity, surveyType);
+
     userAuditService.saveUserAudit(
         userIdentity, null, AuditType.USER_SURVEY_USAGE, AuditSubType.ADDED, surveyType.name());
 
-    return ResponseEntity.ok(userService.addUserSurvey(userIdentity, surveyType));
+    return ResponseEntity.ok(response);
   }
 
+  @Transactional
   @PatchMapping("/{userIdentity}/removeSurvey/{surveyType}")
   public ResponseEntity<UserDTO> removeUserSurvey(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
@@ -235,12 +245,15 @@ public class UserEndpoint {
     rbacService.assertUserPermission(PermissionType.USER_SURVEY_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
+    UserDTO response = userService.removeUserSurvey(userIdentity, surveyType);
+
     userAuditService.saveUserAudit(
         userIdentity, null, AuditType.USER_SURVEY_USAGE, AuditSubType.REMOVED, surveyType.name());
 
-    return ResponseEntity.ok(userService.removeUserSurvey(userIdentity, surveyType));
+    return ResponseEntity.ok(response);
   }
 
+  @Transactional
   @PatchMapping("/{userIdentity}/addUserRole/{roleName}")
   public ResponseEntity<UserDTO> addUserRole(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
@@ -251,12 +264,15 @@ public class UserEndpoint {
     rbacService.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
+    UserDTO response = userService.addUserRole(userIdentity, roleName);
+
     userAuditService.saveUserAudit(
         userIdentity, roleName, AuditType.USER_ROLE, AuditSubType.ADDED, null);
 
-    return ResponseEntity.ok(userService.addUserRole(userIdentity, roleName));
+    return ResponseEntity.ok(response);
   }
 
+  @Transactional
   @PatchMapping("/{userIdentity}/removeUserRole/{roleName}")
   public ResponseEntity<UserDTO> removeUserRole(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
@@ -267,12 +283,15 @@ public class UserEndpoint {
     rbacService.assertAdminPermission(roleName, PermissionType.USER_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
+    UserDTO response = userService.removeUserRole(userIdentity, roleName);
+
     userAuditService.saveUserAudit(
         userIdentity, roleName, AuditType.USER_ROLE, AuditSubType.REMOVED, null);
 
-    return ResponseEntity.ok(userService.removeUserRole(userIdentity, roleName));
+    return ResponseEntity.ok(response);
   }
 
+  @Transactional
   @PatchMapping("/{userIdentity}/addAdminRole/{roleName}")
   public ResponseEntity<UserDTO> addAdminRole(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
@@ -283,12 +302,15 @@ public class UserEndpoint {
     rbacService.assertUserPermission(PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
+
+    UserDTO response = userService.addAdminRole(userIdentity, roleName);
     userAuditService.saveUserAudit(
         userIdentity, roleName, AuditType.ADMIN_ROLE, AuditSubType.ADDED, null);
 
-    return ResponseEntity.ok(userService.addAdminRole(userIdentity, roleName));
+    return ResponseEntity.ok(response);
   }
 
+  @Transactional
   @PatchMapping("/{userIdentity}/removeAdminRole/{roleName}")
   public ResponseEntity<UserDTO> removeAdminRole(
       @PathVariable(value = "userIdentity") @Valid @Email String userIdentity,
@@ -300,10 +322,13 @@ public class UserEndpoint {
     rbacService.assertUserPermission(PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
     rbacService.assertNotSelfModification(userIdentity);
 
+
+    UserDTO response = userService.removeAdminRole(userIdentity, roleName);
+
     userAuditService.saveUserAudit(
         userIdentity, roleName, AuditType.ADMIN_ROLE, AuditSubType.REMOVED, null);
 
-    return ResponseEntity.ok(userService.removeAdminRole(userIdentity, roleName));
+    return ResponseEntity.ok(response);
   }
 
   @GetMapping("/audit")

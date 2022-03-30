@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.AuditType;
@@ -113,4 +114,160 @@ public class UserServiceTest {
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not deletable", exception.getMessage());
   }
+
+  @Test
+  public void exceptionThrownWhenModifyingDeletedUser() {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    testUser.setDeleted(true);
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    UserDTO dto = mapper.map(testUser, UserDTO.class);
+
+    CTPException exception =
+            assertThrows(
+                    CTPException.class,
+                    () -> {
+                      userService.modifyUser(dto);
+                    });
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+    assertEquals("User not found: " + TEST_USER, exception.getMessage());
+  }
+
+  @Test
+  public void exceptionThrownWhenAddingSurveyToDeletedUser() {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    testUser.setDeleted(true);
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    CTPException exception =
+            assertThrows(
+                    CTPException.class,
+                    () -> {
+                      userService.addUserSurvey(TEST_USER, SurveyType.SOCIAL);
+                    });
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+    assertEquals("User not found: " + TEST_USER, exception.getMessage());
+  }
+
+  @Test
+  public void exceptionThrownWhenRemovingSurveyFromDeletedUser() {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    testUser.setDeleted(true);
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    CTPException exception =
+            assertThrows(
+                    CTPException.class,
+                    () -> {
+                      userService.removeUserSurvey(TEST_USER, SurveyType.SOCIAL);
+                    });
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+    assertEquals("User not found: " + TEST_USER, exception.getMessage());
+  }
+
+  @Test
+  public void exceptionThrownWhenAddingRoleToDeletedUser() {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    testUser.setDeleted(true);
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    CTPException exception =
+            assertThrows(
+                    CTPException.class,
+                    () -> {
+                      userService.addUserRole(TEST_USER, "a role");
+                    });
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+    assertEquals("User not found: " + TEST_USER, exception.getMessage());
+  }
+
+  @Test
+  public void exceptionThrownWhenRemovingRoleFromDeletedUser() {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    testUser.setDeleted(true);
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    CTPException exception =
+            assertThrows(
+                    CTPException.class,
+                    () -> {
+                      userService.removeUserRole(TEST_USER, "a role");
+                    });
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+    assertEquals("User not found: " + TEST_USER, exception.getMessage());
+  }
+
+  @Test
+  public void exceptionThrownWhenAddingAdminRRoleToDeletedUser() {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    testUser.setDeleted(true);
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    CTPException exception =
+            assertThrows(
+                    CTPException.class,
+                    () -> {
+                      userService.addAdminRole(TEST_USER, "a role");
+                    });
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+    assertEquals("User not found: " + TEST_USER, exception.getMessage());
+  }
+
+  @Test
+  public void exceptionThrownWhenRemovingAdminRoleFromDeletedUser() {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    testUser.setDeleted(true);
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    CTPException exception =
+            assertThrows(
+                    CTPException.class,
+                    () -> {
+                      userService.removeAdminRole(TEST_USER, "a role");
+                    });
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+    assertEquals("User not found: " + TEST_USER, exception.getMessage());
+  }
+
+  @Test
+  public void exceptionThrownWhenDeletingAlreadyDeletedUser() {
+    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+
+    testUser.setDeleted(true);
+
+    when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
+
+    CTPException exception =
+            assertThrows(
+                    CTPException.class,
+                    () -> {
+                      userService.deleteUser(TEST_USER);
+                    });
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+    assertEquals("User not found: " + TEST_USER, exception.getMessage());
+  }
+
+
 }
