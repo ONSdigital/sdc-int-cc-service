@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.domain.RefusalType;
 import uk.gov.ons.ctp.common.domain.Region;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
@@ -32,6 +33,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.Permission;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Survey;
+import uk.gov.ons.ctp.integration.contactcentresvc.model.SurveyUsage;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 
 /**
@@ -42,6 +44,7 @@ import uk.gov.ons.ctp.integration.contactcentresvc.model.User;
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class TransactionalOps {
   private UserRepository userRepo;
+  private UserSurveyUsageRepository userSurveyUsageRepository;
   private CaseRepository caseRepository;
   private RoleRepository roleRepository;
   private PermissionRepository permissionRepository;
@@ -56,6 +59,7 @@ public class TransactionalOps {
 
   public TransactionalOps(
       UserRepository userRepo,
+      UserSurveyUsageRepository userSurveyUsageRepository,
       RoleRepository roleRepository,
       PermissionRepository permissionRepository,
       UacRepository uacRepository,
@@ -68,6 +72,7 @@ public class TransactionalOps {
       CaseUpdateEventReceiver target,
       UacUpdateEventReceiver uacUpdateEventReceiver) {
     this.userRepo = userRepo;
+    this.userSurveyUsageRepository = userSurveyUsageRepository;
     this.roleRepository = roleRepository;
     this.permissionRepository = permissionRepository;
     this.uacRepository = uacRepository;
@@ -83,6 +88,7 @@ public class TransactionalOps {
 
   public void deleteAll() {
     userAuditRepository.deleteAll();
+    userSurveyUsageRepository.deleteAll();
     interactionRepository.deleteAll();
     uacRepository.deleteAll();
     caseRepository.deleteAll();
@@ -92,6 +98,18 @@ public class TransactionalOps {
     collectionExerciseRepository.deleteAll();
     surveyRepository.deleteAll();
     eventToSendRepository.deleteAll();
+  }
+
+  public User createSurveyUser(String name, UUID id, List<Role> userRoles, List<Role> adminRoles) {
+    User user = createUser(name, id, userRoles, adminRoles);
+
+    SurveyUsage surveyUsage = new SurveyUsage(UUID.randomUUID(), SurveyType.SOCIAL, List.of(user));
+    userSurveyUsageRepository.saveAndFlush(surveyUsage);
+
+    user.setSurveyUsages(List.of(surveyUsage));
+    userRepo.save(user);
+
+    return user;
   }
 
   public User createUser(String name, UUID id) {

@@ -127,7 +127,5 @@ public class UserRoleRepositoryIT extends PostgresTestBase {
     ArrayList<Role> roles = new ArrayList<>();
     roles.add(role);
     txOps.createUser("Joe", SHOPKEEPER_UUID, null, roles);
-
-    txOps.verifyAdminUserAndRole("Joe", "shopkeeper");
   }
 }
