@@ -1,6 +1,5 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.representation;
 
-import java.util.Date;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -24,19 +23,13 @@ public class PostalFulfilmentRequestDTO {
 
   @NotNull private UUID caseId;
 
-  @Size(max = 20)
+  @Size(max = 35)
   @LoggingScope(scope = Scope.MASK)
-  private String title;
+  private String firstName;
 
   @Size(max = 35)
   @LoggingScope(scope = Scope.MASK)
-  private String forename;
+  private String lastName;
 
-  @Size(max = 35)
-  @LoggingScope(scope = Scope.MASK)
-  private String surname;
-
-  @NotNull private String fulfilmentCode;
-
-  @NotNull private Date dateTime;
+  @NotNull private String packCode;
 }

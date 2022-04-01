@@ -6,12 +6,12 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.v;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
@@ -42,7 +42,6 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.TopicType;
 import uk.gov.ons.ctp.common.event.model.CaseUpdate;
 import uk.gov.ons.ctp.common.event.model.CollectionExerciseUpdate;
-import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.EqLaunch;
 import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
@@ -55,8 +54,6 @@ import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientSer
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.EventDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.TelephoneCaptureDTO;
-import uk.gov.ons.ctp.integration.common.product.ProductReference;
-import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.contactcentresvc.event.EventTransfer;
@@ -78,7 +75,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequ
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.util.PgpEncrypt;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
@@ -95,8 +91,6 @@ public class CaseService {
   @Autowired private UacRepository uacRepo;
 
   @Autowired private CaseServiceClientService caseServiceClient;
-
-  @Autowired private ProductReference productReference;
 
   @Autowired private MapperFacade mapper;
 
@@ -129,18 +123,16 @@ public class CaseService {
           kv("requestBodyDTO", requestBodyDTO));
     }
 
-    verifyFulfilmentCodeNotBlackListed(requestBodyDTO.getFulfilmentCode());
+    verifyPackCodeNotBlackListed(requestBodyDTO.getPackCode());
 
     UUID caseId = requestBodyDTO.getCaseId();
 
-    Contact contact = new Contact();
-    contact.setTitle(requestBodyDTO.getTitle());
-    contact.setForename(requestBodyDTO.getForename());
-    contact.setSurname(requestBodyDTO.getSurname());
-
     FulfilmentRequest fulfilmentRequestPayload =
         createFulfilmentRequestPayload(
-            requestBodyDTO.getFulfilmentCode(), Product.DeliveryChannel.POST, caseId, contact);
+            caseId,
+            requestBodyDTO.getPackCode(),
+            requestBodyDTO.getFirstName(),
+            requestBodyDTO.getLastName());
 
     sendEvent(TopicType.FULFILMENT, fulfilmentRequestPayload, caseId);
 
@@ -156,37 +148,39 @@ public class CaseService {
     return response;
   }
 
-  public ResponseDTO fulfilmentRequestBySMS(SMSFulfilmentRequestDTO requestBodyDTO)
-      throws CTPException {
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Now in the fulfilmentRequestBySMS method in class CaseServiceImpl.",
-          kv("requestBodyDTO", requestBodyDTO));
-    }
-
-    verifyFulfilmentCodeNotBlackListed(requestBodyDTO.getFulfilmentCode());
-
-    UUID caseId = requestBodyDTO.getCaseId();
-
-    Contact contact = new Contact();
-    contact.setTelNo(requestBodyDTO.getTelNo());
-
-    FulfilmentRequest fulfilmentRequestedPayload =
-        createFulfilmentRequestPayload(
-            requestBodyDTO.getFulfilmentCode(), Product.DeliveryChannel.SMS, caseId, contact);
-    sendEvent(TopicType.FULFILMENT, fulfilmentRequestedPayload, caseId);
-
-    ResponseDTO response =
-        ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
-
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Now returning from the fulfilmentRequestBySMS method in class CaseServiceImpl",
-          kv("response", response));
-    }
-
-    return response;
-  }
+  // Commented out by SOCINT_351
+  //
+  //  public ResponseDTO fulfilmentRequestBySMS(SMSFulfilmentRequestDTO requestBodyDTO)
+  //      throws CTPException {
+  //    if (log.isDebugEnabled()) {
+  //      log.debug(
+  //          "Now in the fulfilmentRequestBySMS method in class CaseServiceImpl.",
+  //          kv("requestBodyDTO", requestBodyDTO));
+  //    }
+  //
+  //    verifyFulfilmentCodeNotBlackListed(requestBodyDTO.getFulfilmentCode());
+  //
+  //    UUID caseId = requestBodyDTO.getCaseId();
+  //
+  //    Contact contact = new Contact();
+  //    contact.setTelNo(requestBodyDTO.getTelNo());
+  //
+  //    FulfilmentRequest fulfilmentRequestedPayload =
+  //        createFulfilmentRequestPayload(
+  //            requestBodyDTO.getFulfilmentCode(), Product.DeliveryChannel.SMS, caseId, contact);
+  //    sendEvent(TopicType.FULFILMENT, fulfilmentRequestedPayload, caseId);
+  //
+  //    ResponseDTO response =
+  //        ResponseDTO.builder().id(caseId.toString()).dateTime(DateTimeUtil.nowUTC()).build();
+  //
+  //    if (log.isDebugEnabled()) {
+  //      log.debug(
+  //          "Now returning from the fulfilmentRequestBySMS method in class CaseServiceImpl",
+  //          kv("response", response));
+  //    }
+  //
+  //    return response;
+  //  }
 
   public CaseDTO getCaseById(final UUID caseId, CaseQueryRequestDTO requestParamsDTO)
       throws CTPException {
@@ -521,94 +515,43 @@ public class CaseService {
     sendEvent(TopicType.EQ_LAUNCH, eqLaunch, caseId);
   }
 
-  // TODO : FLEXIBLE CASE - what if the survey is not address based?
-  private Product.Region convertRegion(Case caze) {
-    return Product.Region.valueOf(caze.getSample().get(CaseUpdate.ATTRIBUTE_REGION));
-  }
-
   /**
    * create a contact centre fulfilment request event
    *
-   * @param fulfilmentCode the code for the product requested
+   * @param packCode the code for the product requested
    * @param deliveryChannel how the fulfilment should be delivered
    * @param caseId the id of the household,CE or SPG case the fulfilment is for
+   * @param firstName is the first name of the person to send to.
+   * @param lastName is the surname of the person to send to.
    * @return the request event to be delivered to the events exchange
    * @throws CTPException the requested product is invalid for the parameters given
    */
   private FulfilmentRequest createFulfilmentRequestPayload(
-      String fulfilmentCode, Product.DeliveryChannel deliveryChannel, UUID caseId, Contact contact)
-      throws CTPException {
+      UUID caseId, String packCode, String firstName, String lastName) throws CTPException {
     if (log.isDebugEnabled()) {
       log.debug(
           "Entering createFulfilmentEvent method in class CaseServiceImpl",
-          kv("fulfilmentCode", fulfilmentCode));
+          kv("packCode", packCode));
     }
 
-    Case caze = caseRepoClient.getCaseById(caseId);
-    Product product = findProduct(fulfilmentCode, deliveryChannel, convertRegion(caze));
-
-    if (deliveryChannel == Product.DeliveryChannel.POST) {
-      if (product.getIndividual()) {
-        if (StringUtils.isBlank(contact.getForename())
-            || StringUtils.isBlank(contact.getSurname())) {
-
-          log.warn(
-              "Individual fields are required for the requested fulfilment",
-              kv("fulfilmentCode", fulfilmentCode));
-          throw new CTPException(
-              Fault.BAD_REQUEST,
-              "The fulfilment is for an individual so none of the following fields can be empty: "
-                  + "'forename' or 'surname'");
-        }
-      }
-    }
+    // Will fail if case doesn't exist
+    caseRepoClient.getCaseById(caseId);
 
     FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
-    if (product.getIndividual()) {
-      fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
-    }
-
-    fulfilmentRequest.setFulfilmentCode(product.getFulfilmentCode());
     fulfilmentRequest.setCaseId(caseId.toString());
-    fulfilmentRequest.setContact(contact);
+    fulfilmentRequest.setPackCode(packCode);
+    fulfilmentRequest.setUacMetadata(new HashMap<>());
+
+    Map<String, String> personalisation = new HashMap<>();
+    if (Strings.isNotBlank(firstName)) {
+      personalisation.put("firstName", firstName);
+    }
+    if (Strings.isNotBlank(lastName)) {
+      personalisation.put("lastName", lastName);
+    }
+    fulfilmentRequest.setPersonalisation(personalisation);
 
     return fulfilmentRequest;
-  }
-
-  /**
-   * find the product using the parameters provided
-   *
-   * @param fulfilmentCode the code for the product requested
-   * @param deliveryChannel how should the fulfilment be delivered
-   * @param region identifies the region of the household case the fulfilment is for - used to
-   *     confirm the requested products eligibility
-   * @return the matching product
-   * @throws CTPException the product could not found or is ineligible for the given parameters
-   */
-  private Product findProduct(
-      String fulfilmentCode, Product.DeliveryChannel deliveryChannel, Product.Region region)
-      throws CTPException {
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Passing fulfilmentCode, deliveryChannel, and region, into findProduct method.",
-          kv("fulfilmentCode", fulfilmentCode),
-          kv("deliveryChannel", deliveryChannel),
-          kv("region", region));
-    }
-    Product searchCriteria =
-        Product.builder()
-            .fulfilmentCode(fulfilmentCode)
-            .requestChannels(Arrays.asList(Product.RequestChannel.CC))
-            .deliveryChannel(deliveryChannel)
-            .regions(Arrays.asList(region))
-            .build();
-    List<Product> products = productReference.searchProducts(searchCriteria);
-    if (products.size() == 0) {
-      log.warn("Compatible product cannot be found", kv("searchCriteria", searchCriteria));
-      throw new CTPException(Fault.BAD_REQUEST, "Compatible product cannot be found");
-    }
-
-    return products.get(0);
   }
 
   /**
@@ -812,13 +755,13 @@ public class CaseService {
     return eqUrl;
   }
 
-  private void verifyFulfilmentCodeNotBlackListed(String fulfilmentCode) throws CTPException {
+  private void verifyPackCodeNotBlackListed(String packCode) throws CTPException {
     Set<String> blacklistedProducts = appConfig.getFulfilments().getBlacklistedCodes();
 
-    if (blacklistedProducts.contains(fulfilmentCode)) {
-      log.info("Fulfilment code is no longer available", kv("fulfilmentCode", fulfilmentCode));
+    if (blacklistedProducts.contains(packCode)) {
+      log.info("Pack code is no longer available", kv("packCode", packCode));
       throw new CTPException(
-          Fault.BAD_REQUEST, "Requested fulfilment code is no longer available: " + fulfilmentCode);
+          Fault.BAD_REQUEST, "Requested pack code is no longer available: " + packCode);
     }
   }
 }

@@ -32,7 +32,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequ
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.InteractionService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.RBACService;
@@ -197,48 +196,50 @@ public class CaseEndpoint implements CTPEndpoint {
         CaseSubInteractionType.FULFILMENT_PRINT,
         // TODO should be the fulfilment description when refactored to use new
         // survey products
-        requestBodyDTO.getFulfilmentCode());
+        requestBodyDTO.getPackCode());
 
     return ResponseEntity.ok(response);
   }
 
-  /**
-   * the POST end point to request an SMS fulfilment for a case
-   *
-   * @param caseId the id of the case
-   * @param requestBodyDTO the request body
-   * @return response entity
-   * @throws CTPException something went wrong
-   */
-  @RequestMapping(value = "/{caseId}/fulfilment/sms", method = RequestMethod.POST)
-  @ResponseStatus(value = HttpStatus.OK)
-  public ResponseEntity<ResponseDTO> fulfilmentRequestBySMS(
-      @PathVariable(value = "caseId") final UUID caseId,
-      @Valid @RequestBody SMSFulfilmentRequestDTO requestBodyDTO)
-      throws CTPException {
-
-    log.info(
-        "Entering POST fulfilmentRequestBySMS",
-        kv("pathParam", caseId),
-        kv("requestBody", requestBodyDTO));
-
-    rbacService.assertUserPermission(
-        caseService.getSurveyForCase(caseId).getId(), PermissionType.REQUEST_SMS_FULFILMENT);
-
-    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
-
-    ResponseDTO response = caseService.fulfilmentRequestBySMS(requestBodyDTO);
-
-    saveCaseInteraction(
-        caseId,
-        CaseInteractionType.FULFILMENT_REQUESTED,
-        CaseSubInteractionType.FULFILMENT_SMS,
-        // TODO should be the fulfilment description when refactored to use new
-        // survey products
-        requestBodyDTO.getFulfilmentCode());
-
-    return ResponseEntity.ok(response);
-  }
+  // Comment out by SOCINT-351
+  //
+  //  /**
+  //   * the POST end point to request an SMS fulfilment for a case
+  //   *
+  //   * @param caseId the id of the case
+  //   * @param requestBodyDTO the request body
+  //   * @return response entity
+  //   * @throws CTPException something went wrong
+  //   */
+  //  @RequestMapping(value = "/{caseId}/fulfilment/sms", method = RequestMethod.POST)
+  //  @ResponseStatus(value = HttpStatus.OK)
+  //  public ResponseEntity<ResponseDTO> fulfilmentRequestBySMS(
+  //      @PathVariable(value = "caseId") final UUID caseId,
+  //      @Valid @RequestBody SMSFulfilmentRequestDTO requestBodyDTO)
+  //      throws CTPException {
+  //
+  //    log.info(
+  //        "Entering POST fulfilmentRequestBySMS",
+  //        kv("pathParam", caseId),
+  //        kv("requestBody", requestBodyDTO));
+  //
+  //    rbacService.assertUserPermission(
+  //        caseService.getSurveyForCase(caseId).getId(), PermissionType.REQUEST_SMS_FULFILMENT);
+  //
+  //    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId());
+  //
+  //    ResponseDTO response = caseService.fulfilmentRequestBySMS(requestBodyDTO);
+  //
+  //    saveCaseInteraction(
+  //        caseId,
+  //        CaseInteractionType.FULFILMENT_REQUESTED,
+  //        CaseSubInteractionType.FULFILMENT_SMS,
+  //        // TODO should be the fulfilment description when refactored to use new
+  //        // survey products
+  //        requestBodyDTO.getFulfilmentCode());
+  //
+  //    return ResponseEntity.ok(response);
+  //  }
 
   /**
    * the POST end point to report a refusal.

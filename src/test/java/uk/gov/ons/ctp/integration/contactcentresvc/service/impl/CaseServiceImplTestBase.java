@@ -36,7 +36,6 @@ import uk.gov.ons.ctp.common.event.model.EventPayload;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.CaseServiceClientService;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.RmCaseDTO;
-import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.contactcentresvc.BlacklistedUPRNBean;
 import uk.gov.ons.ctp.integration.contactcentresvc.CCSvcBeanMapper;
 import uk.gov.ons.ctp.integration.contactcentresvc.config.AppConfig;
@@ -58,8 +57,6 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 public abstract class CaseServiceImplTestBase {
   @Spy AppConfig appConfig = new AppConfig();
-
-  @Mock ProductReference productReference;
 
   @Mock CaseServiceClientService caseServiceClient;
 
