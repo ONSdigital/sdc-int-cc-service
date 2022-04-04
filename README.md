@@ -7,7 +7,7 @@ is required by Contact Centre in order for it to verify the contact centre's UAC
 
 ## Set Up
 Do the following steps to set up the code to run locally:
-* Install Java 11 locally
+* Install Java 17 locally
 * Make sure that you have a suitable settings.xml file in your local .m2 directory
 * Clone the sdc-int-cc-service locally
 
