@@ -5,6 +5,11 @@ spring:
         project-id: local
         emulator-host: localhost:9808
 
+management:
+  health:
+    pubsub:
+      enabled: false
+
 logging:
   level:
     uk.gov.ons.ctp: INFO

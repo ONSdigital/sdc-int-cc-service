@@ -22,7 +22,6 @@ public class AppConfig {
   private Fulfilments fulfilments;
   private KeyStore keystore;
   private EqConfig eq;
-  private Logging logging;
   private Resource publicPgpKey1;
   private Resource publicPgpKey2;
   private UPRNBlacklist uprnBlacklist;

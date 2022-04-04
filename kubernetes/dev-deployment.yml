@@ -121,11 +121,6 @@ spec:
             configMapKeyRef:
               name: cc-config
               key: telephone-capture-disabled
-        - name: CLOUD_STORAGE_CASE_SCHEMA_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: cc-config
-              key: cloud-storage-case-schema-name
         - name: SPRING_CLOUD_GCP_PUBSUB_PROJECTID
           valueFrom:
             configMapKeyRef:
@@ -190,7 +185,7 @@ spec:
               name: env-secrets
               key: response-id-salt
         - name: SURVEYS
-            valueFrom:
-              configMapKeyRef:
-                name: cc-config
-                key: surveys
+          valueFrom:
+            configMapKeyRef:
+              name: cc-config
+              key: surveys
