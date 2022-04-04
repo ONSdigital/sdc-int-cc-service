@@ -112,6 +112,13 @@ public class TransactionalOps {
     return user;
   }
 
+  public User createDeletedUser(String name, UUID id) {
+    User user = createUser(name, id);
+    user.setDeleted(true);
+    userRepo.save(user);
+    return user;
+  }
+
   public User createUser(String name, UUID id) {
     return createUser(name, id, null, null);
   }
