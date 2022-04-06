@@ -93,6 +93,34 @@ public class UserEndpointIT extends FullStackIntegrationTestBase {
   }
 
   @Test
+  public void shouldUndeleteUserWithResetAtttributes() throws Exception {
+    Role role1 =
+        txOps.createRole("user-creator", UUID.randomUUID(), List.of(PermissionType.CREATE_USER));
+    Role role2 =
+        txOps.createRole("case-searcher", UUID.randomUUID(), List.of(PermissionType.SEARCH_CASES));
+    Role role3 =
+        txOps.createRole("case-viewer", UUID.randomUUID(), List.of(PermissionType.VIEW_CASE));
+
+    txOps.createUser(PHIL, UUID.randomUUID(), List.of(role1, role2), List.of(role3));
+    User user = txOps.findUser(PHIL);
+    txOps.verifyNormalUserAndRole(PHIL, "user-creator");
+    txOps.verifyNormalUserAndRole(PHIL, "case-searcher");
+    txOps.verifyAdminUserAndRole(PHIL, "case-viewer");
+
+    userEndpoint().deleteUser("user.manager@ext.ons.gov.uk", PHIL);
+    user = txOps.findUser(PHIL);
+    assertTrue(user.isDeleted());
+
+    txOps.createUser("alison.pritchard@ons.gov.uk", UUID.randomUUID(), List.of(role1), null);
+    userEndpoint().createUser("alison.pritchard@ons.gov.uk", PHIL);
+    user = txOps.findUser(PHIL);
+    assertFalse(user.isDeleted());
+    assertTrue(user.isActive());
+    txOps.verifyNoUserRoles(PHIL);
+    txOps.verifyNoAdminRoles(PHIL);
+  }
+
+  @Test
   public void deleteUser() throws CTPException {
 
     userEndpoint().deleteUser("user.manager@ext.ons.gov.uk", "delete.target@ext.ons.gov.uk");

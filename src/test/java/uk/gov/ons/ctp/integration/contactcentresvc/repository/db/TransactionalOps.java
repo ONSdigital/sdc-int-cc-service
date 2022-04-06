@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.repository.db;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -315,14 +315,24 @@ public class TransactionalOps {
   public void verifyNormalUserAndRole(String userName, String roleName) {
     Optional<User> user = userRepo.findByIdentity(userName);
     Optional<Role> role = roleRepository.findByName(roleName);
-    assertEquals(role.get(), user.get().getUserRoles().get(0));
-    assertEquals(user.get(), role.get().getUsers().get(0));
+    assertTrue(user.get().getUserRoles().contains(role.get()));
+    assertTrue(role.get().getUsers().contains(user.get()));
   }
 
   public void verifyAdminUserAndRole(String userName, String roleName) {
     Optional<User> user = userRepo.findByIdentity(userName);
     Optional<Role> role = roleRepository.findByName(roleName);
-    assertEquals(role.get(), user.get().getAdminRoles().get(0));
-    assertEquals(user.get(), role.get().getAdmins().get(0));
+    assertTrue(user.get().getAdminRoles().contains(role.get()));
+    assertTrue(role.get().getAdmins().contains(user.get()));
+  }
+
+  public void verifyNoUserRoles(String identity) {
+    Optional<User> user = userRepo.findByIdentity(identity);
+    assertTrue(user.get().getUserRoles().isEmpty());
+  }
+
+  public void verifyNoAdminRoles(String identity) {
+    Optional<User> user = userRepo.findByIdentity(identity);
+    assertTrue(user.get().getAdminRoles().isEmpty());
   }
 }

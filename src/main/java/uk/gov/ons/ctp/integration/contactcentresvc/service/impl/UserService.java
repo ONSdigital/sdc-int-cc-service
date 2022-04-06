@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -105,6 +106,12 @@ public class UserService {
       if (user.isDeleted()) {
         log.info("Undeleting user {}", user.getIdentity());
         user.setDeleted(false);
+        // set other attributes to known state.
+        // The UI will fill in the new values with additional calls.
+        user.setActive(true);
+        user.setUserRoles(Collections.emptyList());
+        user.setAdminRoles(Collections.emptyList());
+        user.setSurveyUsages(Collections.emptyList());
       } else {
         throw new CTPException(Fault.BAD_REQUEST, "User with that name already exists");
       }
