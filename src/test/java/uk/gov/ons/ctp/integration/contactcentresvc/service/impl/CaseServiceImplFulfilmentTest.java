@@ -142,7 +142,7 @@ public class CaseServiceImplFulfilmentTest extends CaseServiceImplTestBase {
 
     // Verify first/last name in the published event
     assertEquals(CASE_ID_0.toString(), actualFulfilmentRequest.getCaseId());
-    Map<String, String> personalisation = actualFulfilmentRequest.getPersonalisation();
+    Map<String, Object> personalisation = actualFulfilmentRequest.getPersonalisation();
     if (Strings.isBlank(firstName)) {
       assertFalse(personalisation.containsKey("firstName"));
     } else {

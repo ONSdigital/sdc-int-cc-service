@@ -565,9 +565,14 @@ public class CaseService {
     FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
     fulfilmentRequest.setCaseId(caseId.toString());
     fulfilmentRequest.setPackCode(packCode);
-    fulfilmentRequest.setUacMetadata(new HashMap<>());
 
-    Map<String, String> personalisation = new HashMap<>();
+    // TODO: Once wave calculations have been decided then the wave number can be calculated
+    // correctly
+    HashMap<String, Object> uacMetadata = new HashMap<>();
+    uacMetadata.put("wave", Integer.valueOf(1)); // TODO: Remove hardcoding
+    fulfilmentRequest.setUacMetadata(uacMetadata);
+
+    Map<String, Object> personalisation = new HashMap<>();
     if (Strings.isNotBlank(firstName)) {
       personalisation.put("firstName", firstName);
     }
