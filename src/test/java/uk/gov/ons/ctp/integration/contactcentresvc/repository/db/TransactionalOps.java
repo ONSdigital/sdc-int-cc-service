@@ -136,6 +136,10 @@ public class TransactionalOps {
     return user;
   }
 
+  public User findUser(String identity) {
+    return userRepo.findByIdentity(identity).orElse(null);
+  }
+
   public Role createRole(String name, UUID id, List<PermissionType> permTypes) {
     permTypes = permTypes == null ? new ArrayList<>() : permTypes;
     Role role = Role.builder().id(id).name(name).permissions(new ArrayList<>()).build();

@@ -36,6 +36,7 @@ public class UserEndpointIT extends FullStackIntegrationTestBase {
 
   private static final UUID DELETER_ROLE_ID =
       UUID.fromString("7121e404-9ec0-11ec-a16c-4c3275913db5");
+  private final String PHIL = "philip.whiles@ext.ons.gov.uk";
 
   @Autowired private TransactionalOps txOps;
   @Autowired private UserRepository userRepo;
@@ -63,6 +64,32 @@ public class UserEndpointIT extends FullStackIntegrationTestBase {
     Role role = txOps.createRole("deleter", DELETER_ROLE_ID, perms);
     txOps.createUser("user.manager@ext.ons.gov.uk", UUID.randomUUID(), List.of(role), null);
     txOps.createUser("delete.target@ext.ons.gov.uk", UUID.randomUUID(), List.of(role), null);
+  }
+
+  @Test
+  public void shouldCreateUser() throws Exception {
+    Role role =
+        txOps.createRole("user-creator", UUID.randomUUID(), List.of(PermissionType.CREATE_USER));
+    txOps.createUser("alison.pritchard@ons.gov.uk", UUID.randomUUID(), List.of(role), null);
+    userEndpoint().createUser("alison.pritchard@ons.gov.uk", PHIL);
+    assertTrue(userRepo.findByIdentity(PHIL).isPresent());
+  }
+
+  @Test
+  public void shouldUndeleteUser() throws Exception {
+    Role role =
+        txOps.createRole("user-creator", UUID.randomUUID(), List.of(PermissionType.CREATE_USER));
+    txOps.createUser("alison.pritchard@ons.gov.uk", UUID.randomUUID(), List.of(role), null);
+    userEndpoint().createUser("alison.pritchard@ons.gov.uk", PHIL);
+    assertTrue(userRepo.findByIdentity(PHIL).isPresent());
+
+    userEndpoint().deleteUser("user.manager@ext.ons.gov.uk", PHIL);
+    User user = txOps.findUser(PHIL);
+    assertTrue(user.isDeleted());
+
+    userEndpoint().createUser("alison.pritchard@ons.gov.uk", PHIL);
+    user = txOps.findUser(PHIL);
+    assertFalse(user.isDeleted());
   }
 
   @Test

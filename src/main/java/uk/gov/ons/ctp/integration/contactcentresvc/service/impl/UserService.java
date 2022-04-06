@@ -4,6 +4,7 @@ import static uk.gov.ons.ctp.common.log.ScopedStructuredArguments.kv;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.MapperFacade;
@@ -96,13 +97,22 @@ public class UserService {
   public UserDTO createUser(UserDTO userDTO) throws CTPException {
 
     log.debug("Entering createUser", kv("userIdentity", userDTO.getIdentity()));
-    if (userRepository.findByIdentity(userDTO.getIdentity()).isPresent()) {
-      throw new CTPException(Fault.BAD_REQUEST, "User with that name already exists");
-    }
 
-    User user = new User();
-    user.setId(UUID.randomUUID());
-    user.setIdentity(userDTO.getIdentity());
+    Optional<User> userOpt = userRepository.findByIdentity(userDTO.getIdentity());
+    User user;
+    if (userOpt.isPresent()) {
+      user = userOpt.get();
+      if (user.isDeleted()) {
+        log.info("Undeleting user {}", user.getIdentity());
+        user.setDeleted(false);
+      } else {
+        throw new CTPException(Fault.BAD_REQUEST, "User with that name already exists");
+      }
+    } else {
+      user = new User();
+      user.setId(UUID.randomUUID());
+      user.setIdentity(userDTO.getIdentity());
+    }
 
     userRepository.saveAndFlush(user);
     return createDTO(user);
