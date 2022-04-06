@@ -207,15 +207,6 @@ eq:
   host: www.google.com
   path: /en/start/launch-eq/?token=
   response-id-salt: CENSUS
-  
-cloud-storage:
-  case-schema-name: new-case
-  event-backup-schema-name: event-backup
-  backoff:
-    initial: 500
-    multiplier: 2
-    max: 3500
-    max-attempts: 3
 
 uprn-blacklist:
 # The default value for UPRN 100060447618 is for '24 Sinah Lane, Hayling Island'

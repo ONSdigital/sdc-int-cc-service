@@ -188,8 +188,8 @@ public class RBACService {
   }
 
   /**
-   * asserts that the user identity exists in context, the user exists in the db, and the user is
-   * currently active
+   * asserts that the user identity exists in context, the user exists in the db, the user is
+   * currently active, and not deleted
    *
    * @return the User if all the above
    * @throws CTPException one of the conditions above was not met
@@ -211,6 +211,11 @@ public class RBACService {
     if (!user.isActive()) {
       throw new CTPException(
           Fault.ACCESS_DENIED, String.format("User %s no longer active", principalIdentity));
+    }
+
+    if (user.isDeleted()) {
+      throw new CTPException(
+          Fault.ACCESS_DENIED, String.format("User %s has been deleted", principalIdentity));
     }
     return user;
   }

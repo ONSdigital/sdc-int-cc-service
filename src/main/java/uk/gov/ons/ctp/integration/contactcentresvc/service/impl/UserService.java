@@ -37,11 +37,7 @@ public class UserService {
   public UserDTO getUser(String userIdentity) throws CTPException {
 
     log.debug("Entering getUser", kv("userIdentity", userIdentity));
-    User user =
-        userRepository
-            .findByIdentity(userIdentity)
-            .orElseThrow(
-                () -> new CTPException(Fault.BAD_REQUEST, "User not found: " + userIdentity));
+    User user = findUserIfNotDeleted(userIdentity);
 
     return createDTO(user);
   }
@@ -61,10 +57,7 @@ public class UserService {
   @Transactional
   public List<RoleDTO> getUsersRoles(String userIdentity) throws CTPException {
     log.debug("Entering getUsersRoles");
-    User user =
-        userRepository
-            .findByIdentity(userIdentity)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+    User user = findUserIfNotDeleted(userIdentity);
 
     return mapper.mapAsList(user.getUserRoles(), RoleDTO.class);
   }
@@ -90,10 +83,7 @@ public class UserService {
   public UserDTO modifyUser(UserDTO userDTO) throws CTPException {
 
     log.debug("Entering modifyUser", kv("userIdentity", userDTO.getIdentity()));
-    User user =
-        userRepository
-            .findByIdentity(userDTO.getIdentity())
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+    User user = findUserIfNotDeleted(userDTO.getIdentity());
 
     user.setActive(userDTO.isActive());
     user.setForename(userDTO.getForename());
@@ -123,10 +113,7 @@ public class UserService {
 
     log.debug(
         "Entering addUserSurvey", kv("userIdentity", userIdentity), kv("surveyType", surveyType));
-    User user =
-        userRepository
-            .findByIdentity(userIdentity)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+    User user = findUserIfNotDeleted(userIdentity);
 
     if (!user.isActive()) {
       throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
@@ -152,10 +139,7 @@ public class UserService {
         "Entering removeUserSurvey",
         kv("userIdentity", userIdentity),
         kv("surveyType", surveyType));
-    User user =
-        userRepository
-            .findByIdentity(userIdentity)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+    User user = findUserIfNotDeleted(userIdentity);
 
     if (!user.isActive()) {
       throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
@@ -178,10 +162,7 @@ public class UserService {
   public UserDTO addUserRole(String userIdentity, String roleName) throws CTPException {
 
     log.debug("Entering addUserRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
-    User user =
-        userRepository
-            .findByIdentity(userIdentity)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+    User user = findUserIfNotDeleted(userIdentity);
 
     if (!user.isActive()) {
       throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
@@ -205,10 +186,7 @@ public class UserService {
 
     log.debug(
         "Entering removeUserRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
-    User user =
-        userRepository
-            .findByIdentity(userIdentity)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+    User user = findUserIfNotDeleted(userIdentity);
 
     if (!user.isActive()) {
       throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
@@ -231,10 +209,7 @@ public class UserService {
   public UserDTO addAdminRole(String userIdentity, String roleName) throws CTPException {
 
     log.debug("Entering addAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
-    User user =
-        userRepository
-            .findByIdentity(userIdentity)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+    User user = findUserIfNotDeleted(userIdentity);
 
     if (!user.isActive()) {
       throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
@@ -258,10 +233,7 @@ public class UserService {
 
     log.debug(
         "Entering removeAdminRole", kv("userIdentity", userIdentity), kv("roleName", roleName));
-    User user =
-        userRepository
-            .findByIdentity(userIdentity)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+    User user = findUserIfNotDeleted(userIdentity);
 
     if (!user.isActive()) {
       throw new CTPException(Fault.BAD_REQUEST, "Operation not allowed on an inactive user");
@@ -282,10 +254,7 @@ public class UserService {
 
   @Transactional
   public UserDTO deleteUser(String userIdentity) throws CTPException {
-    User user =
-        userRepository
-            .findByIdentity(userIdentity)
-            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+    User user = findUserIfNotDeleted(userIdentity);
 
     UserDTO response = createDTO(user);
 
@@ -303,5 +272,19 @@ public class UserService {
         !userAuditRepository.existsByCcuserIdAndAuditType(user.getId(), AuditType.LOGIN));
 
     return userDTO;
+  }
+
+  private User findUserIfNotDeleted(String userIdentity) throws CTPException {
+    User user =
+        userRepository
+            .findByIdentity(userIdentity)
+            .orElseThrow(() -> new CTPException(Fault.BAD_REQUEST, "User not found"));
+
+    if (user.isDeleted()) {
+      throw new CTPException(
+          Fault.BAD_REQUEST, String.format("User not found: " + user.getIdentity()));
+    }
+
+    return user;
   }
 }

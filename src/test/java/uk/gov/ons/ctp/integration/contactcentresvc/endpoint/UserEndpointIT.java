@@ -1,16 +1,29 @@
 package uk.gov.ons.ctp.integration.contactcentresvc.endpoint;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.ons.ctp.common.domain.SurveyType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.PermissionType;
 import uk.gov.ons.ctp.integration.contactcentresvc.model.Role;
@@ -27,12 +40,26 @@ public class UserEndpointIT extends FullStackIntegrationTestBase {
   @Autowired private TransactionalOps txOps;
   @Autowired private UserRepository userRepo;
 
+  TestRestTemplate restTemplate;
+  URL base;
+  @LocalServerPort int port;
+
   @BeforeEach
   public void setup() throws MalformedURLException {
 
+    base = new URL("http://localhost:" + port);
+
+    restTemplate = new TestRestTemplate(new RestTemplateBuilder());
+
     txOps.deleteAll();
 
-    var perms = List.of(PermissionType.DELETE_USER);
+    var perms =
+        List.of(
+            PermissionType.DELETE_USER,
+            PermissionType.READ_USER,
+            PermissionType.USER_SURVEY_MAINTENANCE,
+            PermissionType.USER_ROLE_MAINTENANCE,
+            PermissionType.RESERVED_ADMIN_ROLE_MAINTENANCE);
     Role role = txOps.createRole("deleter", DELETER_ROLE_ID, perms);
     txOps.createUser("user.manager@ext.ons.gov.uk", UUID.randomUUID(), List.of(role), null);
     txOps.createUser("delete.target@ext.ons.gov.uk", UUID.randomUUID(), List.of(role), null);
@@ -86,5 +113,203 @@ public class UserEndpointIT extends FullStackIntegrationTestBase {
     // Confirm user still exists
     User user = userRepo.findByIdentity("user.manager@ext.ons.gov.uk").get();
     assertFalse(user.isDeleted());
+  }
+
+  @Test
+  public void getDeletedUserReturnsNotFound() throws CTPException {
+    txOps.createDeletedUser("deleted.user@ext.ons.gov.uk", UUID.randomUUID());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+
+    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    ResponseEntity<UserDTO> response =
+        restTemplate.exchange(
+            base.toString() + "/ccsvc/users/deleted.user@ext.ons.gov.uk",
+            HttpMethod.GET,
+            requestEntity,
+            UserDTO.class,
+            params);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+  }
+
+  @Test
+  public void modifyDeletedUserReturnsNotFound() throws CTPException {
+    txOps.createDeletedUser("deleted.user@ext.ons.gov.uk", UUID.randomUUID());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+
+    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    ResponseEntity<UserDTO> response =
+        restTemplate.exchange(
+            base.toString() + "/ccsvc/users/deleted.user@ext.ons.gov.uk",
+            HttpMethod.PUT,
+            requestEntity,
+            UserDTO.class,
+            params);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+  }
+
+  @Test
+  public void addingRoleToDeletedUserBadRequest() throws CTPException {
+    txOps.createDeletedUser("deleted.user@ext.ons.gov.uk", UUID.randomUUID());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+
+    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    ResponseEntity<UserDTO> response =
+        restTemplate.exchange(
+            base.toString() + "/ccsvc/users/deleted.user@ext.ons.gov.uk/addUserRole/role",
+            HttpMethod.PATCH,
+            requestEntity,
+            UserDTO.class,
+            params);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+  }
+
+  @Test
+  public void removingRoleFromDeletedUserBadRequest() throws CTPException {
+    txOps.createDeletedUser("deleted.user@ext.ons.gov.uk", UUID.randomUUID());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+
+    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    ResponseEntity<UserDTO> response =
+        restTemplate.exchange(
+            base.toString() + "/ccsvc/users/deleted.user@ext.ons.gov.uk/removeUserRole/role",
+            HttpMethod.PATCH,
+            requestEntity,
+            UserDTO.class,
+            params);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+  }
+
+  @Test
+  public void addingAdminRoleToDeletedUserBadRequest() throws CTPException {
+    txOps.createDeletedUser("deleted.user@ext.ons.gov.uk", UUID.randomUUID());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+
+    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    ResponseEntity<UserDTO> response =
+        restTemplate.exchange(
+            base.toString() + "/ccsvc/users/deleted.user@ext.ons.gov.uk/addAdminRole/role",
+            HttpMethod.PATCH,
+            requestEntity,
+            UserDTO.class,
+            params);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+  }
+
+  @Test
+  public void removingAdminRoleFromDeletedUserBadRequest() throws CTPException {
+    txOps.createDeletedUser("deleted.user@ext.ons.gov.uk", UUID.randomUUID());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+
+    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    ResponseEntity<UserDTO> response =
+        restTemplate.exchange(
+            base.toString() + "/ccsvc/users/deleted.user@ext.ons.gov.uk/removeAdminRole/role",
+            HttpMethod.PATCH,
+            requestEntity,
+            UserDTO.class,
+            params);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+  }
+
+  @Test
+  public void addingSurveyToDeletedUserBadRequest() throws CTPException {
+    txOps.createDeletedUser("deleted.user@ext.ons.gov.uk", UUID.randomUUID());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+
+    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    ResponseEntity<UserDTO> response =
+        restTemplate.exchange(
+            base.toString()
+                + "/ccsvc/users/deleted.user@ext.ons.gov.uk/addSurvey/"
+                + SurveyType.SOCIAL,
+            HttpMethod.PATCH,
+            requestEntity,
+            UserDTO.class,
+            params);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+  }
+
+  @Test
+  public void removingSurveyFromDeletedUserBadRequest() throws CTPException {
+    txOps.createDeletedUser("deleted.user@ext.ons.gov.uk", UUID.randomUUID());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+
+    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    ResponseEntity<UserDTO> response =
+        restTemplate.exchange(
+            base.toString()
+                + "/ccsvc/users/deleted.user@ext.ons.gov.uk/removeSurvey/"
+                + SurveyType.SOCIAL,
+            HttpMethod.PATCH,
+            requestEntity,
+            UserDTO.class,
+            params);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+  }
+
+  @Test
+  public void deletedUserNotReturnedByGetUsers() throws CTPException {
+    txOps.createDeletedUser("deleted.user@ext.ons.gov.uk", UUID.randomUUID());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "user.manager@ext.ons.gov.uk");
+
+    HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    ResponseEntity<List<UserDTO>> response =
+        restTemplate.exchange(
+            base.toString() + "/ccsvc/users",
+            HttpMethod.GET,
+            requestEntity,
+            new ParameterizedTypeReference<List<UserDTO>>() {},
+            params);
+    assertEquals(2, response.getBody().size());
+    assertNotEquals("deleted.user@ext.ons.gov.uk", response.getBody().get(0).getIdentity());
+    assertNotEquals("deleted.user@ext.ons.gov.uk", response.getBody().get(1).getIdentity());
+
+    List<User> users = userRepo.findAll();
+    assertEquals(3, users.size());
   }
 }

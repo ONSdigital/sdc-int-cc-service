@@ -87,4 +87,33 @@ public class UserLoginIT extends FullStackIntegrationTestBase {
     assertEquals("Wilson", userInDB.getSurname());
     assertTrue(userInDB.isActive());
   }
+
+  @Test
+  public void loginDeletedUser() throws Exception {
+
+    txOps.createDeletedUser("Fred@ext.ons.gov.uk", FRED_UUID);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("x-user-id", "Fred@ext.ons.gov.uk");
+
+    LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
+    loginRequestDTO.setForename("Hamish");
+    loginRequestDTO.setSurname("Wilson");
+
+    HttpEntity<LoginRequestDTO> requestEntity =
+        new HttpEntity<LoginRequestDTO>(loginRequestDTO, headers);
+
+    Map<String, String> params = new HashMap<String, String>();
+
+    // Submit login request
+    ResponseEntity<UserDTO> response =
+        restTemplate.exchange(
+            base.toString() + "/ccsvc/users/login",
+            HttpMethod.PUT,
+            requestEntity,
+            UserDTO.class,
+            params);
+
+    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+  }
 }
