@@ -18,7 +18,6 @@ import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -47,7 +46,6 @@ import uk.gov.ons.ctp.integration.contactcentresvc.representation.ModifyCaseRequ
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.RefusalRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.ResponseDTO;
-import uk.gov.ons.ctp.integration.contactcentresvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.representation.SurveyDTO;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.AddressService;
 import uk.gov.ons.ctp.integration.contactcentresvc.service.impl.CaseService;
@@ -208,19 +206,11 @@ public class EndpointSecurityTest {
   }
 
   @Test
-  public void testOkGetFulfilfments() {
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(base.toString() + "/ccsvc/fulfilments", String.class);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-  }
-
-  @Test
   public void testOkPostFulfilmentPost() throws CTPException {
     UUID caseId = UUID.randomUUID();
     PostalFulfilmentRequestDTO requestBody = new PostalFulfilmentRequestDTO();
-    requestBody.setDateTime(new Date());
     requestBody.setCaseId(caseId);
-    requestBody.setFulfilmentCode("ABC123");
+    requestBody.setPackCode("ABC123");
     mockGetSurvey();
 
     ResponseEntity<String> response =
@@ -231,23 +221,23 @@ public class EndpointSecurityTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  @Test
-  public void testOkPostFulfilmentSMS() throws CTPException {
-    UUID caseId = UUID.randomUUID();
-    SMSFulfilmentRequestDTO requestBody = new SMSFulfilmentRequestDTO();
-    requestBody.setDateTime(new Date());
-    requestBody.setCaseId(caseId);
-    requestBody.setFulfilmentCode("ABC123");
-    requestBody.setTelNo("447123456789");
-    mockGetSurvey();
-
-    ResponseEntity<String> response =
-        restTemplate.postForEntity(
-            base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/sms",
-            requestBody,
-            String.class);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-  }
+  //  @Test
+  //  public void testOkPostFulfilmentSMS() throws CTPException {
+  //    UUID caseId = UUID.randomUUID();
+  //    SMSFulfilmentRequestDTO requestBody = new SMSFulfilmentRequestDTO();
+  //    requestBody.setDateTime(new Date());
+  //    requestBody.setCaseId(caseId);
+  //    requestBody.setFulfilmentCode("ABC123");
+  //    requestBody.setTelNo("447123456789");
+  //    mockGetSurvey();
+  //
+  //    ResponseEntity<String> response =
+  //        restTemplate.postForEntity(
+  //            base.toString() + "/ccsvc/cases/" + caseId + "/fulfilment/sms",
+  //            requestBody,
+  //            String.class);
+  //    assertEquals(HttpStatus.OK, response.getStatusCode());
+  //  }
 
   private void mockGetSurvey() throws CTPException {
     SurveyDTO surveyDTO = SurveyDTO.builder().id(UUID.randomUUID()).build();

@@ -99,7 +99,7 @@ public final class CaseEndpointFulfilmentPostTest {
         CaseInteractionRequestDTO.builder()
             .type(CaseInteractionType.FULFILMENT_REQUESTED)
             .subtype(CaseSubInteractionType.FULFILMENT_PRINT)
-            .note(requestData.getFulfilmentCode())
+            .note(requestData.getPackCode())
             .build();
     verify(interactionService, times(1))
         .saveCaseInteraction(requestData.getCaseId(), interactionDTO);
@@ -110,18 +110,6 @@ public final class CaseEndpointFulfilmentPostTest {
     ObjectNode json = FixtureHelper.loadClassObjectNode();
     ResultActions actions =
         mockMvc.perform(postJson("/cases/123456789/fulfilment/post", json.toString()));
-    actions.andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void postFulfilmentByCaseById_BadDate() throws Exception {
-    ObjectNode json = FixtureHelper.loadClassObjectNode();
-    PostalFulfilmentRequestDTO requestData =
-        mapper.convertValue(json, PostalFulfilmentRequestDTO.class);
-    json.put("dateTime", "2019:12:25 12:34:56");
-    ResultActions actions =
-        mockMvc.perform(
-            postJson("/cases/" + requestData.getCaseId() + "/fulfilment/post", json.toString()));
     actions.andExpect(status().isBadRequest());
   }
 
