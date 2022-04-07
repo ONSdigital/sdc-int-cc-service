@@ -2,8 +2,10 @@ package uk.gov.ons.ctp.integration.contactcentresvc.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -12,6 +14,8 @@ import java.util.UUID;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -41,10 +45,56 @@ public class UserServiceTest {
   private final String TEST_USER = "testUser";
   private final String TEST_USER_2 = "testUser2";
   private final String TEST_USER_3 = "testUser3";
+  private final String PHIL = "philip.whiles@ext.ons.gov.uk";
+
+  @Captor private ArgumentCaptor<User> userCaptor;
+
+  @Test
+  public void shouldCreateNewUser() throws Exception {
+
+    when(userRepository.findByIdentity(PHIL)).thenReturn(Optional.empty());
+
+    UserDTO philDto = UserDTO.builder().identity(PHIL).build();
+    UserDTO result = userService.createUser(philDto);
+    assertNotNull(result);
+    verify(userRepository).saveAndFlush(userCaptor.capture());
+    User phil = userCaptor.getValue();
+    assertNotNull(phil);
+    assertEquals(PHIL, phil.getIdentity());
+  }
+
+  @Test
+  public void shouldUndeleteUserToCreate() throws Exception {
+    User deletedPhil = buildUser(PHIL);
+    deletedPhil.setDeleted(true);
+
+    when(userRepository.findByIdentity(PHIL)).thenReturn(Optional.of(deletedPhil));
+
+    UserDTO philDto = UserDTO.builder().identity(PHIL).build();
+    UserDTO result = userService.createUser(philDto);
+    assertNotNull(result);
+    verify(userRepository).saveAndFlush(userCaptor.capture());
+    User phil = userCaptor.getValue();
+    assertNotNull(phil);
+    assertEquals(PHIL, phil.getIdentity());
+  }
+
+  @Test
+  public void shouldRejectExistingUserThatIsNotDeleted() throws Exception {
+
+    when(userRepository.findByIdentity(PHIL)).thenReturn(Optional.of(buildUser(PHIL)));
+
+    UserDTO philDto = UserDTO.builder().identity(PHIL).build();
+
+    CTPException exception =
+        assertThrows(CTPException.class, () -> userService.createUser(philDto));
+
+    assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
+  }
 
   @Test
   public void canBeDeletedTrueWhenZeroCaseInteractionsSpecificUser() throws CTPException {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
@@ -58,7 +108,7 @@ public class UserServiceTest {
 
   @Test
   public void canBeDeletedFalseWhenSomeCaseInteractionsSpecificUser() throws CTPException {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
@@ -73,9 +123,9 @@ public class UserServiceTest {
   @Test
   public void canBeDeletedCorrectForMultipleUsers() throws CTPException {
 
-    User test1 = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
-    User test2 = User.builder().id(UUID.randomUUID()).identity(TEST_USER_2).build();
-    User test3 = User.builder().id(UUID.randomUUID()).identity(TEST_USER_3).build();
+    User test1 = buildUser(TEST_USER);
+    User test2 = buildUser(TEST_USER_2);
+    User test3 = buildUser(TEST_USER_3);
 
     List<User> users = List.of(test1, test2, test3);
 
@@ -97,7 +147,7 @@ public class UserServiceTest {
 
   @Test
   public void deleteUserWhoIsNotDeletable() throws CTPException {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     when(userRepository.findByIdentity(TEST_USER)).thenReturn(Optional.of(testUser));
 
@@ -117,7 +167,7 @@ public class UserServiceTest {
 
   @Test
   public void exceptionThrownWhenModifyingDeletedUser() {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     testUser.setDeleted(true);
 
@@ -138,7 +188,7 @@ public class UserServiceTest {
 
   @Test
   public void exceptionThrownWhenAddingSurveyToDeletedUser() {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     testUser.setDeleted(true);
 
@@ -157,7 +207,7 @@ public class UserServiceTest {
 
   @Test
   public void exceptionThrownWhenRemovingSurveyFromDeletedUser() {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     testUser.setDeleted(true);
 
@@ -176,7 +226,7 @@ public class UserServiceTest {
 
   @Test
   public void exceptionThrownWhenAddingRoleToDeletedUser() {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     testUser.setDeleted(true);
 
@@ -195,7 +245,7 @@ public class UserServiceTest {
 
   @Test
   public void exceptionThrownWhenRemovingRoleFromDeletedUser() {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     testUser.setDeleted(true);
 
@@ -214,7 +264,7 @@ public class UserServiceTest {
 
   @Test
   public void exceptionThrownWhenAddingAdminRRoleToDeletedUser() {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     testUser.setDeleted(true);
 
@@ -233,7 +283,7 @@ public class UserServiceTest {
 
   @Test
   public void exceptionThrownWhenRemovingAdminRoleFromDeletedUser() {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     testUser.setDeleted(true);
 
@@ -252,7 +302,7 @@ public class UserServiceTest {
 
   @Test
   public void exceptionThrownWhenDeletingAlreadyDeletedUser() {
-    User testUser = User.builder().id(UUID.randomUUID()).identity(TEST_USER).build();
+    User testUser = buildTestUser();
 
     testUser.setDeleted(true);
 
@@ -267,5 +317,13 @@ public class UserServiceTest {
 
     assertEquals(CTPException.Fault.BAD_REQUEST, exception.getFault());
     assertEquals("User not found: " + TEST_USER, exception.getMessage());
+  }
+
+  private User buildUser(String identity) {
+    return User.builder().id(UUID.randomUUID()).identity(identity).build();
+  }
+
+  private User buildTestUser() {
+    return buildUser(TEST_USER);
   }
 }
